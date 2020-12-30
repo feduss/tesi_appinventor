@@ -17,10 +17,7 @@ import com.google.appinventor.client.explorer.project.Project;
 import com.google.appinventor.client.widgets.LabeledTextBox;
 import com.google.appinventor.client.youngandroid.TextValidators;
 import com.google.appinventor.shared.rpc.project.ProjectNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidBlocksNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidFormNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidPackageNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidProjectNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.*;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -211,6 +208,7 @@ public final class AddFormCommand extends ChainableCommand {
       String qualifiedFormName = packageNode.getPackageName() + '.' + formName;
       final String formFileId = YoungAndroidFormNode.getFormFileId(qualifiedFormName);
       final String blocksFileId = YoungAndroidBlocksNode.getBlocklyFileId(qualifiedFormName);
+      final String rulesFileId = YoungAndroidRulesNode.getRulelyFileId(qualifiedFormName);
 
       OdeAsyncCallback<Long> callback = new OdeAsyncCallback<Long>(
           // failure message
@@ -240,11 +238,12 @@ public final class AddFormCommand extends ChainableCommand {
                   ode.getEditorManager().getOpenProjectEditor(project.getProjectId());
               FileEditor formEditor = projectEditor.getFileEditor(formFileId);
               FileEditor blocksEditor = projectEditor.getFileEditor(blocksFileId);
-              if (formEditor != null && blocksEditor != null && !ode.screensLocked()) {
+              FileEditor rulesEditor = projectEditor.getFileEditor(rulesFileId);
+              if (formEditor != null && blocksEditor != null && rulesEditor != null && !ode.screensLocked()) {
                 DesignToolbar designToolbar = Ode.getInstance().getDesignToolbar();
                 long projectId = formEditor.getProjectId();
                 designToolbar.addScreen(projectId, formName, formEditor, 
-                    blocksEditor);
+                    blocksEditor, rulesEditor);
                 designToolbar.switchToScreen(projectId, formName, DesignToolbar.View.FORM);
                 executeNextCommand(projectRootNode);
               } else {

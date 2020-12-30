@@ -36,9 +36,11 @@ import com.google.gwt.core.client.Scheduler;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -65,11 +67,13 @@ public class DesignToolbar extends Toolbar {
     public final String screenName;
     public final FileEditor formEditor;
     public final FileEditor blocksEditor;
+    public final FileEditor rulesEditor;
 
-    public Screen(String name, FileEditor formEditor, FileEditor blocksEditor) {
+    public Screen(String name, FileEditor formEditor, FileEditor blocksEditor, FileEditor rulesEditor) {
       this.screenName = name;
       this.formEditor = formEditor;
       this.blocksEditor = blocksEditor;
+      this.rulesEditor = rulesEditor;
     }
   }
 
@@ -95,9 +99,9 @@ public class DesignToolbar extends Toolbar {
     }
 
     // Returns true if we added the screen (it didn't previously exist), false otherwise.
-    public boolean addScreen(String name, FileEditor formEditor, FileEditor blocksEditor) {
+    public boolean addScreen(String name, FileEditor formEditor, FileEditor blocksEditor, FileEditor rulesEditor) {
       if (!screens.containsKey(name)) {
-        screens.put(name, new Screen(name, formEditor, blocksEditor));
+        screens.put(name, new Screen(name, formEditor, blocksEditor, rulesEditor));
         return true;
       } else {
         return false;
@@ -123,6 +127,7 @@ public class DesignToolbar extends Toolbar {
   private static final String WIDGET_NAME_REMOVEFORM = "RemoveForm";
   private static final String WIDGET_NAME_SCREENS_DROPDOWN = "ScreensDropdown";
   private static final String WIDGET_NAME_SWITCH_TO_BLOCKS_EDITOR = "SwitchToBlocksEditor";
+  private static final String WIDGET_NAME_SWITCH_TO_RULES_EDITOR = "SwitchToRulesEditor"; //feduss
   private static final String WIDGET_NAME_SWITCH_TO_FORM_EDITOR = "SwitchToFormEditor";
   private static final String WIDGET_NAME_SENDTOGALLERY = "SendToGallery";
 
@@ -138,7 +143,8 @@ public class DesignToolbar extends Toolbar {
   // Enum for type of view showing in the design tab
   public enum View {
     FORM,   // Form editor view
-    BLOCKS  // Blocks editor view
+    BLOCKS,  // Blocks editor view
+    RULES  // Rules editor view
   }
   public View currentView = View.FORM;
 
@@ -196,13 +202,24 @@ public class DesignToolbar extends Toolbar {
       addButton(new ToolbarItem(WIDGET_NAME_SENDTOGALLERY,
           MESSAGES.publishToGalleryButton(), new SendToGalleryAction()));
     }
-
     addButton(new ToolbarItem(WIDGET_NAME_SWITCH_TO_FORM_EDITOR,
-        MESSAGES.switchToFormEditorButton(), new SwitchToFormEditorAction()), true);
+            MESSAGES.switchToFormEditorButton(), new SwitchToFormEditorAction()), true);
     addButton(new ToolbarItem(WIDGET_NAME_SWITCH_TO_BLOCKS_EDITOR,
-        MESSAGES.switchToBlocksEditorButton(), new SwitchToBlocksEditorAction()), true);
-
-    // Gray out the Designer button and enable the blocks button
+            MESSAGES.switchToBlocksEditorButton(), new SwitchToBlocksEditorAction()), true);
+    //feduss
+    if(true){
+      //setButtonVisible(WIDGET_NAME_SWITCH_TO_FORM_EDITOR, false);
+      setButtonVisible(WIDGET_NAME_SWITCH_TO_BLOCKS_EDITOR, false);
+      addButton(new ToolbarItem(WIDGET_NAME_SWITCH_TO_RULES_EDITOR,
+              MESSAGES.switchToRulesEditorButton(), new SwitchToRulesEditorAction()), true);
+      Label antlrLabel = new Label();
+      antlrLabel.setText("Antlr Edition");
+      antlrLabel.setStyleName("ya-ProjectName");
+      antlrLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+      //toolbar.add(antlrLabel);
+    }
+    ///end///
+    // Gray out the Designer button and enable the blocks/rules button
     toggleEditor(false);
     Ode.getInstance().getTopToolbar().updateFileMenuButtons(0);
   }
@@ -350,11 +367,20 @@ public class DesignToolbar extends Toolbar {
       projectEditor.selectFileEditor(screen.formEditor);
       toggleEditor(false);
       Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
-    } else {  // must be View.BLOCKS
+      //} else if(currentView == View.BLOCKS) {  // must be View.BLOCKS
+    }else if(currentView == View.BLOCKS){
       projectEditor.selectFileEditor(screen.blocksEditor);
       toggleEditor(true);
       Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
     }
+    //feduss, se la view è rules
+    else{
+      OdeLog.wlog("Ramo else di RULES");
+      projectEditor.selectFileEditor(screen.rulesEditor);
+      toggleEditor(false);
+      Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
+    }
+    ///end///
     // Inform the Blockly Panel which project/screen (aka form) we are working on
     BlocklyPanel.setCurrentForm(projectId + "_" + newScreenName);
     screen.blocksEditor.makeActiveWorkspace();
@@ -376,6 +402,25 @@ public class DesignToolbar extends Toolbar {
       }
     }
   }
+
+  //feduss
+  private class SwitchToRulesEditorAction implements Command {
+    @Override
+    public void execute() {
+      if (currentProject == null) {
+        OdeLog.wlog("DesignToolbar.currentProject is null. "
+                + "Ignoring SwitchToRulesEditorAction.execute().");
+        return;
+      }
+      if (currentView != View.RULES) {
+        long projectId = Ode.getInstance().getCurrentYoungAndroidProjectRootNode().getProjectId();
+        switchToScreen(projectId, currentProject.currentScreen, View.RULES);
+        toggleEditor(true);       // Gray out the rules button and enable the designer button
+        Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
+      }
+    }
+  }
+  ///end///
 
   private class SendToGalleryAction implements Command {
     @Override
@@ -481,14 +526,14 @@ public class DesignToolbar extends Toolbar {
    * and blocksEditor is the file editor for the form's blocks.
    */
   public void addScreen(long projectId, String name, FileEditor formEditor,
-      FileEditor blocksEditor) {
+                        FileEditor blocksEditor, FileEditor rulesEditor) {
     if (!projectMap.containsKey(projectId)) {
       OdeLog.wlog("DesignToolbar can't find project " + name + " with id " + projectId
           + ". Ignoring addScreen().");
       return;
     }
     DesignProject project = projectMap.get(projectId);
-    if (project.addScreen(name, formEditor, blocksEditor)) {
+    if (project.addScreen(name, formEditor, blocksEditor, rulesEditor)) {
       if (currentProject == project) {
         addDropDownButtonItem(WIDGET_NAME_SCREENS_DROPDOWN, new DropDownItem(name,
             name, new SwitchScreenAction(projectId, name)));
@@ -566,8 +611,16 @@ public class DesignToolbar extends Toolbar {
   }
 
   private void toggleEditor(boolean blocks) {
-    setButtonEnabled(WIDGET_NAME_SWITCH_TO_BLOCKS_EDITOR, !blocks);
-    setButtonEnabled(WIDGET_NAME_SWITCH_TO_FORM_EDITOR, blocks);
+    //feduss
+    if(true){
+      setButtonEnabled(WIDGET_NAME_SWITCH_TO_RULES_EDITOR, !blocks);
+      setButtonEnabled(WIDGET_NAME_SWITCH_TO_FORM_EDITOR, blocks);
+    }
+    ///end///
+    else{
+      setButtonEnabled(WIDGET_NAME_SWITCH_TO_BLOCKS_EDITOR, !blocks);
+      setButtonEnabled(WIDGET_NAME_SWITCH_TO_FORM_EDITOR, blocks);
+    }
 
     if (AppInventorFeatures.allowMultiScreenApplications() && !isReadOnly) {
       if (getCurrentProject() == null || "Screen1".equals(getCurrentProject().currentScreen)) {

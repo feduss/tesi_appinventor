@@ -34,11 +34,7 @@ import com.google.appinventor.shared.rpc.project.ChecksumedFileException;
 import com.google.appinventor.shared.rpc.project.ChecksumedLoadFile;
 import com.google.appinventor.shared.rpc.project.ProjectNode;
 import com.google.appinventor.shared.rpc.project.ProjectRootNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidBlocksNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidComponentsFolder;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidFormNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidProjectNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidSourceNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.*;
 import com.google.appinventor.shared.storage.StorageUtil;
 import com.google.appinventor.shared.youngandroid.YoungAndroidSourceAnalyzer;
 import com.google.common.collect.Maps;
@@ -77,6 +73,7 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
   private class EditorSet {
     YaFormEditor formEditor = null;
     YaBlocksEditor blocksEditor = null;
+    YaRulesEditor rulesEditor = null;
   }
 
   // Maps form name -> editors for this form
@@ -197,7 +194,7 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
       EditorSet editors = editorMap.get(formName);
       if (editors.formEditor != null && editors.blocksEditor != null) {
         designToolbar.addScreen(projectRootNode.getProjectId(), formName, editors.formEditor, 
-            editors.blocksEditor);
+            editors.blocksEditor, editors.rulesEditor);
         if (isScreen1(formName)) {
           screen1Added = true;
           if (readyToShowScreen1()) {  // probably not yet but who knows?
@@ -281,12 +278,18 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
         formName = ((YoungAndroidBlocksNode) node).getFormName();
       }
     }
+    else if (node instanceof YoungAndroidRulesNode) {
+      if (getFileEditor(node.getFileId()) == null) {
+        addRulesEditor((YoungAndroidRulesNode) node);
+        formName = ((YoungAndroidRulesNode) node).getFormName();
+      }
+    }
     if (formName != null) {
       // see if we have both editors yet
       EditorSet editors = editorMap.get(formName);
       if (editors.formEditor != null && editors.blocksEditor != null) {
         Ode.getInstance().getDesignToolbar().addScreen(node.getProjectId(), formName, 
-            editors.formEditor, editors.blocksEditor);
+            editors.formEditor, editors.blocksEditor, editors.rulesEditor);
       }
     }
   }
@@ -508,6 +511,20 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
     } else {
       EditorSet editors = new EditorSet();
       editors.blocksEditor = newBlocksEditor;
+      editorMap.put(formName, editors);
+    }
+  }
+
+  private void addRulesEditor(YoungAndroidRulesNode rulesNode) {
+    final YaRulesEditor yaRulesEditor = new YaRulesEditor(this, rulesNode);
+    final String formName = rulesNode.getFormName();
+    OdeLog.log("Adding blocks editor for " + formName);
+    if (editorMap.containsKey(formName)) {
+      // This happens if the form editor was already added.
+      editorMap.get(formName).rulesEditor = yaRulesEditor;
+    } else {
+      EditorSet editors = new EditorSet();
+      editors.rulesEditor = yaRulesEditor;
       editorMap.put(formName, editors);
     }
   }

@@ -375,10 +375,15 @@ public class DesignToolbar extends Toolbar {
     }
     //feduss, se la view è rules
     else{
-      OdeLog.wlog("Ramo else di RULES");
-      projectEditor.selectFileEditor(screen.rulesEditor);
-      toggleEditor(false);
-      Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
+      if(screen.rulesEditor == null){
+        Window.alert("screen.rulesEditor è null!");
+      }
+      else if(Window.confirm("Sei arrivato alla riga 378 di DesignToolbar: eseguire la riga 379, riportata di seguito? \n " +
+              "projectEditor.selectFileEditor(screen.rulesEditor), dove screen.rulesEditor è " + screen.rulesEditor.toString())){
+        projectEditor.selectFileEditor(screen.rulesEditor);
+        toggleEditor(false);
+        Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
+      }
     }
     ///end///
     // Inform the Blockly Panel which project/screen (aka form) we are working on
@@ -414,6 +419,7 @@ public class DesignToolbar extends Toolbar {
       }
       if (currentView != View.RULES) {
         long projectId = Ode.getInstance().getCurrentYoungAndroidProjectRootNode().getProjectId();
+        //TODO (feduss) questo switchToScreen fa crashare
         switchToScreen(projectId, currentProject.currentScreen, View.RULES);
         toggleEditor(true);       // Gray out the rules button and enable the designer button
         Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);

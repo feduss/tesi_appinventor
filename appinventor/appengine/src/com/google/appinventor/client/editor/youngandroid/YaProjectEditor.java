@@ -8,10 +8,7 @@ package com.google.appinventor.client.editor.youngandroid;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
-import com.google.appinventor.client.DesignToolbar;
-import com.google.appinventor.client.ErrorReporter;
-import com.google.appinventor.client.Ode;
-import com.google.appinventor.client.OdeAsyncCallback;
+import com.google.appinventor.client.*;
 import com.google.appinventor.client.boxes.AssetListBox;
 import com.google.appinventor.client.editor.EditorManager;
 import com.google.appinventor.client.editor.FileEditor;
@@ -73,7 +70,6 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
   private class EditorSet {
     YaFormEditor formEditor = null;
     YaBlocksEditor blocksEditor = null;
-    YaRulesEditor rulesEditor = null;
   }
 
   // Maps form name -> editors for this form
@@ -194,7 +190,7 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
       EditorSet editors = editorMap.get(formName);
       if (editors.formEditor != null && editors.blocksEditor != null) {
         designToolbar.addScreen(projectRootNode.getProjectId(), formName, editors.formEditor, 
-            editors.blocksEditor, editors.rulesEditor);
+            editors.blocksEditor);
         if (isScreen1(formName)) {
           screen1Added = true;
           if (readyToShowScreen1()) {  // probably not yet but who knows?
@@ -278,18 +274,12 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
         formName = ((YoungAndroidBlocksNode) node).getFormName();
       }
     }
-    else if (node instanceof YoungAndroidRulesNode) {
-      if (getFileEditor(node.getFileId()) == null) {
-        addRulesEditor((YoungAndroidRulesNode) node);
-        formName = ((YoungAndroidRulesNode) node).getFormName();
-      }
-    }
     if (formName != null) {
       // see if we have both editors yet
       EditorSet editors = editorMap.get(formName);
       if (editors.formEditor != null && editors.blocksEditor != null) {
         Ode.getInstance().getDesignToolbar().addScreen(node.getProjectId(), formName, 
-            editors.formEditor, editors.blocksEditor, editors.rulesEditor);
+            editors.formEditor, editors.blocksEditor);
       }
     }
   }
@@ -511,20 +501,6 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
     } else {
       EditorSet editors = new EditorSet();
       editors.blocksEditor = newBlocksEditor;
-      editorMap.put(formName, editors);
-    }
-  }
-
-  private void addRulesEditor(YoungAndroidRulesNode rulesNode) {
-    final YaRulesEditor yaRulesEditor = new YaRulesEditor(this, rulesNode);
-    final String formName = rulesNode.getFormName();
-    OdeLog.log("Adding blocks editor for " + formName);
-    if (editorMap.containsKey(formName)) {
-      // This happens if the form editor was already added.
-      editorMap.get(formName).rulesEditor = yaRulesEditor;
-    } else {
-      EditorSet editors = new EditorSet();
-      editors.rulesEditor = yaRulesEditor;
       editorMap.put(formName, editors);
     }
   }

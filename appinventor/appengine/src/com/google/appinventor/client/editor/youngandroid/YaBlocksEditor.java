@@ -5,9 +5,7 @@
 // http://www.apache.org/licenses/LICENSE-2.0
 package com.google.appinventor.client.editor.youngandroid;
 
-import com.google.appinventor.client.ErrorReporter;
-import com.google.appinventor.client.Ode;
-import com.google.appinventor.client.OdeAsyncCallback;
+import com.google.appinventor.client.*;
 import com.google.appinventor.client.boxes.AssetListBox;
 import com.google.appinventor.client.boxes.BlockSelectorBox;
 import com.google.appinventor.client.boxes.PaletteBox;
@@ -19,11 +17,13 @@ import com.google.appinventor.client.editor.simple.components.MockForm;
 import com.google.appinventor.client.editor.simple.palette.DropTargetProvider;
 import com.google.appinventor.client.editor.youngandroid.BlocklyPanel.BlocklyWorkspaceChangeListener;
 import com.google.appinventor.client.editor.youngandroid.events.EventHelper;
+import com.google.appinventor.client.editor.youngandroid.palette.YoungAndroidAntLRPanel;
 import com.google.appinventor.client.editor.youngandroid.palette.YoungAndroidPalettePanel;
 import com.google.appinventor.client.explorer.SourceStructureExplorer;
 import com.google.appinventor.client.explorer.SourceStructureExplorerItem;
 import com.google.appinventor.client.explorer.project.ComponentDatabaseChangeListener;
 import com.google.appinventor.client.output.OdeLog;
+import com.google.appinventor.client.thesis.ThesisVariables;
 import com.google.appinventor.client.widgets.dnd.DropTarget;
 import com.google.appinventor.shared.properties.json.JSONArray;
 import com.google.appinventor.shared.properties.json.JSONValue;
@@ -36,7 +36,6 @@ import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Command;
@@ -88,6 +87,9 @@ public final class YaBlocksEditor extends FileEditor
   // Panel that is used as the content of the palette box
   private final YoungAndroidPalettePanel palettePanel;
 
+  //feduss
+  private final YoungAndroidAntLRPanel antLRPanel;
+
   // Blocks area. Note that the blocks area is a part of the "document" in the
   // browser (via the deckPanel in the ProjectEditor). So if the document changes (which happens
   // when we switch projects) we will lose the blocks editor state, even though
@@ -121,6 +123,7 @@ public final class YaBlocksEditor extends FileEditor
     fullFormName = blocksNode.getProjectId() + "_" + blocksNode.getFormName();
     formToBlocksEditor.put(fullFormName, this);
     blocksArea = new BlocklyPanel(this, fullFormName); // [lyn, 2014/10/28] pass in editor so can extract form json from it
+
     blocksArea.setWidth("100%");
     // This code seems to be using a rather old layout, so we cannot simply pass 100% for height.
     // Instead, it needs to be calculated from the client's window, and a listener added to Window
@@ -134,8 +137,15 @@ public final class YaBlocksEditor extends FileEditor
        blocksArea.setHeight(height - VIEWER_WINDOW_OFFSET + "px");
      }
     });
+
     initWidget(blocksArea);
     blocksArea.populateComponentTypes(COMPONENT_DATABASE.getComponentsJSONString());
+
+    //feduss, if ThesisVariables.enableRules is true, hide blockArea
+    if(ThesisVariables.enableRules){
+      Window.alert("primo if ok");
+      blocksArea.setVisible(false);
+    }
 
     // Get references to the source structure explorer
     sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
@@ -146,6 +156,14 @@ public final class YaBlocksEditor extends FileEditor
     // Create palettePanel, which will be used as the content of the PaletteBox.
     myFormEditor = projectEditor.getFormFileEditor(blocksNode.getFormName());
     if (myFormEditor != null) {
+      //feduss, if "view" is RULES, change palette to another type (DEBUG)
+      if(ThesisVariables.enableRules){
+        Window.alert("Secondo if ok");
+        antLRPanel = new YoungAndroidAntLRPanel(myFormEditor);
+      }
+      else{
+        antLRPanel = null;
+      }
       palettePanel = new YoungAndroidPalettePanel(myFormEditor);
       palettePanel.loadComponents(new DropTargetProvider() {
         // TODO(sharon): make the tree in the BlockSelectorBox a drop target
@@ -155,8 +173,11 @@ public final class YaBlocksEditor extends FileEditor
         }
       });
       palettePanel.setSize("100%", "100%");
+
+
     } else {
       palettePanel = null;
+      antLRPanel = null;
       OdeLog.wlog("Can't get form editor for blocks: " + getFileId());
     }
   }
@@ -224,28 +245,39 @@ public final class YaBlocksEditor extends FileEditor
     // Set the palette box's content.
     if (palettePanel != null) {
       PaletteBox paletteBox = PaletteBox.getPaletteBox();
-      paletteBox.setContent(palettePanel);
+      //feduss
+      if(ThesisVariables.enableRules){
+        paletteBox.setContent(antLRPanel);
+      }
+      else{
+        paletteBox.setContent(palettePanel);
+      }
     }
-    PaletteBox.getPaletteBox().setVisible(false);
+    if(false){
+      PaletteBox.getPaletteBox().setVisible(true);
+    }
+    else{
+      PaletteBox.getPaletteBox().setVisible(false);
 
-    // Update the source structure explorer with the tree of this form's components.
-    MockForm form = getForm();
-    if (form != null) {
-      // start with no component selected in sourceStructureExplorer. We
-      // don't want a component drawer open in the blocks editor when we
-      // come back to it.
-      updateBlocksTree(form, null);
+      // Update the source structure explorer with the tree of this form's components.
+      MockForm form = getForm();
+      if (form != null) {
+        // start with no component selected in sourceStructureExplorer. We
+        // don't want a component drawer open in the blocks editor when we
+        // come back to it.
+        updateBlocksTree(form, null);
 
-      Ode.getInstance().getWorkColumns().remove(Ode.getInstance().getStructureAndAssets()
-          .getWidget(2));
-      Ode.getInstance().getWorkColumns().insert(Ode.getInstance().getStructureAndAssets(), 1);
-      Ode.getInstance().getStructureAndAssets().insert(BlockSelectorBox.getBlockSelectorBox(), 0);
-      BlockSelectorBox.getBlockSelectorBox().setVisible(true);
-      AssetListBox.getAssetListBox().setVisible(true);
-      blocksArea.injectWorkspace();
-      hideComponentBlocks();
-    } else {
-      OdeLog.wlog("Can't get form editor for blocks: " + getFileId());
+        Ode.getInstance().getWorkColumns().remove(Ode.getInstance().getStructureAndAssets()
+                .getWidget(2));
+        Ode.getInstance().getWorkColumns().insert(Ode.getInstance().getStructureAndAssets(), 1);
+        Ode.getInstance().getStructureAndAssets().insert(BlockSelectorBox.getBlockSelectorBox(), 0);
+        BlockSelectorBox.getBlockSelectorBox().setVisible(true);
+        AssetListBox.getAssetListBox().setVisible(true);
+        blocksArea.injectWorkspace();
+        hideComponentBlocks();
+      } else {
+        OdeLog.wlog("Can't get form editor for blocks: " + getFileId());
+      }
     }
   }
 

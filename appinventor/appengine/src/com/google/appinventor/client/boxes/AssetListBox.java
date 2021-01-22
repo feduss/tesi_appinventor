@@ -8,6 +8,7 @@ package com.google.appinventor.client.boxes;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 import com.google.appinventor.client.explorer.youngandroid.AssetList;
+import com.google.appinventor.client.thesis.ThesisVariables;
 import com.google.appinventor.client.widgets.boxes.Box;
 
 /**

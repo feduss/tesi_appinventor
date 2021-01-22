@@ -185,11 +185,6 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
       }
     }
 
-    for (ProjectNode source : projectRootNode.getAllSourceNodes()) {
-      if (source instanceof YoungAndroidRulesNode) {
-        addRulesEditor((YoungAndroidRulesNode) source);
-      }
-    }
     // Add the screens to the design toolbar, along with their associated editors
     DesignToolbar designToolbar = Ode.getInstance().getDesignToolbar();
     for (String formName : editorMap.keySet()) {

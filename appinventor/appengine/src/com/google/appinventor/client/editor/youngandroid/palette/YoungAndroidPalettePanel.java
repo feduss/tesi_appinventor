@@ -177,7 +177,7 @@ public class YoungAndroidPalettePanel extends Composite implements SimplePalette
 
     searchText = new TextBox();
     searchText.setWidth("100%");
-    searchText.getElement().setPropertyString("placeholder", MESSAGES.inputTextBoxAntLR());
+    searchText.getElement().setPropertyString("placeholder", MESSAGES.searchComponents());
     searchText.getElement().setAttribute("style", "width: 100%; box-sizing: border-box;");
 
     searchText.addKeyUpHandler(new SearchKeyUpHandler());

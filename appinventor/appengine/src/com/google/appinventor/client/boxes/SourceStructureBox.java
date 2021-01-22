@@ -39,7 +39,7 @@ public final class SourceStructureBox extends Box {
         false,  // minimizable
         false); // removable
 
-    sourceStructureExplorer = new SourceStructureExplorer();
+    sourceStructureExplorer = new SourceStructureExplorer("SourceStructureBox");
 
     setContent(sourceStructureExplorer);
   }

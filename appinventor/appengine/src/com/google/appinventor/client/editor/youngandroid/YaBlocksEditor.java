@@ -17,7 +17,6 @@ import com.google.appinventor.client.editor.simple.components.MockForm;
 import com.google.appinventor.client.editor.simple.palette.DropTargetProvider;
 import com.google.appinventor.client.editor.youngandroid.BlocklyPanel.BlocklyWorkspaceChangeListener;
 import com.google.appinventor.client.editor.youngandroid.events.EventHelper;
-import com.google.appinventor.client.editor.youngandroid.palette.YoungAndroidAntLRPanel;
 import com.google.appinventor.client.editor.youngandroid.palette.YoungAndroidPalettePanel;
 import com.google.appinventor.client.explorer.SourceStructureExplorer;
 import com.google.appinventor.client.explorer.SourceStructureExplorerItem;
@@ -87,9 +86,6 @@ public final class YaBlocksEditor extends FileEditor
   // Panel that is used as the content of the palette box
   private final YoungAndroidPalettePanel palettePanel;
 
-  //feduss
-  private final YoungAndroidAntLRPanel antLRPanel;
-
   // Blocks area. Note that the blocks area is a part of the "document" in the
   // browser (via the deckPanel in the ProjectEditor). So if the document changes (which happens
   // when we switch projects) we will lose the blocks editor state, even though
@@ -125,6 +121,7 @@ public final class YaBlocksEditor extends FileEditor
     blocksArea = new BlocklyPanel(this, fullFormName); // [lyn, 2014/10/28] pass in editor so can extract form json from it
 
     blocksArea.setWidth("100%");
+
     // This code seems to be using a rather old layout, so we cannot simply pass 100% for height.
     // Instead, it needs to be calculated from the client's window, and a listener added to Window
     // We use VIEWER_WINDOW_OFFSET as an approximation of the size of the top navigation bar
@@ -141,12 +138,6 @@ public final class YaBlocksEditor extends FileEditor
     initWidget(blocksArea);
     blocksArea.populateComponentTypes(COMPONENT_DATABASE.getComponentsJSONString());
 
-    //feduss, if ThesisVariables.enableRules is true, hide blockArea
-    if(ThesisVariables.enableRules){
-      Window.alert("primo if ok");
-      blocksArea.setVisible(false);
-    }
-
     // Get references to the source structure explorer
     sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
 
@@ -156,14 +147,6 @@ public final class YaBlocksEditor extends FileEditor
     // Create palettePanel, which will be used as the content of the PaletteBox.
     myFormEditor = projectEditor.getFormFileEditor(blocksNode.getFormName());
     if (myFormEditor != null) {
-      //feduss, if "view" is RULES, change palette to another type (DEBUG)
-      if(ThesisVariables.enableRules){
-        Window.alert("Secondo if ok");
-        antLRPanel = new YoungAndroidAntLRPanel(myFormEditor);
-      }
-      else{
-        antLRPanel = null;
-      }
       palettePanel = new YoungAndroidPalettePanel(myFormEditor);
       palettePanel.loadComponents(new DropTargetProvider() {
         // TODO(sharon): make the tree in the BlockSelectorBox a drop target
@@ -177,7 +160,6 @@ public final class YaBlocksEditor extends FileEditor
 
     } else {
       palettePanel = null;
-      antLRPanel = null;
       OdeLog.wlog("Can't get form editor for blocks: " + getFileId());
     }
   }
@@ -245,39 +227,35 @@ public final class YaBlocksEditor extends FileEditor
     // Set the palette box's content.
     if (palettePanel != null) {
       PaletteBox paletteBox = PaletteBox.getPaletteBox();
-      //feduss
+      paletteBox.setContent(palettePanel);
+    }
+
+    PaletteBox.getPaletteBox().setVisible(false);
+
+    // Update the source structure explorer with the tree of this form's components.
+    MockForm form = getForm();
+    if (form != null) {
+      // start with no component selected in sourceStructureExplorer. We
+      // don't want a component drawer open in the blocks editor when we
+      // come back to it.
+      updateBlocksTree(form, null);
+
+      Ode.getInstance().getWorkColumns().remove(Ode.getInstance().getStructureAndAssets()
+              .getWidget(2));
+      Ode.getInstance().getWorkColumns().insert(Ode.getInstance().getStructureAndAssets(), 1);
+      Ode.getInstance().getStructureAndAssets().insert(BlockSelectorBox.getBlockSelectorBox(), 0);
+      BlockSelectorBox.getBlockSelectorBox().setVisible(true);
+      //feduss hide media box in Rules view
       if(ThesisVariables.enableRules){
-        paletteBox.setContent(antLRPanel);
+        AssetListBox.getAssetListBox().setVisible(false);
       }
       else{
-        paletteBox.setContent(palettePanel);
-      }
-    }
-    if(false){
-      PaletteBox.getPaletteBox().setVisible(true);
-    }
-    else{
-      PaletteBox.getPaletteBox().setVisible(false);
-
-      // Update the source structure explorer with the tree of this form's components.
-      MockForm form = getForm();
-      if (form != null) {
-        // start with no component selected in sourceStructureExplorer. We
-        // don't want a component drawer open in the blocks editor when we
-        // come back to it.
-        updateBlocksTree(form, null);
-
-        Ode.getInstance().getWorkColumns().remove(Ode.getInstance().getStructureAndAssets()
-                .getWidget(2));
-        Ode.getInstance().getWorkColumns().insert(Ode.getInstance().getStructureAndAssets(), 1);
-        Ode.getInstance().getStructureAndAssets().insert(BlockSelectorBox.getBlockSelectorBox(), 0);
-        BlockSelectorBox.getBlockSelectorBox().setVisible(true);
         AssetListBox.getAssetListBox().setVisible(true);
-        blocksArea.injectWorkspace();
-        hideComponentBlocks();
-      } else {
-        OdeLog.wlog("Can't get form editor for blocks: " + getFileId());
       }
+      blocksArea.injectWorkspace();
+      hideComponentBlocks();
+    } else {
+      OdeLog.wlog("Can't get form editor for blocks: " + getFileId());
     }
   }
 

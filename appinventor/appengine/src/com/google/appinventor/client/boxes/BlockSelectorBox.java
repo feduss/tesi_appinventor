@@ -10,6 +10,7 @@ import com.google.appinventor.client.editor.youngandroid.BlockDrawerSelectionLis
 import com.google.appinventor.client.explorer.SourceStructureExplorer;
 import com.google.appinventor.client.explorer.SourceStructureExplorerItem;
 import com.google.appinventor.client.output.OdeLog;
+import com.google.appinventor.client.thesis.ThesisVariables;
 import com.google.appinventor.client.widgets.boxes.Box;
 import com.google.appinventor.shared.settings.SettingsConstants;
 import com.google.common.collect.Maps;
@@ -121,11 +122,15 @@ public final class BlockSelectorBox extends Box {
    * Creates new block selector box.
    */
   private BlockSelectorBox() {
-    super(MESSAGES.blockSelectorBoxCaption(), 300, // height
-        false, // minimizable
-        false); // removable
+    //feduss, change box title
+    super(ThesisVariables.enableRules ?
+                    MESSAGES.antLRSelectorBoxCaption() :
+                    MESSAGES.blockSelectorBoxCaption(),
+            300, // height
+            false, // minimizable
+            false); // removable
 
-    sourceStructureExplorer = new SourceStructureExplorer();
+    sourceStructureExplorer = new SourceStructureExplorer("BlockSelectorBox");
 
     setContent(sourceStructureExplorer);
     setVisible(false);

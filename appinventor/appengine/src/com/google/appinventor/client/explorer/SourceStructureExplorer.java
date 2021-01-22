@@ -7,6 +7,7 @@
 package com.google.appinventor.client.explorer;
 
 import com.google.appinventor.client.Ode;
+import com.google.appinventor.client.thesis.ThesisVariables;
 import com.google.appinventor.client.widgets.TextButton;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -21,13 +22,7 @@ import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.user.client.Event;
 
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.TreeItem;
-import com.google.gwt.user.client.ui.Tree;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.*;
 
 import java.util.Iterator;
 
@@ -71,7 +66,8 @@ public class SourceStructureExplorer extends Composite {
   /**
    * Creates a new source structure explorer.
    */
-  public SourceStructureExplorer() {
+  //fedus, add type to not execute the if(ThesisVariables.enableRules) in some context
+  public SourceStructureExplorer(String type) {
     // Initialize UI elements
     tree = new EventCaptureTree(Ode.getImageBundle());
     tree.setAnimationEnabled(true);
@@ -173,10 +169,96 @@ public class SourceStructureExplorer extends Composite {
     buttonPanel.setCellHorizontalAlignment(deleteButton, HorizontalPanel.ALIGN_LEFT);
 
     VerticalPanel panel = new VerticalPanel();
-    panel.add(scrollPanel);
-    panel.add(new Label());
-    panel.add(buttonPanel);
-    panel.setCellHorizontalAlignment(buttonPanel, HorizontalPanel.ALIGN_CENTER);
+    //feduss, replace Blocks vertical panel with my antlr panel
+    if(ThesisVariables.enableRules && !type.equals("SourceStructureBox")){
+
+      VerticalPanel panel2 = new VerticalPanel();
+      // Put a ScrollPanel around the panel.
+      scrollPanel = new ScrollPanel(panel2);
+      scrollPanel.setWidth("200px");  // wide enough to avoid a horizontal scrollbar most of the time
+      scrollPanel.setHeight("100%"); // approximately the same height as the viewer
+
+      TextBox inputTextBox = new TextBox(); //initialization
+      //inputTextBox.setWidth("100%"); //fill width
+      inputTextBox.getElement().setPropertyString("placeholder", MESSAGES.inputTextBoxAntLR()); //set a placeholder
+      inputTextBox.getElement().setAttribute("style", "width: 100%; box-sizing: border-box;"); //set css style
+
+      Label resultLabel = new Label();
+      //resultLabel.setWidth("100%"); //fill width
+      resultLabel.setText(MESSAGES.resultLabelAntLR());
+
+      //TODO aggiungere una label con gli error di parsing?
+
+      Button confirmButton = new Button();
+      //confirmButton.setWidth("40%");
+      confirmButton.setText("PARSE");
+      confirmButton.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent clickEvent) {
+          ///Il nostro lexer
+                /*TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(inputTextBox.getText()));
+                ///
+                ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
+                CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
+
+                ///Il nostro parser
+                TesiParser tesiParser = new TesiParser(commonTokenStream);
+
+                //Ottengo il parserTree dal nostro parser
+                ParseTree tree = tesiParser.blocks();
+
+                //Creo un nuovo listener per l'input string
+                TesiParserListener listener = new TesiParserListenerC();
+                //E creo anche quello per gli errori
+                //TesiParserErrorListener errorListener = new TesiParserErrorListener();
+
+                //E li aggiungo al nostro parser
+                tesiParser.addParseListener(listener);
+                //tesiParser.addErrorListener(errorListener);
+
+                //Navigo nel parser tree usando il listener appena creato
+                ParseTreeWalker walker = new ParseTreeWalker();
+                walker.walk(listener, tree);
+
+                if(tesiParser.getNumberOfSyntaxErrors() == 0){
+                    if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
+                        System.out.println("Rules detected: " + tesiParser.getRuleNames().length);
+
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for (String rule : tesiParser.getRuleNames()) {
+                            //System.out.println("\n " + rule);
+                            stringBuilder.append(rule);
+                            stringBuilder.append(" ;");
+                        }
+                        //System.out.println(tree.toStringTree(tesiParser));
+                        resultLabel.setText(stringBuilder.toString());
+                    }
+                    else{
+                        resultLabel.setText("No rules detected.");
+                    }
+                }
+                else{
+                    resultLabel.setText("Check the errors and try again.");
+                }*/
+
+        }
+      });
+
+      //add all to the vertical panel
+      panel2.add(inputTextBox);
+      panel2.add(confirmButton);
+      panel2.add(resultLabel);
+      panel.add(scrollPanel);
+      panel.setCellHorizontalAlignment(confirmButton, HorizontalPanel.ALIGN_CENTER);
+      panel.setWidth("100%");
+      panel.setHeight("100%");
+    }
+    else{
+      panel.add(scrollPanel);
+      panel.add(new Label());
+      panel.add(buttonPanel);
+      panel.setCellHorizontalAlignment(buttonPanel, HorizontalPanel.ALIGN_CENTER);
+    }
     initWidget(panel);
   }
 

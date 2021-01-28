@@ -1,19 +1,17 @@
-package com.google.appinventor.client.thesis;// Generated from TesiParser.g4 by ANTLR 4.9
-
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.atn.ATN;
-import org.antlr.v4.runtime.atn.ATNDeserializer;
-import org.antlr.v4.runtime.atn.ParserATNSimulator;
-import org.antlr.v4.runtime.atn.PredictionContextCache;
+// Generated from TesiParser.g4 by ANTLR 4.8
+package com.google.appinventor.client.thesis;
+import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.misc.*;
+import org.antlr.v4.runtime.tree.*;
 import java.util.List;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class TesiParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.9", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.8", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -113,11 +111,11 @@ public class TesiParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_blocks; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).enterBlocks(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterBlocks(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).exitBlocks(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitBlocks(this);
 		}
 	}
 
@@ -188,11 +186,11 @@ public class TesiParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_if_else; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).enterIf_else(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterIf_else(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).exitIf_else(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitIf_else(this);
 		}
 	}
 
@@ -250,11 +248,11 @@ public class TesiParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_view; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).enterView(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterView(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).exitView(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitView(this);
 		}
 	}
 
@@ -295,11 +293,11 @@ public class TesiParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_statement; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).enterStatement(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterStatement(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).exitStatement(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitStatement(this);
 		}
 	}
 
@@ -340,11 +338,11 @@ public class TesiParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_assignment; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).enterAssignment(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterAssignment(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener) ((TesiParserListener)listener).exitAssignment(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitAssignment(this);
 		}
 	}
 

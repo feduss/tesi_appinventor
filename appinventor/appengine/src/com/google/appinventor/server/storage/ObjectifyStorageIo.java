@@ -16,7 +16,6 @@ import com.google.appengine.api.memcache.ErrorHandlers;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService.SetPolicy;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
@@ -57,7 +56,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
 
 import com.googlecode.objectify.Key;
@@ -98,8 +96,6 @@ import java.util.Date;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
-
-import org.json.JSONObject;
 
 /**
  * Implements the StorageIo interface using Objectify as the underlying data

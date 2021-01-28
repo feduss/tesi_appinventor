@@ -7,7 +7,7 @@
 package com.google.appinventor.client.explorer;
 
 import com.google.appinventor.client.Ode;
-import com.google.appinventor.client.thesis.ThesisVariables;
+import com.google.appinventor.client.thesis.*;
 import com.google.appinventor.client.widgets.TextButton;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -21,8 +21,12 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.user.client.Event;
-
 import com.google.gwt.user.client.ui.*;
+
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.util.Iterator;
 
@@ -40,6 +44,12 @@ public class SourceStructureExplorer extends Composite {
   private final EventCaptureTree tree;
   private final TextButton renameButton;
   private final TextButton deleteButton;
+
+  //feduss
+  VerticalPanel panel2;
+  TextBox inputTextBox; //initialization
+  Label resultLabel;
+  //////
 
   /**
    * This is a hack to work around the fact that for multiselect we need to have
@@ -171,19 +181,18 @@ public class SourceStructureExplorer extends Composite {
     VerticalPanel panel = new VerticalPanel();
     //feduss, replace Blocks vertical panel with my antlr panel
     if(ThesisVariables.enableRules && !type.equals("SourceStructureBox")){
-
-      VerticalPanel panel2 = new VerticalPanel();
+      panel2 = new VerticalPanel();
       // Put a ScrollPanel around the panel.
       scrollPanel = new ScrollPanel(panel2);
       scrollPanel.setWidth("200px");  // wide enough to avoid a horizontal scrollbar most of the time
       scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
-      TextBox inputTextBox = new TextBox(); //initialization
+      inputTextBox = new TextBox();
       //inputTextBox.setWidth("100%"); //fill width
       inputTextBox.getElement().setPropertyString("placeholder", MESSAGES.inputTextBoxAntLR()); //set a placeholder
       inputTextBox.getElement().setAttribute("style", "width: 100%; box-sizing: border-box;"); //set css style
 
-      Label resultLabel = new Label();
+      resultLabel = new Label();
       //resultLabel.setWidth("100%"); //fill width
       resultLabel.setText(MESSAGES.resultLabelAntLR());
 
@@ -195,20 +204,21 @@ public class SourceStructureExplorer extends Composite {
       confirmButton.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent clickEvent) {
-          ///Il nostro lexer
-                /*TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(inputTextBox.getText()));
+                ///Custom Lexer
+                TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(inputTextBox.getText()));
                 ///
                 ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
                 CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
 
-                ///Il nostro parser
+                ///Custom Parser
                 TesiParser tesiParser = new TesiParser(commonTokenStream);
 
-                //Ottengo il parserTree dal nostro parser
+                //Ottengo il parserTree dal custom parser
                 ParseTree tree = tesiParser.blocks();
 
                 //Creo un nuovo listener per l'input string
-                TesiParserListener listener = new TesiParserListenerC();
+                TesiParserListener listener = new TesiParserBaseListener();
+
                 //E creo anche quello per gli errori
                 //TesiParserErrorListener errorListener = new TesiParserErrorListener();
 
@@ -221,9 +231,11 @@ public class SourceStructureExplorer extends Composite {
                 walker.walk(listener, tree);
 
                 if(tesiParser.getNumberOfSyntaxErrors() == 0){
+                    //Se ha riconosciuto regole
                     if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
                         System.out.println("Rules detected: " + tesiParser.getRuleNames().length);
 
+                        //Concatena i nomi delle regole in una string
                         StringBuilder stringBuilder = new StringBuilder();
                         for (String rule : tesiParser.getRuleNames()) {
                             //System.out.println("\n " + rule);
@@ -231,6 +243,7 @@ public class SourceStructureExplorer extends Composite {
                             stringBuilder.append(" ;");
                         }
                         //System.out.println(tree.toStringTree(tesiParser));
+                        //E poi la visualizza
                         resultLabel.setText(stringBuilder.toString());
                     }
                     else{
@@ -239,7 +252,7 @@ public class SourceStructureExplorer extends Composite {
                 }
                 else{
                     resultLabel.setText("Check the errors and try again.");
-                }*/
+                }
 
         }
       });

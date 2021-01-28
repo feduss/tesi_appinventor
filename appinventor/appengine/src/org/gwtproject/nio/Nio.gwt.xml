@@ -3,7 +3,8 @@
     "http://gwtproject.org/doctype/2.8.2/gwt-module.dtd">
 <module>
   <inherits name='com.google.gwt.user.User'/>
-  <inherits name='elemental2.webstorage.WebStorage'/>
+  <!--inherits name='elemental2.webstoragewebstorage.WebStorage'/-->
+  <inherits name='elemental2.core.Core'/>
 
   <inherits name='com.google.gwt.corp.compatibility.Numbers'/>
   <inherits name='java.nio.Nio'/>

@@ -478,6 +478,7 @@ public final class YaBlocksEditor extends FileEditor
   }
 
   public void showComponentBlocks(String instanceName) {
+    Window.alert("showComponentBlocks instanceName: " + instanceName);
     String instanceDrawer = "component_" + instanceName;
     if (selectedDrawer == null || !blocksArea.drawerShowing()
         || !selectedDrawer.equals(instanceDrawer)) {
@@ -495,6 +496,7 @@ public final class YaBlocksEditor extends FileEditor
   }
 
   public void showBuiltinBlocks(String drawerName) {
+    Window.alert("showBuiltinBlocks DrawerName: " + drawerName);
     OdeLog.log("Showing built-in drawer " + drawerName);
     String builtinDrawer = "builtin_" + drawerName;
     if (selectedDrawer == null || !blocksArea.drawerShowing()
@@ -507,7 +509,13 @@ public final class YaBlocksEditor extends FileEditor
     }
   }
 
+  //feduss
+  public void insertBlock(String rule, String type){
+    blocksArea.insertBlock(rule, type);
+  }
+
   public void showGenericBlocks(String drawerName) {
+    Window.alert("showGenericBlocks drawerName: " + drawerName);
     OdeLog.log("Showing generic drawer " + drawerName);
     String genericDrawer = "generic_" + drawerName;
     if (selectedDrawer == null || !blocksArea.drawerShowing()

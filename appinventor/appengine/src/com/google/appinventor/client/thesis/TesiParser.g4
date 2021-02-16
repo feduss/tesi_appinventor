@@ -2,13 +2,16 @@ parser grammar TesiParser;
 
 options {tokenVocab=TesiLexer;}
 
-blocks: if_else | assignment | statement | view;
+block: event condition? action other_action*;
 
-if_else : IF statement THEN statement (ELSE statement)*;
+event: WHEN STRING VERB ACTION;
 
-view: ARTICLE TYPE STRING; //STRING is the ID of the ui component
+condition : IF statement; //THEN statement (ELSE statement)*;
 
-statement: view VERB ACTION;
+action: THEN statement (AND block)*;
 
-assignment: view ASSIGN STRING; //STRING is the value
+other_action: COLON statement (AND block)*;
 
+statement: STRING VERB ACTION;
+
+//assignment: view ASSIGN STRING; //STRING is the value

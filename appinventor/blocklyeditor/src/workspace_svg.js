@@ -278,9 +278,14 @@ Blockly.WorkspaceSvg.prototype.showBuiltin = function(name) {
   return this;
 };
 
+//feduss
+Blockly.WorkspaceSvg.prototype.insertBlock = function (rule, type) {
+  this.drawer_.insertBlock(rule, type);
+}
+
 /**
- * Show the drawer with generic blocks for a component type.
- */
+* Show the drawer with generic blocks for a component type.
+*/
 Blockly.WorkspaceSvg.prototype.showGeneric = function(name) {
   if (this.drawer_)
     this.drawer_.showGeneric(name);

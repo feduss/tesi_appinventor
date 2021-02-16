@@ -2,24 +2,26 @@ lexer grammar TesiLexer;
 
 WHITESPACE: [ \t\r\n]-> skip;
 
-IF: 'if'|'when';
+WHEN: 'when';
+
+IF: 'if';
 
 THEN: 'then';
 
 ELSE: 'else';
 
+AND: 'and';
+
 ARTICLE: 'the'|'a';
 
-TYPE: 'button'|'label'|'input';
+//TYPE: 'button'|'label'|'input';
 
-VERB : ' is';
+VERB : 'is';
 
 COLON: ',';
 
 SEMICOLON: ';';
 
-ASSIGN : '='|'is';
-
-ACTION : 'hidden'|'make visible'|'disabled'|'shown'|'clicked';
+ACTION : 'hidden'|'make visible'|'disabled'|'shown'|'clicked'|'visible';
 
 STRING : [a-zA-Z0-9]+;

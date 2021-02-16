@@ -582,7 +582,7 @@ public class DesignToolbar extends Toolbar {
 
   private void toggleEditor(boolean blocks) {
     //feduss
-    if(true){
+    if(ThesisVariables.enableRules){
       setButtonEnabled(WIDGET_NAME_SWITCH_TO_RULES_EDITOR, !blocks);
       setButtonEnabled(WIDGET_NAME_SWITCH_TO_FORM_EDITOR, blocks);
     }

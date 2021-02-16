@@ -7,6 +7,7 @@
 package com.google.appinventor.client.explorer;
 
 import com.google.appinventor.client.Ode;
+import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
 import com.google.appinventor.client.thesis.*;
 import com.google.appinventor.client.widgets.TextButton;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -20,15 +21,18 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
@@ -76,10 +80,11 @@ public class SourceStructureExplorer extends Composite {
   /**
    * Creates a new source structure explorer.
    */
-  //fedus, add type to not execute the if(ThesisVariables.enableRules) in some context
+  //feduss, add type to not execute the if(ThesisVariables.enableRules) in some context
   public SourceStructureExplorer(String type) {
     // Initialize UI elements
     tree = new EventCaptureTree(Ode.getImageBundle());
+
     tree.setAnimationEnabled(true);
     tree.setScrollOnSelectEnabled(false);
     tree.addCloseHandler(new CloseHandler<TreeItem>() {
@@ -195,40 +200,35 @@ public class SourceStructureExplorer extends Composite {
       resultLabel = new Label();
       //resultLabel.setWidth("100%"); //fill width
       resultLabel.setText(MESSAGES.resultLabelAntLR());
-
-      //TODO aggiungere una label con gli error di parsing?
-
       Button confirmButton = new Button();
-      //confirmButton.setWidth("40%");
       confirmButton.setText("PARSE");
       confirmButton.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent clickEvent) {
-                ///Custom Lexer
+                //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
+                ///Custom Lexer ->  A lexer takes the individual characters and transforms them
+                // in tokens, the atoms that the parser uses to create the logical structure
                 TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(inputTextBox.getText()));
-                ///
+                tesiLexer.removeErrorListeners();
+                //Create syntax error listener
+                SyntaxErrorListener errorListener = new SyntaxErrorListener();
+                //Add it to lexer
+                tesiLexer.addErrorListener(errorListener);
                 ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
                 CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
 
                 ///Custom Parser
                 TesiParser tesiParser = new TesiParser(commonTokenStream);
+                tesiParser.removeErrorListeners();
+                //Add prev syntax error listener to parser
+                tesiParser.addErrorListener(errorListener);
 
-                //Ottengo il parserTree dal custom parser
-                ParseTree tree = tesiParser.blocks();
+                tesiParser.setBuildParseTree(true);
+                //Set the root of parse tree as upper parser rules i've defined, aka blocks
+                TesiParser.BlockContext treeRoot = tesiParser.block();
 
-                //Creo un nuovo listener per l'input string
-                TesiParserListener listener = new TesiParserBaseListener();
-
-                //E creo anche quello per gli errori
-                //TesiParserErrorListener errorListener = new TesiParserErrorListener();
-
-                //E li aggiungo al nostro parser
-                tesiParser.addParseListener(listener);
-                //tesiParser.addErrorListener(errorListener);
-
-                //Navigo nel parser tree usando il listener appena creato
-                ParseTreeWalker walker = new ParseTreeWalker();
-                walker.walk(listener, tree);
+                TesiParserBaseVisitor visitor = new TesiParserBaseVisitor();
+                visitor.visit(treeRoot);
 
                 if(tesiParser.getNumberOfSyntaxErrors() == 0){
                     //Se ha riconosciuto regole
@@ -240,18 +240,67 @@ public class SourceStructureExplorer extends Composite {
                         for (String rule : tesiParser.getRuleNames()) {
                             //System.out.println("\n " + rule);
                             stringBuilder.append(rule);
-                            stringBuilder.append(" ;");
+                            stringBuilder.append("; ");
                         }
                         //System.out.println(tree.toStringTree(tesiParser));
                         //E poi la visualizza
                         resultLabel.setText(stringBuilder.toString());
+
+                        JSONObject rule = new JSONObject();
+
+                        //treeRoot is the block rules detected
+                        //the i get the event, and then the string, to get the drawerName
+
+                        //Event: when
+                        //Ex.: button1
+                        String BlockName = treeRoot.event().STRING().getText();
+                        BlockName = BlockName.substring(0,1).toUpperCase().concat(BlockName.substring(1));
+
+                        //Ex.: is clicked
+                        String EventVerbAction = treeRoot.event().VERB().getText() + " " + treeRoot.event().ACTION().getText();
+
+                        rule.put("blockName", new JSONString(BlockName));
+                        rule.put("eventVerbAction", new JSONString(EventVerbAction));
+
+
+                        if(treeRoot.condition() != null){
+                          //Condition: if
+                          //Ex.: label1
+                          String ConditionSubj = treeRoot.condition().statement().STRING().getText();
+                          rule.put("conditionSubj", new JSONString(ConditionSubj));
+                          Window.alert("conditionSubj: " + ConditionSubj);
+                          //Ex.: is hidden
+                          String ConditionVerbAction = treeRoot.condition().statement().VERB().getText() + " "
+                                  + treeRoot.condition().statement().ACTION().getText();
+                          rule.put("conditionVerbAction", new JSONString(ConditionVerbAction));
+                          Window.alert("conditionVerbAction: " + ConditionVerbAction);
+
+                        }
+                        //Action: then
+                        //Ex.: label2
+                        String ActionSubj = treeRoot.action(0).statement().STRING().getText();
+                        rule.put("actionSubj", new JSONString(ActionSubj));
+                        //Ex.: is shown
+                        String ActionVerb = treeRoot.action(0).statement().VERB().getText() + " "
+                                + treeRoot.action(0).statement().ACTION().getText();
+                        rule.put("actionVerb", new JSONString(ActionVerb));
+
+                        //Window.alert( "rule: \n\n" + rule.toString());
+                        YaBlocksEditor editor =
+                                (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
+                        editor.insertBlock(rule.toString(), "Component");
                     }
                     else{
                         resultLabel.setText("No rules detected.");
                     }
                 }
                 else{
-                    resultLabel.setText("Check the errors and try again.");
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("Check the following " + tesiParser.getNumberOfSyntaxErrors()  + " error/s and try again:");
+                    for(String error : errorListener.getSyntaxErrorList()){
+                      stringBuilder.append("\n- " + error);
+                    }
+                    resultLabel.setText(stringBuilder.toString());
                 }
 
         }

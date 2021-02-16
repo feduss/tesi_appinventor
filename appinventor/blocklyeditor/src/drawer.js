@@ -126,6 +126,65 @@ Blockly.Drawer.buildToolkitTree_ = function(jsonToolkit) {
   return tree;
 };
 
+//feduss
+Blockly.Drawer.prototype.insertBlock = function (rule, type){
+  var rule1 = JSON.parse(rule);
+  // x -> y means that x the function y
+  /*
+   * Blockly.Drawer.prototype.showBuiltin = function(drawerName) of drawer.js
+   */
+  if(type === "Builtin"){
+    var drawerName = Blockly.Drawer.PREFIX_ + rule1.blockName;
+    var blockSet = this.options.languageTree[drawerName];
+    if(drawerName == "cat_Procedures") {
+      var newBlockSet = [];
+      //comment by feduss, but code is of mit: getting blockset
+      for(var i=0;i<blockSet.length;i++) {
+        if(!(blockSet[i] == "procedures_callnoreturn" // Include callnoreturn only if at least one defnoreturn declaration
+            && this.workspace_.getProcedureDatabase().voidProcedures == 0)
+            &&
+            !(blockSet[i] == "procedures_callreturn" // Include callreturn only if at least one defreturn declaration
+                && this.workspace_.getProcedureDatabase().returnProcedures == 0)){
+          newBlockSet.push(blockSet[i]);
+        }
+      }
+      blockSet = newBlockSet;
+    }
+
+    if (!blockSet) {
+      //throw "no such drawer: " + drawerName;
+      alert(blockSet.replace("cat_", "") + " doesn't exist: check the views in Designer tab and try again");
+    }
+    else{
+      Blockly.hideChaff();
+      //comment by feduss, but code is of mit: getting blockset as xmlList
+      var xmlList = Blockly.Drawer.prototype.blockListToXMLArray(blockSet);
+
+      this.flyout_.insertBlock(xmlList)
+    }
+  }
+  //Example: buttons
+  else if(type === "Component"){
+    var instanceName = rule1.blockName;
+
+    var component = this.workspace_.getComponentDatabase().getInstance(instanceName);
+    if (component) {
+      Blockly.hideChaff();
+      //this.flyout_.show(this.instanceRecordToXMLArray(component));
+      this.flyout_.insertBlock(this.instanceRecordToXMLArray(component));
+      this.lastComponent = instanceName;
+    } else {
+      alert(instanceName + " doesn't exist: check the views in Designer tab and try again");
+
+      console.log("Got call to Blockly.Drawer.showComponent(" +  instanceName +
+          ") - unknown component name");
+    }
+  }
+
+
+
+}
+
 /**
  * Show the contents of the built-in drawer named drawerName. drawerName
  * should be one of Blockly.Msg.VARIABLE_CATEGORY,

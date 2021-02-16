@@ -761,6 +761,12 @@ public class BlocklyPanel extends HTMLPanel {
       .showBuiltin(drawerName);
   }-*/;
 
+  //feduss
+  public native void insertBlock(String rule, String type)/*-{
+    this.@com.google.appinventor.client.editor.youngandroid.BlocklyPanel::workspace
+      .insertBlock(rule, type);
+  }-*/;
+
   /**
    * Show the generic blocks drawer with the specified name
    *

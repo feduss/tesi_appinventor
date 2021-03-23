@@ -510,8 +510,8 @@ public final class YaBlocksEditor extends FileEditor
   }
 
   //feduss
-  public void insertBlock(String rule, String type){
-    blocksArea.insertBlock(rule, type);
+  public void insertBlock(String rule){
+    blocksArea.insertBlock(rule);
   }
 
   public void showGenericBlocks(String drawerName) {

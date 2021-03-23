@@ -193,6 +193,8 @@ public class SourceStructureExplorer extends Composite {
       scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
       inputTextBox = new TextBox();
+      //DEBUG:
+      inputTextBox.setText("when button1 is clicked then label1 is hidden");
       //inputTextBox.setWidth("100%"); //fill width
       inputTextBox.getElement().setPropertyString("placeholder", MESSAGES.inputTextBoxAntLR()); //set a placeholder
       inputTextBox.getElement().setAttribute("style", "width: 100%; box-sizing: border-box;"); //set css style
@@ -246,49 +248,15 @@ public class SourceStructureExplorer extends Composite {
                         //E poi la visualizza
                         resultLabel.setText(stringBuilder.toString());
 
-                        JSONObject rule = new JSONObject();
-
-                        //treeRoot is the block rules detected
-                        //the i get the event, and then the string, to get the drawerName
-
-                        //Event: when
-                        //Ex.: button1
-                        String BlockName = treeRoot.event().STRING().getText();
-                        BlockName = BlockName.substring(0,1).toUpperCase().concat(BlockName.substring(1));
-
-                        //Ex.: is clicked
-                        String EventVerbAction = treeRoot.event().VERB().getText() + " " + treeRoot.event().ACTION().getText();
-
-                        rule.put("blockName", new JSONString(BlockName));
-                        rule.put("eventVerbAction", new JSONString(EventVerbAction));
+                        JSONObject rule = getJSONBlock(treeRoot);
 
 
-                        if(treeRoot.condition() != null){
-                          //Condition: if
-                          //Ex.: label1
-                          String ConditionSubj = treeRoot.condition().statement().STRING().getText();
-                          rule.put("conditionSubj", new JSONString(ConditionSubj));
-                          Window.alert("conditionSubj: " + ConditionSubj);
-                          //Ex.: is hidden
-                          String ConditionVerbAction = treeRoot.condition().statement().VERB().getText() + " "
-                                  + treeRoot.condition().statement().ACTION().getText();
-                          rule.put("conditionVerbAction", new JSONString(ConditionVerbAction));
-                          Window.alert("conditionVerbAction: " + ConditionVerbAction);
-
-                        }
-                        //Action: then
-                        //Ex.: label2
-                        String ActionSubj = treeRoot.action(0).statement().STRING().getText();
-                        rule.put("actionSubj", new JSONString(ActionSubj));
-                        //Ex.: is shown
-                        String ActionVerb = treeRoot.action(0).statement().VERB().getText() + " "
-                                + treeRoot.action(0).statement().ACTION().getText();
-                        rule.put("actionVerb", new JSONString(ActionVerb));
+                        //Window.alert("Json: \n" + rule.toString());
 
                         //Window.alert( "rule: \n\n" + rule.toString());
                         YaBlocksEditor editor =
                                 (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
-                        editor.insertBlock(rule.toString(), "Component");
+                        editor.insertBlock(rule.toString());
                     }
                     else{
                         resultLabel.setText("No rules detected.");
@@ -322,6 +290,69 @@ public class SourceStructureExplorer extends Composite {
       panel.setCellHorizontalAlignment(buttonPanel, HorizontalPanel.ALIGN_CENTER);
     }
     initWidget(panel);
+  }
+
+  //feduss
+  private static JSONObject getJSONBlock(TesiParser.BlockContext treeRoot) {
+    JSONObject json = new JSONObject();
+    //treeRoot is the block rules detected
+    //the i get the event, and then the string, to get the drawerName
+
+    //Event: when
+    //Ex.: button1
+    String BlockName = treeRoot.event().STRING().getText();
+    BlockName = BlockName.substring(0,1).toUpperCase().concat(BlockName.substring(1));
+
+    //Ex.: is clicked
+    String EventVerbAction = treeRoot.event().VERB().getText() + " " + treeRoot.event().ACTION().getText();
+
+    JSONObject temp = new JSONObject();
+    temp.put("whenSubj", new JSONString(BlockName));
+    temp.put("whenVerbAct", new JSONString(EventVerbAction));
+    json.put("event", temp);
+
+    if(treeRoot.condition() != null){
+      //Condition: if
+      //Ex.: label1
+      String ConditionSubj = treeRoot.condition().statement().STRING().getText();
+      ConditionSubj = ConditionSubj.substring(0,1).toUpperCase().concat(ConditionSubj.substring(1));
+
+      //Ex.: is hidden
+      String ConditionVerbAction = treeRoot.condition().statement().VERB().getText() + " "
+              + treeRoot.condition().statement().ACTION().getText();
+      temp = new JSONObject();
+      temp.put("condSubj", new JSONString(ConditionSubj));
+      temp.put("condVerbAct", new JSONString(ConditionVerbAction));
+      json.put("condition", temp);
+    }
+
+    //Actions: then
+    //Ex.: label2
+    for(int i = 0; i < treeRoot.action().size(); i++){
+      String ActionSubj = treeRoot.action(i).statement().STRING().getText();
+      ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
+
+      //Ex.: is shown
+      String ActionVerb = treeRoot.action(i).statement().VERB().getText() + " "
+              + treeRoot.action(i).statement().ACTION().getText();
+
+
+      temp = new JSONObject();
+      if(treeRoot.action(i).block() != null){
+        JSONObject temp2 = new JSONObject();
+        temp.put("actionSubj", new JSONString(ActionSubj));
+        temp.put("actionVerb", new JSONString(ActionVerb));
+        temp.put("actionEvent", getJSONBlock(treeRoot.action(i).block()));
+      }
+      else{
+        temp.put("actionSubj", new JSONString(ActionSubj));
+        temp.put("actionVerb", new JSONString(ActionVerb));
+      }
+      json.put("action" + i, temp);
+
+
+    }
+    return json;
   }
 
   private void deleteItemFromTree() {

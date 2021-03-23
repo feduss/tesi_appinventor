@@ -20,8 +20,8 @@ public class TesiParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		WHITESPACE=1, WHEN=2, IF=3, THEN=4, ELSE=5, ARTICLE=6, VERB=7, COLON=8, 
-		SEMICOLON=9, ACTION=10, STRING=11;
+		WHITESPACE=1, WHEN=2, IF=3, THEN=4, ELSE=5, THROW=6, ARTICLE=7, VERB=8, 
+		COLON=9, SEMICOLON=10, OPEN=11, CLOSE=12, ACTION=13, STRING=14;
 	public static final int
 		RULE_block = 0, RULE_event = 1, RULE_condition = 2, RULE_action = 3, RULE_statement = 4;
 	private static String[] makeRuleNames() {
@@ -33,15 +33,15 @@ public class TesiParser extends Parser {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, null, "'when'", "'if'", "'then'", "'else'", null, "'is'", "','", 
-			"';'"
+			null, null, "'when'", "'if'", "'then'", "'else'", "'throw'", null, "'is'", 
+			"','", "';'", "'('", "')'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, "WHITESPACE", "WHEN", "IF", "THEN", "ELSE", "ARTICLE", "VERB", 
-			"COLON", "SEMICOLON", "ACTION", "STRING"
+			null, "WHITESPACE", "WHEN", "IF", "THEN", "ELSE", "THROW", "ARTICLE", 
+			"VERB", "COLON", "SEMICOLON", "OPEN", "CLOSE", "ACTION", "STRING"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -108,20 +108,6 @@ public class TesiParser extends Parser {
 		public ActionContext action(int i) {
 			return getRuleContext(ActionContext.class,i);
 		}
-		public List<TerminalNode> THEN() { return getTokens(TesiParser.THEN); }
-		public TerminalNode THEN(int i) {
-			return getToken(TesiParser.THEN, i);
-		}
-		public List<BlockContext> block() {
-			return getRuleContexts(BlockContext.class);
-		}
-		public BlockContext block(int i) {
-			return getRuleContext(BlockContext.class,i);
-		}
-		public List<TerminalNode> COLON() { return getTokens(TesiParser.COLON); }
-		public TerminalNode COLON(int i) {
-			return getToken(TesiParser.COLON, i);
-		}
 		public BlockContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -138,7 +124,6 @@ public class TesiParser extends Parser {
 		enterRule(_localctx, 0, RULE_block);
 		int _la;
 		try {
-			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(10);
@@ -153,48 +138,20 @@ public class TesiParser extends Parser {
 				}
 			}
 
-			setState(22); 
+			setState(15); 
 			_errHandler.sync(this);
-			_alt = 1;
+			_la = _input.LA(1);
 			do {
-				switch (_alt) {
-				case 1:
-					{
-					{
-					setState(14);
-					action();
-					setState(17);
-					_errHandler.sync(this);
-					switch ( getInterpreter().adaptivePredict(_input,1,_ctx) ) {
-					case 1:
-						{
-						setState(15);
-						match(THEN);
-						setState(16);
-						block();
-						}
-						break;
-					}
-					setState(20);
-					_errHandler.sync(this);
-					switch ( getInterpreter().adaptivePredict(_input,2,_ctx) ) {
-					case 1:
-						{
-						setState(19);
-						match(COLON);
-						}
-						break;
-					}
-					}
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
+				{
+				{
+				setState(14);
+				action();
 				}
-				setState(24); 
+				}
+				setState(17); 
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,3,_ctx);
-			} while ( _alt!=2 && _alt!= ATN.INVALID_ALT_NUMBER );
+				_la = _input.LA(1);
+			} while ( _la==THEN );
 			}
 		}
 		catch (RecognitionException re) {
@@ -230,13 +187,13 @@ public class TesiParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(26);
+			setState(19);
 			match(WHEN);
-			setState(27);
+			setState(20);
 			match(STRING);
-			setState(28);
+			setState(21);
 			match(VERB);
-			setState(29);
+			setState(22);
 			match(ACTION);
 			}
 		}
@@ -273,9 +230,9 @@ public class TesiParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(31);
+			setState(24);
 			match(IF);
-			setState(32);
+			setState(25);
 			statement();
 			}
 		}
@@ -295,6 +252,12 @@ public class TesiParser extends Parser {
 		public StatementContext statement() {
 			return getRuleContext(StatementContext.class,0);
 		}
+		public TerminalNode THROW() { return getToken(TesiParser.THROW, 0); }
+		public TerminalNode OPEN() { return getToken(TesiParser.OPEN, 0); }
+		public BlockContext block() {
+			return getRuleContext(BlockContext.class,0);
+		}
+		public TerminalNode CLOSE() { return getToken(TesiParser.CLOSE, 0); }
 		public ActionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -309,13 +272,30 @@ public class TesiParser extends Parser {
 	public final ActionContext action() throws RecognitionException {
 		ActionContext _localctx = new ActionContext(_ctx, getState());
 		enterRule(_localctx, 6, RULE_action);
+		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(34);
+			setState(27);
 			match(THEN);
-			setState(35);
+			setState(28);
 			statement();
+			setState(34);
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			if (_la==THROW) {
+				{
+				setState(29);
+				match(THROW);
+				setState(30);
+				match(OPEN);
+				setState(31);
+				block();
+				setState(32);
+				match(CLOSE);
+				}
+			}
+
 			}
 		}
 		catch (RecognitionException re) {
@@ -350,11 +330,11 @@ public class TesiParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(37);
+			setState(36);
 			match(STRING);
-			setState(38);
+			setState(37);
 			match(VERB);
-			setState(39);
+			setState(38);
 			match(ACTION);
 			}
 		}
@@ -370,18 +350,17 @@ public class TesiParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\r,\4\2\t\2\4\3\t"+
-		"\3\4\4\t\4\4\5\t\5\4\6\t\6\3\2\3\2\5\2\17\n\2\3\2\3\2\3\2\5\2\24\n\2\3"+
-		"\2\5\2\27\n\2\6\2\31\n\2\r\2\16\2\32\3\3\3\3\3\3\3\3\3\3\3\4\3\4\3\4\3"+
-		"\5\3\5\3\5\3\6\3\6\3\6\3\6\3\6\2\2\7\2\4\6\b\n\2\2\2*\2\f\3\2\2\2\4\34"+
-		"\3\2\2\2\6!\3\2\2\2\b$\3\2\2\2\n\'\3\2\2\2\f\16\5\4\3\2\r\17\5\6\4\2\16"+
-		"\r\3\2\2\2\16\17\3\2\2\2\17\30\3\2\2\2\20\23\5\b\5\2\21\22\7\6\2\2\22"+
-		"\24\5\2\2\2\23\21\3\2\2\2\23\24\3\2\2\2\24\26\3\2\2\2\25\27\7\n\2\2\26"+
-		"\25\3\2\2\2\26\27\3\2\2\2\27\31\3\2\2\2\30\20\3\2\2\2\31\32\3\2\2\2\32"+
-		"\30\3\2\2\2\32\33\3\2\2\2\33\3\3\2\2\2\34\35\7\4\2\2\35\36\7\r\2\2\36"+
-		"\37\7\t\2\2\37 \7\f\2\2 \5\3\2\2\2!\"\7\5\2\2\"#\5\n\6\2#\7\3\2\2\2$%"+
-		"\7\6\2\2%&\5\n\6\2&\t\3\2\2\2\'(\7\r\2\2()\7\t\2\2)*\7\f\2\2*\13\3\2\2"+
-		"\2\6\16\23\26\32";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\20+\4\2\t\2\4\3\t"+
+		"\3\4\4\t\4\4\5\t\5\4\6\t\6\3\2\3\2\5\2\17\n\2\3\2\6\2\22\n\2\r\2\16\2"+
+		"\23\3\3\3\3\3\3\3\3\3\3\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\5\3\5\5\5%\n"+
+		"\5\3\6\3\6\3\6\3\6\3\6\2\2\7\2\4\6\b\n\2\2\2(\2\f\3\2\2\2\4\25\3\2\2\2"+
+		"\6\32\3\2\2\2\b\35\3\2\2\2\n&\3\2\2\2\f\16\5\4\3\2\r\17\5\6\4\2\16\r\3"+
+		"\2\2\2\16\17\3\2\2\2\17\21\3\2\2\2\20\22\5\b\5\2\21\20\3\2\2\2\22\23\3"+
+		"\2\2\2\23\21\3\2\2\2\23\24\3\2\2\2\24\3\3\2\2\2\25\26\7\4\2\2\26\27\7"+
+		"\20\2\2\27\30\7\n\2\2\30\31\7\17\2\2\31\5\3\2\2\2\32\33\7\5\2\2\33\34"+
+		"\5\n\6\2\34\7\3\2\2\2\35\36\7\6\2\2\36$\5\n\6\2\37 \7\b\2\2 !\7\r\2\2"+
+		"!\"\5\2\2\2\"#\7\16\2\2#%\3\2\2\2$\37\3\2\2\2$%\3\2\2\2%\t\3\2\2\2&\'"+
+		"\7\20\2\2\'(\7\n\2\2()\7\17\2\2)\13\3\2\2\2\5\16\23$";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

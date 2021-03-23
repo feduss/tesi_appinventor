@@ -10,7 +10,7 @@ THEN: 'then';
 
 ELSE: 'else';
 
-AND: 'and';
+THROW: 'throw';
 
 ARTICLE: 'the'|'a';
 
@@ -21,6 +21,10 @@ VERB : 'is';
 COLON: ',';
 
 SEMICOLON: ';';
+
+OPEN: '(';
+
+CLOSE: ')';
 
 ACTION : 'hidden'|'make visible'|'disabled'|'shown'|'clicked'|'visible';
 

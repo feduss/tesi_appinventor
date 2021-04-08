@@ -1,4 +1,4 @@
-// Generated from TesiParser.g4 by ANTLR 4.8
+// Generated from TesiParser.g4 by ANTLR 4.9.2
 package com.google.appinventor.client.thesis;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -29,15 +29,33 @@ public interface TesiParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCondition(TesiParser.ConditionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link TesiParser#action_body}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAction_body(TesiParser.Action_bodyContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link TesiParser#action}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitAction(TesiParser.ActionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link TesiParser#anotherAction}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAnotherAction(TesiParser.AnotherActionContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link TesiParser#statement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitStatement(TesiParser.StatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link TesiParser#open_page}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOpen_page(TesiParser.Open_pageContext ctx);
 }

@@ -51,7 +51,7 @@ public class SourceStructureExplorer extends Composite {
 
   //feduss
   VerticalPanel panel2;
-  TextBox inputTextBox; //initialization
+  TextArea inputTextBox; //initialization
   Label resultLabel;
   //////
 
@@ -192,12 +192,18 @@ public class SourceStructureExplorer extends Composite {
       scrollPanel.setWidth("200px");  // wide enough to avoid a horizontal scrollbar most of the time
       scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
-      inputTextBox = new TextBox();
+      inputTextBox = new TextArea();
       //DEBUG:
-      inputTextBox.setText("when button1 is clicked then label1 is hidden");
-      //inputTextBox.setWidth("100%"); //fill width
+      //inputTextBox.setText("when button1 is clicked if label1 is hidden then label1 is hidden");
+      //inputTextBox.setText("when button1 is clicked if label1 is hidden then label1 is shown and open page1");
+      //inputTextBox.setText("when button1 is clicked if label1 is hidden then button2 is shown throw (when button2 is
+      // clicked then open page1)");
+      inputTextBox.setText("when button1 is clicked if label1 is hidden then button2 is shown throw (when button2 is" +
+              " clicked then open page1) and label1 is shown");
+      inputTextBox.setWidth("100%"); //fill width
       inputTextBox.getElement().setPropertyString("placeholder", MESSAGES.inputTextBoxAntLR()); //set a placeholder
       inputTextBox.getElement().setAttribute("style", "width: 100%; box-sizing: border-box;"); //set css style
+      inputTextBox.getElement().setAttribute("wrap","on");
 
       resultLabel = new Label();
       //resultLabel.setWidth("100%"); //fill width
@@ -235,18 +241,7 @@ public class SourceStructureExplorer extends Composite {
                 if(tesiParser.getNumberOfSyntaxErrors() == 0){
                     //Se ha riconosciuto regole
                     if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
-                        System.out.println("Rules detected: " + tesiParser.getRuleNames().length);
-
-                        //Concatena i nomi delle regole in una string
-                        StringBuilder stringBuilder = new StringBuilder();
-                        for (String rule : tesiParser.getRuleNames()) {
-                            //System.out.println("\n " + rule);
-                            stringBuilder.append(rule);
-                            stringBuilder.append("; ");
-                        }
-                        //System.out.println(tree.toStringTree(tesiParser));
-                        //E poi la visualizza
-                        resultLabel.setText(stringBuilder.toString());
+                        resultLabel.setText("Rule detected successfully");
 
                         JSONObject rule = getJSONBlock(treeRoot);
 
@@ -295,62 +290,113 @@ public class SourceStructureExplorer extends Composite {
   //feduss
   private static JSONObject getJSONBlock(TesiParser.BlockContext treeRoot) {
     JSONObject json = new JSONObject();
-    //treeRoot is the block rules detected
-    //the i get the event, and then the string, to get the drawerName
+    if(treeRoot != null){
+      //treeRoot is the block rules detected
+      //the i get the event, and then the string, to get the drawerName
 
-    //Event: when
-    //Ex.: button1
-    String BlockName = treeRoot.event().STRING().getText();
-    BlockName = BlockName.substring(0,1).toUpperCase().concat(BlockName.substring(1));
+      //Event: when
+      //Ex.: button1
+      String BlockName = treeRoot.event().STRING().getText();
+      BlockName = BlockName.substring(0,1).toUpperCase().concat(BlockName.substring(1));
 
-    //Ex.: is clicked
-    String EventVerbAction = treeRoot.event().VERB().getText() + " " + treeRoot.event().ACTION().getText();
+      //Ex.: is clicked
+      String EventVerbAction = treeRoot.event().VERB().getText() + " " + treeRoot.event().ACTION().getText();
 
-    JSONObject temp = new JSONObject();
-    temp.put("whenSubj", new JSONString(BlockName));
-    temp.put("whenVerbAct", new JSONString(EventVerbAction));
-    json.put("event", temp);
+      JSONObject temp = new JSONObject();
+      temp.put("whenSubj", new JSONString(BlockName));
+      temp.put("whenVerbAct", new JSONString(EventVerbAction));
+      json.put("event", temp);
 
-    if(treeRoot.condition() != null){
-      //Condition: if
-      //Ex.: label1
-      String ConditionSubj = treeRoot.condition().statement().STRING().getText();
-      ConditionSubj = ConditionSubj.substring(0,1).toUpperCase().concat(ConditionSubj.substring(1));
+      if(treeRoot.condition() != null){
+        //Condition: if
+        //Ex.: label1
+        String ConditionSubj = treeRoot.condition().statement().STRING().getText();
+        ConditionSubj = ConditionSubj.substring(0,1).toUpperCase().concat(ConditionSubj.substring(1));
 
-      //Ex.: is hidden
-      String ConditionVerbAction = treeRoot.condition().statement().VERB().getText() + " "
-              + treeRoot.condition().statement().ACTION().getText();
+        //Ex.: is hidden
+        String ConditionVerbAction = treeRoot.condition().statement().VERB().getText() + " "
+                + treeRoot.condition().statement().ACTION().getText();
+        temp = new JSONObject();
+        temp.put("condSubj", new JSONString(ConditionSubj));
+        temp.put("condVerbAct", new JSONString(ConditionVerbAction));
+        json.put("condition", temp);
+      }
+
+      int size = treeRoot.anotherAction().size();
+      System.out.println("Size: " + String.valueOf(size));
+      json.put("otherActionNumber", new JSONString(String.valueOf(size)));
+      //Actions
       temp = new JSONObject();
-      temp.put("condSubj", new JSONString(ConditionSubj));
-      temp.put("condVerbAct", new JSONString(ConditionVerbAction));
-      json.put("condition", temp);
-    }
 
-    //Actions: then
-    //Ex.: label2
-    for(int i = 0; i < treeRoot.action().size(); i++){
-      String ActionSubj = treeRoot.action(i).statement().STRING().getText();
-      ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
+      //ActionSubj
+      //Ex.: label2
+      String ActionSubj = null, ActionObj = null;
+      if(treeRoot.action().action_body().statement() != null){
+        ActionSubj = treeRoot.action().action_body().statement().STRING().getText();
+      }
+      else if(treeRoot.action().action_body().open_page() != null){
+        ActionObj = treeRoot.action().action_body().open_page().STRING().getText();
+      }
 
-      //Ex.: is shown
-      String ActionVerb = treeRoot.action(i).statement().VERB().getText() + " "
-              + treeRoot.action(i).statement().ACTION().getText();
-
-
-      temp = new JSONObject();
-      if(treeRoot.action(i).block() != null){
-        JSONObject temp2 = new JSONObject();
-        temp.put("actionSubj", new JSONString(ActionSubj));
-        temp.put("actionVerb", new JSONString(ActionVerb));
-        temp.put("actionEvent", getJSONBlock(treeRoot.action(i).block()));
+      if(ActionSubj != null){
+        ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
+        ActionObj = "NoObj";
       }
       else{
-        temp.put("actionSubj", new JSONString(ActionSubj));
-        temp.put("actionVerb", new JSONString(ActionVerb));
+        ActionSubj = "NoSubj";
       }
-      json.put("action" + i, temp);
+
+      ////////////////
+
+      //ActionVerb
+      //Ex.: is shown
+      String ActionVerb = null;
+      if(treeRoot.action().action_body().statement() != null){
+        ActionVerb = treeRoot.action().action_body().statement().VERB().getText() + " "
+                + treeRoot.action().action_body().statement().ACTION().getText();
+      }
+      else if(treeRoot.action().action_body().open_page() != null){
+        ActionVerb = treeRoot.action().action_body().open_page().ACTION_PAGE().getText();
+      }
 
 
+      JSONObject temp2 = new JSONObject();
+      temp2.put("actionSubj", new JSONString(ActionSubj));
+      temp2.put("actionVerb", new JSONString(ActionVerb));
+      temp2.put("actionObj", new JSONString(ActionObj));
+      temp2.put("innerRule", getJSONBlock(treeRoot.action().action_body().block())); //block innestato
+      temp.put("action" + 0, temp2);
+      //Other_Actions
+      for(int i = 0; i < treeRoot.anotherAction().size(); i++){
+        if(treeRoot.anotherAction(i).action_body().statement() != null){
+          ActionSubj = treeRoot.anotherAction(i).action_body().statement().STRING().getText();
+          ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
+          ActionObj = "NoObj";
+        }
+        else if(treeRoot.anotherAction(i).action_body().open_page() != null){
+          ActionSubj = "NoSubj";
+          ActionObj = treeRoot.anotherAction(i).action_body().open_page().STRING().getText();
+        }
+
+        if(treeRoot.anotherAction(i).action_body().statement() != null){
+          ActionVerb = ActionVerb = treeRoot.anotherAction(i).action_body().statement().VERB().getText() + " "
+                  + treeRoot.anotherAction(i).action_body().statement().ACTION().getText();
+        }
+        else if(treeRoot.anotherAction(i).action_body().open_page() != null){
+          ActionVerb = treeRoot.anotherAction(i).action_body().open_page().ACTION_PAGE().getText();
+        }
+
+
+        temp2 = new JSONObject();
+        temp2.put("actionSubj", new JSONString(ActionSubj));
+        temp2.put("actionVerb", new JSONString(ActionVerb));
+        temp2.put("actionObj", new JSONString(ActionObj));
+        temp2.put("innerRule", getJSONBlock(treeRoot.anotherAction(i).action_body().block())); //block innestato
+        temp.put("action" + (i + 1), temp2);
+
+
+      }
+      json.put("actions", temp);
     }
     return json;
   }

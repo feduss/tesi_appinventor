@@ -63,7 +63,7 @@ Blockly.WorkspaceSvg.prototype.blocksNeedingRendering = null;
  */
 Blockly.WorkspaceSvg.prototype.latestClick = { x: 0, y: 0 };
 
-/** 
+/**
  * Whether the workspace elements are hidden
  * @type {boolean}
  */
@@ -231,10 +231,10 @@ Blockly.WorkspaceSvg.prototype.addWarningIndicator = function() {
 Blockly.WorkspaceSvg.prototype.addBackpack = function() {
   if (Blockly.Backpack && !this.options.readOnly) {
     this.backpack_ = new Blockly.Backpack(this, {
-        scrollbars: true,
-        media: './assets/',
-        disabledPatternId: this.options.disabledPatternId,
-      });
+      scrollbars: true,
+      media: './assets/',
+      disabledPatternId: this.options.disabledPatternId,
+    });
     var svgBackpack = this.backpack_.createDom(this);
     this.svgGroup_.appendChild(svgBackpack);
     this.backpack_.init();
@@ -279,13 +279,13 @@ Blockly.WorkspaceSvg.prototype.showBuiltin = function(name) {
 };
 
 //feduss
-Blockly.WorkspaceSvg.prototype.insertBlock = function (rule, type) {
-  this.drawer_.insertBlock(rule, type);
+Blockly.WorkspaceSvg.prototype.insertBlock = function (rule) {
+  this.drawer_.insertBlock(rule);
 }
 
 /**
-* Show the drawer with generic blocks for a component type.
-*/
+ * Show the drawer with generic blocks for a component type.
+ */
 Blockly.WorkspaceSvg.prototype.showGeneric = function(name) {
   if (this.drawer_)
     this.drawer_.showGeneric(name);
@@ -332,12 +332,12 @@ Blockly.WorkspaceSvg.prototype.render = function(blocks) {
     if (Blockly.Instrument.useRenderDown) {
       for (var t = 0, topBlock; topBlock = topBlocks[t]; t++) {
         Blockly.Instrument.timer(
-          function () {
-            topBlock.render(false);
-          },
-          function (result, timeDiffInner) {
-            Blockly.Instrument.stats.renderDownTime += timeDiffInner;
-          }
+            function () {
+              topBlock.render(false);
+            },
+            function (result, timeDiffInner) {
+              Blockly.Instrument.stats.renderDownTime += timeDiffInner;
+            }
         );
       }
     } else {
@@ -624,11 +624,11 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
     return function() {
       Blockly.Instrument.initializeStats('expandAllCollapsedBlocks');
       Blockly.Instrument.timer(
-        function() { callback.call(self); },
-        function(result, timeDiff) {
-          Blockly.Instrument.stats.totalTime = timeDiff;
-          Blockly.Instrument.displayStats('expandAllCollapsedBlocks');
-        });
+          function() { callback.call(self); },
+          function(result, timeDiff) {
+            Blockly.Instrument.stats.totalTime = timeDiff;
+            Blockly.Instrument.displayStats('expandAllCollapsedBlocks');
+          });
     };
   }
   for (var i = 0; i < menuOptions.length; ++i) {
@@ -700,7 +700,7 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
     }
     if (block.category == 'Component') {
       var component = block.type + ',' + block.typeName + ','
-        + (block.isGeneric ? '!GENERIC!' : block.instanceName) + ',';
+          + (block.isGeneric ? '!GENERIC!' : block.instanceName) + ',';
       // sort Component blocks first, then events, methods, getters, or setters
       if (block.type == 'component_event') {
         component += block.eventName;
@@ -789,7 +789,7 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
       return res;
     }
 
-    // 3.Component event handlers, lexicographically sorted by 
+    // 3.Component event handlers, lexicographically sorted by
     // type name, instance name, then event name
     if (a.category == "Component" && b.category == "Component" && a.eventName && b.eventName) {
       if (a.typeName == b.typeName) {
@@ -805,9 +805,9 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
       return comparatorA.localeCompare(comparatorB, undefined, {numeric:true});
     }
 
-    // 4. For Component blocks, sorted internally first by type, 
-    // whether they are generic (generics precede specifics), 
-    // then by instance name (for specific blocks), 
+    // 4. For Component blocks, sorted internally first by type,
+    // whether they are generic (generics precede specifics),
+    // then by instance name (for specific blocks),
     // then by method/property name.
     if (a.category == "Component" && b.category == "Component") {
       var geneA = ',2';
@@ -832,7 +832,7 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
       if (res == 0) {
         if (a.instanceName && b.instanceName) {
           res = compareStrTextNum(a.instanceName, b.instanceName);
-        } 
+        }
         // Compare property names
         var prop_method_A = a.propertyName || a.methodName;
         var prop_method_B = b.propertyName || b.methodName;
@@ -863,7 +863,7 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
     var spacing = Blockly.mainWorkspace.options.gridOptions.spacing;
     var spacingInv = 1 / spacing;
     var snap = Blockly.mainWorkspace.options.gridOptions.snap ?
-      function(x) { return (Math.ceil(x * spacingInv) - .5) * spacing; } : function(x) { return x; };
+        function(x) { return (Math.ceil(x * spacingInv) - .5) * spacing; } : function(x) { return x; };
     var viewLeft = snap(metrics.viewLeft + 5);
     var viewTop = snap(metrics.viewTop + 5);
     var x = viewLeft;
@@ -879,38 +879,38 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
       var blkHgt = blockHW.height;
       var blkWidth = blockHW.width;
       switch (layout) {
-      case Blockly.BLKS_HORIZONTAL:
-        if (x < wsRight) {
-          blk.moveBy(x - blkXY.x, y - blkXY.y);
-          blk.select();
-          x = snap(x + blkWidth + SPACER);
-          if (blkHgt > maxHgt) // Remember highest block
+        case Blockly.BLKS_HORIZONTAL:
+          if (x < wsRight) {
+            blk.moveBy(x - blkXY.x, y - blkXY.y);
+            blk.select();
+            x = snap(x + blkWidth + SPACER);
+            if (blkHgt > maxHgt) // Remember highest block
+              maxHgt = blkHgt;
+          } else {
+            y = snap(y + maxHgt + SPACER);
             maxHgt = blkHgt;
-        } else {
-          y = snap(y + maxHgt + SPACER);
-          maxHgt = blkHgt;
-          x = viewLeft;
-          blk.moveBy(x - blkXY.x, y - blkXY.y);
-          blk.select();
-          x = snap(x + blkWidth + SPACER);
-        }
-        break;
-      case Blockly.BLKS_VERTICAL:
-        if (y < wsBottom) {
-          blk.moveBy(x - blkXY.x, y - blkXY.y);
-          blk.select();
-          y = snap(y + blkHgt + SPACER);
-          if (blkWidth > maxWidth)  // Remember widest block
+            x = viewLeft;
+            blk.moveBy(x - blkXY.x, y - blkXY.y);
+            blk.select();
+            x = snap(x + blkWidth + SPACER);
+          }
+          break;
+        case Blockly.BLKS_VERTICAL:
+          if (y < wsBottom) {
+            blk.moveBy(x - blkXY.x, y - blkXY.y);
+            blk.select();
+            y = snap(y + blkHgt + SPACER);
+            if (blkWidth > maxWidth)  // Remember widest block
+              maxWidth = blkWidth;
+          } else {
+            x = snap(x + maxWidth + SPACER);
             maxWidth = blkWidth;
-        } else {
-          x = snap(x + maxWidth + SPACER);
-          maxWidth = blkWidth;
-          y = viewTop;
-          blk.moveBy(x - blkXY.x, y - blkXY.y);
-          blk.select();
-          y = snap(y + blkHgt + SPACER);
-        }
-        break;
+            y = viewTop;
+            blk.moveBy(x - blkXY.x, y - blkXY.y);
+            blk.select();
+            y = snap(y + blkHgt + SPACER);
+          }
+          break;
       }
     }
     Blockly.Events.fire(event);  // end arrangement
@@ -1008,7 +1008,7 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
   // Retrieve from backpack option.
   var backpackRetrieve = {enabled: true};
   backpackRetrieve.text = Blockly.Msg.BACKPACK_GET + " (" +
-    Blockly.getMainWorkspace().getBackpack().count() + ")";
+      Blockly.getMainWorkspace().getBackpack().count() + ")";
   backpackRetrieve.callback = function() {
     if (Blockly.getMainWorkspace().hasBackpack()) {
       Blockly.getMainWorkspace().getBackpack().pasteBackpack();
@@ -1019,7 +1019,7 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
   // Enable grid
   var gridOption = {enabled: true};
   gridOption.text = this.options.gridOptions['enabled'] ? Blockly.Msg.DISABLE_GRID :
-    Blockly.Msg.ENABLE_GRID;
+      Blockly.Msg.ENABLE_GRID;
   gridOption.callback = function() {
     self.options.gridOptions['enabled'] = !self.options.gridOptions['enabled'];
     self.options.gridOptions['snap'] = self.options.gridOptions['enabled'] && top.BlocklyPanel_getSnapEnabled();
@@ -1041,7 +1041,7 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
     // Enable Snapping
     var snapOption = {enabled: this.options.gridOptions['enabled']};
     snapOption.text = this.options.gridOptions['snap'] ? Blockly.Msg.DISABLE_SNAPPING :
-      Blockly.Msg.ENABLE_SNAPPING;
+        Blockly.Msg.ENABLE_SNAPPING;
     snapOption.callback = function() {
       self.options.gridOptions['snap'] = !self.options.gridOptions['snap'];
       if (top.BlocklyPanel_setSnapEnabled) {
@@ -1098,7 +1098,7 @@ Blockly.WorkspaceSvg.prototype.onMouseWheel_ = function(e) {
       }
       var delta = e.deltaY > 0 ? -1 : 1;
       var position = Blockly.utils.mouseToSvg(e, this.getParentSvg(),
-        this.getInverseScreenCTM());
+          this.getInverseScreenCTM());
       this.zoom(position.x, position.y, delta);
     } else {
       // pan using mouse wheel
@@ -1205,7 +1205,7 @@ Blockly.WorkspaceSvg.prototype.fireChangeListener = function(event) {
     Blockly.workspace_arranged_position = null;
     Blockly.workspace_arranged_type = null;
     var oldParent = this.blockDB_[event.oldParentId],
-      block = this.blockDB_[event.blockId];
+        block = this.blockDB_[event.blockId];
     oldParent && this.requestErrorChecking(oldParent);
     block && this.requestErrorChecking(block);
   }
@@ -1287,9 +1287,9 @@ Blockly.WorkspaceSvg.prototype.requestErrorChecking = function(block) {
         var handler = this.getWarningHandler();
         if (handler) {  // not true for flyouts and before the main workspace is rendered.
           goog.array.forEach(this.checkAllBlocks ? this.getAllBlocks() : this.needsErrorCheck,
-            function(block) {
-              handler.checkErrors(block);
-            });
+              function(block) {
+                handler.checkErrors(block);
+              });
         }
       } finally {
         this.pendingErrorCheck = null;

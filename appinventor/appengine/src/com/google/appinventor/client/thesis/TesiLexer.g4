@@ -6,6 +6,8 @@ WHEN: 'when';
 
 IF: 'if';
 
+AND: 'and';
+
 THEN: 'then';
 
 ELSE: 'else';
@@ -27,5 +29,7 @@ OPEN: '(';
 CLOSE: ')';
 
 ACTION : 'hidden'|'make visible'|'disabled'|'shown'|'clicked'|'visible';
+
+ACTION_PAGE : 'open';
 
 STRING : [a-zA-Z0-9]+;

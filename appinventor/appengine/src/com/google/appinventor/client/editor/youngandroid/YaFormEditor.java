@@ -65,7 +65,9 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.impl.WindowImpl;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.ListBox;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +76,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+//feduss
+import com.google.appinventor.client.boxes.BlockSelectorBox;
 
 /**
  * Editor for Young Android Form (.scm) files.
@@ -149,6 +154,9 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
   private static final int OLD_PROJECT_YAV = 150; // Projects older then this have no authURL
 
   private EditableProperties selectedProperties = null;
+
+  //feduss
+  public ArrayList<String> userViewsList = new ArrayList<>();
 
   /**
    * Creates a new YaFormEditor.
@@ -366,6 +374,15 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
     if (loadComplete) {
       if (permanentlyDeleted) {
         onFormStructureChange();
+        //feduss
+        String view = component.getPropertyValue(PROPERTY_NAME_NAME);
+        SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
+        if(sourceStructureExplorer.userViewsList.size() > 0 && sourceStructureExplorer.userViewsList.contains(view)) {
+          Window.alert("removed!");
+          int index = sourceStructureExplorer.userViewsList.indexOf(view);
+          sourceStructureExplorer.whenSubjListBox.removeItem(index);
+          sourceStructureExplorer.userViewsList.remove(index);
+        }
       }
     } else {
       OdeLog.elog("onComponentRemoved called when loadComplete is false");
@@ -377,6 +394,15 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
     if (loadComplete) {
       selectedProperties = component.getProperties();
       onFormStructureChange();
+
+      //feduss
+      String view = component.getPropertyValue(PROPERTY_NAME_NAME);
+      SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
+      if(sourceStructureExplorer.userViewsList.size() == 0 || !sourceStructureExplorer.userViewsList.contains(view)) {
+        Window.alert("added!");
+        sourceStructureExplorer.whenSubjListBox.addItem(view);
+        sourceStructureExplorer.userViewsList.add(view);
+      }
     } else {
       OdeLog.elog("onComponentAdded called when loadComplete is false");
     }
@@ -387,6 +413,19 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
     if (loadComplete) {
       onFormStructureChange();
       updatePropertiesPanel(form.getSelectedComponents(), true);
+
+      //feduss
+      String view = component.getPropertyValue(PROPERTY_NAME_NAME);
+      SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
+      if(sourceStructureExplorer.userViewsList.size() > 0 && sourceStructureExplorer.userViewsList.contains(view)) {
+        Window.alert("renamed!");
+        int index = sourceStructureExplorer.userViewsList.indexOf(view);
+        sourceStructureExplorer.whenSubjListBox.removeItem(index);
+        sourceStructureExplorer.userViewsList.remove(index);
+
+        sourceStructureExplorer.whenSubjListBox.addItem(view);
+        sourceStructureExplorer.userViewsList.add(view);
+      }
     } else {
       OdeLog.elog("onComponentRenamed called when loadComplete is false");
     }
@@ -646,6 +685,7 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
       // Ensure unique name on paste
       if (substitution != null) {
         List<String> names = getComponentNames();
+        Window.alert("names: " + names);
         if (names.contains(componentName)) {
           String oldName = componentName;
           componentName = gensymName(componentType, componentName);
@@ -658,6 +698,14 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
         properties.remove(MockComponent.PROPERTY_NAME_UUID);
       }
 
+      //feduss, add views added by users to antlr list
+      String view = componentName;//mockComponent.getPropertyValue(PROPERTY_NAME_NAME);
+      Window.alert("view: " + view);
+      SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
+      if(sourceStructureExplorer.userViewsList.size() == 0 || !sourceStructureExplorer.userViewsList.contains(view)) {
+        sourceStructureExplorer.whenSubjListBox.addItem(view);
+        sourceStructureExplorer.userViewsList.add(view);
+      }
       // Add the component to its parent component (and if it is non-visible, add it to the
       // nonVisibleComponent panel).
       parent.addComponent(mockComponent);

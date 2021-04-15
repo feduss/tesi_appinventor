@@ -10,6 +10,7 @@ import com.google.appinventor.client.Ode;
 import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
 import com.google.appinventor.client.thesis.*;
 import com.google.appinventor.client.widgets.TextButton;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -23,16 +24,17 @@ import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Locale;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
@@ -48,6 +50,8 @@ public class SourceStructureExplorer extends Composite {
   private final EventCaptureTree tree;
   private final TextButton renameButton;
   private final TextButton deleteButton;
+  public ListBox whenSubjListBox = new ListBox();
+  public ArrayList<String> userViewsList = new ArrayList<>();
 
   //feduss
   VerticalPanel panel2;
@@ -192,6 +196,21 @@ public class SourceStructureExplorer extends Composite {
       scrollPanel.setWidth("200px");  // wide enough to avoid a horizontal scrollbar most of the time
       scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
+      Label whenLabel = new Label();
+      whenLabel.setText("When");
+
+      //whenSubjListBox = new ListBox(); //populated in YaFormEditor
+      ListBox whenVerbListBox = new ListBox();
+      whenVerbListBox.addItem("is hidden");
+      whenVerbListBox.addItem("is make visible");
+      whenVerbListBox.addItem("is disabled");
+      whenVerbListBox.addItem("is shown");
+      whenVerbListBox.addItem("is clicked");
+      whenVerbListBox.addItem("is visible");
+
+      Label thenLabel = new Label();
+      thenLabel.setText("Then");
+
       inputTextBox = new TextArea();
       //DEBUG:
       //inputTextBox.setText("when button1 is clicked if label1 is hidden then label1 is hidden");
@@ -250,7 +269,7 @@ public class SourceStructureExplorer extends Composite {
 
                         //Window.alert( "rule: \n\n" + rule.toString());
                         YaBlocksEditor editor =
-                                (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
+                              (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
                         editor.insertBlock(rule.toString());
                     }
                     else{
@@ -270,7 +289,11 @@ public class SourceStructureExplorer extends Composite {
       });
 
       //add all to the vertical panel
-      panel2.add(inputTextBox);
+      panel2.add(whenLabel);
+      panel2.add(whenSubjListBox);
+      panel2.add(whenVerbListBox);
+      panel2.add(thenLabel);
+      //panel2.add(inputTextBox);
       panel2.add(confirmButton);
       panel2.add(resultLabel);
       panel.add(scrollPanel);

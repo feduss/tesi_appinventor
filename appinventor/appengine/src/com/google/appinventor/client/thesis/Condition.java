@@ -1,0 +1,51 @@
+package com.google.appinventor.client.thesis;
+
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TextBox;
+
+public class Condition {
+
+    private ListBox ifSubj;
+    private ListBox ifVerb;
+    private TextBox ifTextBox;
+    //private Button deleteButton;
+
+    public Condition(ListBox ifSubj, ListBox ifVerb, TextBox ifTextBox/*, Button deleteCond*/){
+        this.setIfSubj(ifSubj);
+        this.setIfVerb(ifVerb);
+        this.setIfTextBox(ifTextBox);
+        //this.setDeleteButton(deleteCond);
+    }
+    public ListBox getIfSubj() {
+        return ifSubj;
+    }
+
+    public void setIfSubj(ListBox ifSubj) {
+        this.ifSubj = ifSubj;
+    }
+
+    public ListBox getIfVerb() {
+        return ifVerb;
+    }
+
+    public void setIfVerb(ListBox ifVerb) {
+        this.ifVerb = ifVerb;
+    }
+
+    public TextBox getIfTextBox() {
+        return ifTextBox;
+    }
+
+    public void setIfTextBox(TextBox ifTextBox) {
+        this.ifTextBox = ifTextBox;
+    }
+
+    /*public Button getDeleteButton() {
+        return deleteButton;
+    }
+
+    public void setDeleteButton(Button deleteButton) {
+        this.deleteButton = deleteButton;
+    }*/
+}

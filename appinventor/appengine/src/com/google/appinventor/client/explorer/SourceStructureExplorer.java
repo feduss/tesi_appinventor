@@ -7,15 +7,12 @@
 package com.google.appinventor.client.explorer;
 
 import com.google.appinventor.client.Ode;
+import com.google.appinventor.client.editor.simple.components.MockComponent;
 import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
 import com.google.appinventor.client.thesis.*;
 import com.google.appinventor.client.widgets.TextButton;
-import com.google.gwt.dom.client.Node;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -24,17 +21,14 @@ import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.atn.ATNConfigSet;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
@@ -50,13 +44,26 @@ public class SourceStructureExplorer extends Composite {
   private final EventCaptureTree tree;
   private final TextButton renameButton;
   private final TextButton deleteButton;
-  public ListBox whenSubjListBox = new ListBox();
-  public ArrayList<String> userViewsList = new ArrayList<>();
 
   //feduss
   VerticalPanel panel2;
   TextArea inputTextBox; //initialization
   Label resultLabel;
+
+  public ListBox whenSubjListBoxGeneric = new ListBox();
+  public ListBox whenVerbListBoxGeneric = new ListBox();
+
+  public ListBox ifSubjListBoxGeneric = new ListBox();
+  public ListBox ifVerbListBoxGeneric = new ListBox();
+
+  public ListBox thenSubjListBoxGeneric = new ListBox();
+  public ListBox thenVerbListBoxGeneric = new ListBox();
+  //Screen -> list of views
+  public HashMap<String, ArrayList<MockComponent>> userViewsList = new HashMap<>();
+
+  public HashMap<String, ArrayList<Rule>> rulesListBoxes =  new HashMap<String, ArrayList<Rule>>(); //Screen -> list of rules
+
+  public String screenName = null;
   //////
 
   /**
@@ -193,36 +200,540 @@ public class SourceStructureExplorer extends Composite {
       panel2 = new VerticalPanel();
       // Put a ScrollPanel around the panel.
       scrollPanel = new ScrollPanel(panel2);
-      scrollPanel.setWidth("200px");  // wide enough to avoid a horizontal scrollbar most of the time
+      scrollPanel.setWidth("1000px");  // wide enough to avoid a horizontal scrollbar most of the time
       scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
-      Label whenLabel = new Label();
-      whenLabel.setText("When");
+      final VerticalPanel verticalPanel = new VerticalPanel();
+      verticalPanel.getElement().setAttribute("cellpadding", "5");
 
-      //whenSubjListBox = new ListBox(); //populated in YaFormEditor
-      ListBox whenVerbListBox = new ListBox();
-      whenVerbListBox.addItem("is hidden");
-      whenVerbListBox.addItem("is make visible");
-      whenVerbListBox.addItem("is disabled");
-      whenVerbListBox.addItem("is shown");
-      whenVerbListBox.addItem("is clicked");
-      whenVerbListBox.addItem("is visible");
+      Button addRule = new Button();
+      addRule.setText("Add rule");
 
-      Label thenLabel = new Label();
-      thenLabel.setText("Then");
+      addRule.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent clickEvent) {
+          //Vertical layout of the rule
+          //Window.alert("Screenanme: " + screenName);
+          final VerticalPanel innerVerticalPanel = new VerticalPanel();
+          if(rulesListBoxes.size() == 0){
+            rulesListBoxes.put(screenName, new ArrayList<Rule>());
+          }
 
-      inputTextBox = new TextArea();
+          Rule newRule = new Rule(rulesListBoxes.get(screenName).size());
+          rulesListBoxes.get(screenName).add(newRule);
+          int ruleIndex = rulesListBoxes.get(screenName).size() - 1;
+          innerVerticalPanel.setTitle("Rule " + String.valueOf(ruleIndex + 1)); //useful to recognize which rule i'm editing, etc
+
+          rulesListBoxes.get(screenName).get(ruleIndex).setRulePanel(innerVerticalPanel);
+
+          Label whenLabel = new Label();
+          whenLabel.setText("When");
+          whenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+          HorizontalPanel whenLabelContainer = new HorizontalPanel();
+          whenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
+          whenLabelContainer.add(whenLabel);
+
+          final ListBox whenSubjListBox = new ListBox();
+          whenSubjListBox.addItem("");
+          whenSubjListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+          final ListBox whenVerbListBox = new ListBox();
+          whenVerbListBox.addItem("");
+          whenVerbListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+
+          /*if(rulesListBoxes.get(screenName) == null){
+            rulesListBoxes.put(screenName, new ArrayList<Rule>());
+          }*/
+          rulesListBoxes.get(screenName).get(newRule.getIndex()).setWhenSubj(whenSubjListBox);
+          rulesListBoxes.get(screenName).get(newRule.getIndex()).setWhenVerb(whenVerbListBox);
+
+          //These listboxes are populated in YaFormEditor and DesignToolbar
+          //When a "when subject" is selected, the list of "when verb" is changed
+          whenSubjListBox.addChangeHandler(new ChangeHandler() {
+            @Override
+            public void onChange(ChangeEvent changeEvent) {
+              ListBoxWhenSubjFieldClicked(whenSubjListBox, whenVerbListBox);
+            }
+          });
+
+          final HorizontalPanel horizontalPanelWhen = new HorizontalPanel();
+          horizontalPanelWhen.add(whenLabelContainer);
+          horizontalPanelWhen.add(new HTML("<hr  style=\"width:75px;\" />"));
+          horizontalPanelWhen.add(whenSubjListBox);
+          horizontalPanelWhen.add(new HTML("<hr  style=\"width:75px;\" />"));
+          horizontalPanelWhen.add(whenVerbListBox);
+
+          final ListBox actionTypeListBox = new ListBox();
+          actionTypeListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+          actionTypeListBox.addItem("");
+          actionTypeListBox.addItem("Set");
+          actionTypeListBox.addItem("Call");
+
+          final ListBox actionSubjListBox = new ListBox();
+          actionSubjListBox.addItem("");
+          actionSubjListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+          final ListBox actionVerbListBox = new ListBox();
+          actionVerbListBox.addItem("");
+          actionVerbListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+
+          final TextBox thenTextBox = new TextBox();
+          thenTextBox.setVisible(false);
+          thenTextBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+          String heightStr = actionVerbListBox.getElement().getStyle().getHeight();
+          double height = 25.0;
+          if(heightStr != null && !heightStr.equals("")){
+            height = Double.parseDouble(heightStr);
+          }
+          thenTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
+
+          final Button deleteMainAction = new Button();
+          deleteMainAction.setText("DEL");
+          deleteMainAction.setEnabled(false);
+
+          if(rulesListBoxes.get(screenName).get(newRule.getIndex()).getActions() == null){
+            rulesListBoxes.get(screenName).get(newRule.getIndex()).setActions(new ArrayList<Action>());
+          }
+
+          //the first action of the rule has index 0 and is empty
+          rulesListBoxes.get(screenName).get(newRule.getIndex()).getActions().add(new Action(0, actionTypeListBox,
+                  actionSubjListBox, actionVerbListBox, thenTextBox, deleteMainAction));
+
+          Label thenLabel = new Label();
+          thenLabel.setText("Then");
+          thenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+          HorizontalPanel thenLabelContainer = new HorizontalPanel();
+          thenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
+          thenLabelContainer.add(thenLabel);
+
+          final HorizontalPanel horizontalPanelAction = new HorizontalPanel();
+          horizontalPanelAction.setTitle("Action 1");
+          horizontalPanelAction.add(thenLabelContainer);
+          horizontalPanelAction.add(new HTML("<hr  style=\"width:75px;\" />"));
+          horizontalPanelAction.add(actionTypeListBox);
+          horizontalPanelAction.add(new HTML("<hr  style=\"width:75px;\" />"));
+          horizontalPanelAction.add(actionSubjListBox);
+          horizontalPanelAction.add(new HTML("<hr  style=\"width:75px;\" />"));
+          horizontalPanelAction.add(actionVerbListBox);
+          horizontalPanelAction.add(thenTextBox);
+          horizontalPanelAction.add(deleteMainAction);
+          //same of when subj
+          actionTypeListBox.addChangeHandler(new ChangeHandler() {
+            @Override
+            public void onChange(ChangeEvent changeEvent) {
+              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+              int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+              //selected is the action type select by the user
+              String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                      .getThenType().getValue(actionTypeListBox.getSelectedIndex());
+              String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                      .getThenSubj().getValue(actionSubjListBox.getSelectedIndex());
+              boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
+              if(actionSubjSelected){
+                int index = actionTypeListBox.getSelectedIndex() - 1;
+                if(index >= 0){
+                  ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType);
+                }
+                else{
+                  if(actionVerbListBox.getItemCount() > 0){
+                    while(actionVerbListBox.getItemCount() > 0){
+                      actionVerbListBox.removeItem(0);
+                    }
+                  }
+                  thenTextBox.setText("");
+                  thenTextBox.setVisible(false);
+                }
+              }
+            }
+          });
+          //same of when subj
+          actionSubjListBox.addChangeHandler(new ChangeHandler() {
+            @Override
+            public void onChange(ChangeEvent changeEvent) {
+              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+              int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+              //selected is the action type select by the user
+              String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                      .getThenType().getValue(actionTypeListBox.getSelectedIndex());
+
+              int index = actionSubjListBox.getSelectedIndex() - 1;
+              if(index >= 0){
+                ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType);
+              }
+              else{
+                if(actionVerbListBox.getItemCount() > 0){
+                  while(actionVerbListBox.getItemCount() > 0){
+                    actionVerbListBox.removeItem(0);
+                  }
+                }
+                thenTextBox.setText("");
+                thenTextBox.setVisible(false);
+              }
+            }
+          });
+
+          //same of when subj
+          actionVerbListBox.addChangeHandler(new ChangeHandler() {
+            @Override
+            public void onChange(ChangeEvent changeEvent) {
+              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+              int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+              //selected is the action type select by the user
+              String actionVerb = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                      .getThenVerb().getValue(actionVerbListBox.getSelectedIndex());
+              ListBoxThenVerbFieldClicked(actionVerb, thenTextBox);
+            }
+          });
+
+          innerVerticalPanel.add(horizontalPanelWhen);
+          innerVerticalPanel.add(horizontalPanelAction);
+          rulesListBoxes.get(screenName).get(newRule.getIndex()).getRulesThenPanel().add(horizontalPanelAction);
+
+          Button addCond = new Button();
+          addCond.setText("Add condition");
+
+          Button addAction = new Button();
+          addAction.setText("Add action");
+
+          Button copyRule = new Button();
+          copyRule.setText("Copy rule");
+
+          Button deleteRule = new Button();
+          deleteRule.setText("Delete rule");
+
+          HorizontalPanel horizontalPanelButton = new HorizontalPanel();
+          horizontalPanelButton.add(addCond);
+          horizontalPanelButton.add(addAction);
+          horizontalPanelButton.add(copyRule);
+          horizontalPanelButton.add(deleteRule);
+
+          innerVerticalPanel.add(horizontalPanelButton);
+
+          deleteMainAction.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+              deleteActionHandler(horizontalPanelAction, innerVerticalPanel);
+            }
+          });
+
+          addAction.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+              final int index = rulesListBoxes.get(screenName).get(ruleIndex).getActions().size();
+              //Window.alert("Rule: " + ruleIndex + ", Action: " + index);
+
+              final ListBox otherActionTypeListBox = new ListBox();
+              otherActionTypeListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+              otherActionTypeListBox.addItem("");
+              otherActionTypeListBox.addItem("Set");
+              otherActionTypeListBox.addItem("Call");
+
+              final ListBox otherActionSubjListBox = new ListBox();
+              otherActionSubjListBox.addItem("");
+              otherActionSubjListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+              final ListBox otherActionVerbListBox = new ListBox();
+              otherActionVerbListBox.addItem("");
+              otherActionVerbListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+              final TextBox thenTextBox = new TextBox();
+              thenTextBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+              String heightStr = otherActionVerbListBox.getElement().getStyle().getHeight();
+              double height = 25.0;
+              if(heightStr != null && !heightStr.equals("")){
+                height = Double.parseDouble(heightStr);
+              }
+              thenTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
+              thenTextBox.setVisible(false);
+
+              Button deleteOtherAction = new Button();
+              deleteOtherAction.setText("DEL");
+
+              rulesListBoxes.get(screenName).get(ruleIndex).getActions().add(new Action(index, otherActionTypeListBox,
+                      otherActionSubjListBox, otherActionVerbListBox, thenTextBox, deleteOtherAction));
+
+              final Label hiddenIndexLabel = new Label();
+              hiddenIndexLabel.setVisible(false);
+              hiddenIndexLabel.setText(String.valueOf(index));
+
+              Label thenLabel = new Label();
+              thenLabel.setText("Then");
+              thenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+              HorizontalPanel thenLabelContainer = new HorizontalPanel();
+              thenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
+              thenLabelContainer.add(thenLabel);
+
+              final HorizontalPanel horizontalPanelAction_n = new HorizontalPanel();
+              horizontalPanelAction_n.setTitle("Action " +
+                      String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() + 1));
+              horizontalPanelAction_n.add(hiddenIndexLabel);
+              horizontalPanelAction_n.add(thenLabelContainer);
+              horizontalPanelAction_n.add(new HTML("<hr  style=\"width:75px;\" />"));
+              horizontalPanelAction_n.add(otherActionTypeListBox);
+              horizontalPanelAction_n.add(new HTML("<hr  style=\"width:75px;\" />"));
+              horizontalPanelAction_n.add(otherActionSubjListBox);
+              horizontalPanelAction_n.add(new HTML("<hr  style=\"width:75px;\" />"));
+              horizontalPanelAction_n.add(otherActionVerbListBox);
+
+              horizontalPanelAction_n.add(thenTextBox);
+              horizontalPanelAction_n.add(deleteOtherAction);
+
+              for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
+                otherActionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+              }
+
+              //same of when subj
+              otherActionTypeListBox.addChangeHandler(new ChangeHandler() {
+                @Override
+                public void onChange(ChangeEvent changeEvent) {
+                  int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+                  int actionIndex = Integer.parseInt(horizontalPanelAction_n.getTitle().split("Action ")[1]) - 1;
+                  //selected is the action type select by the user
+                  String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                          .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
+                  String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                          .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex());
+                  boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
+                  if(actionSubjSelected){
+                    int index = otherActionTypeListBox.getSelectedIndex() - 1;
+                    if(index >= 0){
+                      ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType);
+                    }
+                    else{
+                      if(otherActionVerbListBox.getItemCount() > 0){
+                        while(otherActionVerbListBox.getItemCount() > 0){
+                          otherActionVerbListBox.removeItem(0);
+                        }
+                      }
+                      thenTextBox.setText("");
+                      thenTextBox.setVisible(false);
+                    }
+                  }
+                }
+              });
+
+              //same of when subj
+              otherActionSubjListBox.addChangeHandler(new ChangeHandler() {
+                @Override
+                public void onChange(ChangeEvent changeEvent) {
+                  int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+                  int actionIndex = Integer.parseInt(horizontalPanelAction_n.getTitle().split("Action ")[1]) - 1;
+                  //selected is the action type select by the user
+                  String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                          .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
+                  String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                          .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex());
+
+                  int index = otherActionSubjListBox.getSelectedIndex() - 1;
+                  if(index >= 0){
+                    ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType);
+                  }
+                  else{
+                    if(otherActionVerbListBox.getItemCount() > 0){
+                      while(otherActionVerbListBox.getItemCount() > 0){
+                        otherActionVerbListBox.removeItem(0);
+                      }
+                    }
+                    thenTextBox.setText("");
+                    thenTextBox.setVisible(false);
+                  }
+                }
+              });
+
+              otherActionVerbListBox.addChangeHandler(new ChangeHandler() {
+                @Override
+                public void onChange(ChangeEvent changeEvent) {
+                  int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+                  int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+                  //selected is the action type select by the user
+                  String actionVerb = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                          .getThenVerb().getValue(actionVerbListBox.getSelectedIndex());
+                  ListBoxThenVerbFieldClicked(actionVerb, thenTextBox);
+                }
+              });
+
+              rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(index).setThenType(otherActionTypeListBox);
+              rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(index).setThenSubj(otherActionSubjListBox);
+              rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(index).setThenVerb(otherActionVerbListBox);
+
+              int lastThenIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() - 1;
+              int temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().get(lastThenIndex)) + 1;
+              //Window.alert("Action will be insert in position: " + String.valueOf(temp));
+              rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().add(horizontalPanelAction_n);
+              innerVerticalPanel.insert(horizontalPanelAction_n, temp);
+
+              if(deleteMainAction != null){
+                deleteMainAction.setEnabled(true);
+              }
+
+              deleteOtherAction.addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent clickEvent) {
+                  deleteActionHandler(horizontalPanelAction_n, innerVerticalPanel);
+                }
+              });
+            }
+          });
+
+          addCond.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+              Label ifLabel = new Label();
+              ifLabel.setText("If");
+              ifLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+              HorizontalPanel ifLabelContainer = new HorizontalPanel();
+              ifLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
+              ifLabelContainer.add(ifLabel);
+
+              final ListBox ifSubjListBox = new ListBox();
+              ifSubjListBox.addItem("");
+              ifSubjListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+              final ListBox ifVerbListBox = new ListBox();
+              ifVerbListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+
+              //rulesListBoxes.get(rulesListBoxesCount - 1).setIfSubj(ifSubjListBox);
+              //rulesListBoxes.get(rulesListBoxesCount - 1).setIfVerb(ifVerbListBox);
+              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+
+              final TextBox ifTextBox = new TextBox();
+              ifTextBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+              String heightStr = ifVerbListBox.getElement().getStyle().getHeight();
+              double height = 250.0;
+              if(heightStr != null && !heightStr.equals("")){
+                height = Double.parseDouble(heightStr);
+              }
+              ifTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
+              ifTextBox.setVisible(false);
+
+              Button deleteCond = new Button();
+              deleteCond.setText("DEL");
+
+              rulesListBoxes.get(screenName).get(ruleIndex).addCondition(new Condition(ifSubjListBox, ifVerbListBox, ifTextBox));//, deleteCond));
+
+              final HorizontalPanel horizontalPanelIf = new HorizontalPanel();
+              //Window.alert("IfIndex: " +
+              //        String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
+              horizontalPanelIf.setTitle("Condition " +
+                      String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
+              horizontalPanelIf.add(ifLabelContainer);
+              horizontalPanelIf.add(new HTML("<hr  style=\"width:75px;\" />"));
+              horizontalPanelIf.add(ifSubjListBox);
+              horizontalPanelIf.add(new HTML("<hr  style=\"width:75px;\" />"));
+              horizontalPanelIf.add(ifVerbListBox);
+              horizontalPanelIf.add(ifTextBox);
+
+              //Same of whensubj
+              ifSubjListBox.addChangeHandler(new ChangeHandler() {
+                @Override
+                public void onChange(ChangeEvent changeEvent) {
+                  ListBoxIfSubjFieldClicked(ifSubjListBox, ifVerbListBox);
+                }
+              });
+
+              //Some "if verb" require an extra input text field
+              ifVerbListBox.addChangeHandler(new ChangeHandler() {
+                @Override
+                public void onChange(ChangeEvent changeEvent) {
+                  ListBoxIfVerbFieldClicked(ifVerbListBox, ifTextBox);
+                }
+              });
+
+              for(int i = 0; i < ifSubjListBoxGeneric.getItemCount(); i++){
+                ifSubjListBox.addItem(ifSubjListBoxGeneric.getValue(i));
+              }
+              for(int i = 0; i < ifVerbListBoxGeneric.getItemCount(); i++){
+                ifVerbListBox.addItem(ifVerbListBoxGeneric.getValue(i));
+              }
+
+              int lastIfIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() - 1;
+              int temp = -1;
+              if(lastIfIndex == -1){
+                temp = innerVerticalPanel.getWidgetIndex(horizontalPanelWhen) + 1;
+              }
+              else{
+                temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().get(lastIfIndex)) + 1;
+              }
+              //Window.alert("Condition will be insert in position: " + String.valueOf(temp));
+              rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().add(horizontalPanelIf);
+              innerVerticalPanel.insert(horizontalPanelIf, temp);
+
+              deleteCond.addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent clickEvent) {
+                  int indexToRemove = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
+                  int ifPos = innerVerticalPanel.getWidgetIndex(horizontalPanelIf);
+                  //Window.alert("Condition index: " + (indexToRemove) + ", Condition pos: " + ifPos);
+                  int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+                  //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(indexToRemove).setIfSubj(null);
+                  //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(indexToRemove).setIfVerb(null);
+                  rulesListBoxes.get(screenName).get(ruleIndex).getConditions().remove(indexToRemove);
+                  rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().remove(indexToRemove);
+                  boolean res = innerVerticalPanel.remove(ifPos);
+
+                  for(HorizontalPanel ifPanel : rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel()){
+                    int i = Integer.parseInt(ifPanel.getTitle().split("Condition ")[1]) - 1;
+                    if(i > indexToRemove){
+                      ifPanel.setTitle("Condition " + String.valueOf(i - 1));
+                    }
+                  }
+                }
+              });
+
+              horizontalPanelIf.add(deleteCond);
+            }
+          });
+
+          copyRule.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+              Window.alert("WIP");
+            }
+          });
+
+          deleteRule.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+              int indexToRemove = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+              for(Rule rule : rulesListBoxes.get(screenName)){
+                VerticalPanel rulePanel = rule.getRulePanel();
+                int index = Integer.parseInt(rulePanel.getTitle().split("Rule ")[1]) - 1;
+                if(index > indexToRemove){
+                  rulePanel.setTitle("Rule " + String.valueOf(index - 1));
+                }
+              }
+
+              verticalPanel.remove(rulesListBoxes.get(screenName).get(indexToRemove).getRulePanel());
+              rulesListBoxes.get(screenName).remove(indexToRemove);
+            }
+          });
+
+          for(int i = 0; i < whenSubjListBoxGeneric.getItemCount(); i++){
+            whenSubjListBox.addItem(whenSubjListBoxGeneric.getValue(i));
+          }
+          for(int i = 0; i < whenVerbListBoxGeneric.getItemCount(); i++){
+            whenVerbListBox.addItem(whenVerbListBoxGeneric.getValue(i));
+          }
+          for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
+            actionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+          }
+          for(int i = 0; i < thenVerbListBoxGeneric.getItemCount(); i++){
+            actionVerbListBox.addItem(thenVerbListBoxGeneric.getValue(i));
+          }
+
+
+          verticalPanel.add(innerVerticalPanel);
+        }
+      });
+
+      //inputTextBox = new TextArea();
       //DEBUG:
       //inputTextBox.setText("when button1 is clicked if label1 is hidden then label1 is hidden");
       //inputTextBox.setText("when button1 is clicked if label1 is hidden then label1 is shown and open page1");
       //inputTextBox.setText("when button1 is clicked if label1 is hidden then button2 is shown throw (when button2 is
       // clicked then open page1)");
-      inputTextBox.setText("when button1 is clicked if label1 is hidden then button2 is shown throw (when button2 is" +
+      /*inputTextBox.setText("when button1 is clicked if label1 is hidden then button2 is shown throw (when button2 is" +
               " clicked then open page1) and label1 is shown");
       inputTextBox.setWidth("100%"); //fill width
       inputTextBox.getElement().setPropertyString("placeholder", MESSAGES.inputTextBoxAntLR()); //set a placeholder
       inputTextBox.getElement().setAttribute("style", "width: 100%; box-sizing: border-box;"); //set css style
-      inputTextBox.getElement().setAttribute("wrap","on");
+      inputTextBox.getElement().setAttribute("wrap","on");*/
 
       resultLabel = new Label();
       //resultLabel.setWidth("100%"); //fill width
@@ -232,71 +743,112 @@ public class SourceStructureExplorer extends Composite {
       confirmButton.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent clickEvent) {
-                //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
-                ///Custom Lexer ->  A lexer takes the individual characters and transforms them
-                // in tokens, the atoms that the parser uses to create the logical structure
-                TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(inputTextBox.getText()));
-                tesiLexer.removeErrorListeners();
-                //Create syntax error listener
-                SyntaxErrorListener errorListener = new SyntaxErrorListener();
-                //Add it to lexer
-                tesiLexer.addErrorListener(errorListener);
-                ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
-                CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
+                int ruleCount = 0;
+                //Rule to formatted string
+                for(Rule rule : rulesListBoxes.get(screenName)) {
+                  String value = "";
+                  //EVENT
+                  value += "when " + rule.getWhenSubj().getSelectedItemText() + " " + rule.getWhenVerb().getSelectedItemText() + " ";
 
-                ///Custom Parser
-                TesiParser tesiParser = new TesiParser(commonTokenStream);
-                tesiParser.removeErrorListeners();
-                //Add prev syntax error listener to parser
-                tesiParser.addErrorListener(errorListener);
+                  //CONDITION
+                  if(rule.getConditions() != null && rule.getConditions().size() > 0){
+                    value += "if ";
+                    int i = 0;
+                    for(Condition condition : rule.getConditions()){
+                      if(i > 0){
+                        value += " AND ";
+                      }
+                      value += condition.getIfSubj().getSelectedItemText() + " " +
+                              condition.getIfVerb().getSelectedItemText() + " " +
+                              condition.getIfTextBox().getText();
+                      i++;
+                    }
+                  }
 
-                tesiParser.setBuildParseTree(true);
-                //Set the root of parse tree as upper parser rules i've defined, aka blocks
-                TesiParser.BlockContext treeRoot = tesiParser.block();
+                  //ACTION
+                  value += " then ";
+                  int i = 0;
+                  for(Action action : rule.getActions()){
+                    if(i > 0){
+                      value += " AND ";
+                    }
+                    value += action.getThenType().getSelectedItemText() + " " +
+                            action.getThenSubj().getSelectedItemText() + " " +
+                            action.getThenVerb().getSelectedItemText() + " " +
+                            action.getThenTextBox().getText();
+                    i++;
+                  }
 
-                TesiParserBaseVisitor visitor = new TesiParserBaseVisitor();
-                visitor.visit(treeRoot);
+                  Window.alert("Rule " + ruleCount + ": \n" + value.toLowerCase(Locale.ROOT));
+                  ruleCount++;
 
-                if(tesiParser.getNumberOfSyntaxErrors() == 0){
+                  //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
+                  ///Custom Lexer ->  A lexer takes the individual characters and transforms them
+                  // in tokens, the atoms that the parser uses to create the logical structure
+                  TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(value.toLowerCase(Locale.ROOT)));
+                  tesiLexer.removeErrorListeners();
+                  //Create syntax error listener
+                  SyntaxErrorListener errorListener = new SyntaxErrorListener();
+                  //Add it to lexer
+                  tesiLexer.addErrorListener(errorListener);
+                  ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
+                  CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
+
+                  ///Custom Parser
+                  TesiParser tesiParser = new TesiParser(commonTokenStream);
+                  tesiParser.removeErrorListeners();
+                  //Add prev syntax error listener to parser
+                  tesiParser.addErrorListener(errorListener);
+
+                  tesiParser.setBuildParseTree(true);
+                  //Set the root of parse tree as upper parser rules i've defined, aka blocks
+                  TesiParser.BlockContext treeRoot = tesiParser.block();
+
+                  TesiParserBaseVisitor visitor = new TesiParserBaseVisitor();
+                  visitor.visit(treeRoot);
+
+                  if(tesiParser.getNumberOfSyntaxErrors() == 0){
                     //Se ha riconosciuto regole
                     if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
-                        resultLabel.setText("Rule detected successfully");
+                      resultLabel.setText("Rule detected successfully");
 
-                        JSONObject rule = getJSONBlock(treeRoot);
+                      JSONObject ruleJSON = getJSONBlock(treeRoot);
 
 
-                        //Window.alert("Json: \n" + rule.toString());
+                      //Window.alert("Json: \n" + rule.toString());
 
-                        //Window.alert( "rule: \n\n" + rule.toString());
-                        YaBlocksEditor editor =
+                      //Window.alert( "rule: \n\n" + rule.toString());
+                      YaBlocksEditor editor =
                               (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
-                        editor.insertBlock(rule.toString());
+                      editor.insertBlock(ruleJSON.toString());
                     }
                     else{
-                        resultLabel.setText("No rules detected.");
+                      resultLabel.setText("No rules detected.");
                     }
-                }
-                else{
+                  }
+                  else{
                     StringBuilder stringBuilder = new StringBuilder();
                     stringBuilder.append("Check the following " + tesiParser.getNumberOfSyntaxErrors()  + " error/s and try again:");
                     for(String error : errorListener.getSyntaxErrorList()){
                       stringBuilder.append("\n- " + error);
                     }
                     resultLabel.setText(stringBuilder.toString());
+                  }
                 }
+
+
 
         }
       });
 
       //add all to the vertical panel
-      panel2.add(whenLabel);
-      panel2.add(whenSubjListBox);
-      panel2.add(whenVerbListBox);
-      panel2.add(thenLabel);
       //panel2.add(inputTextBox);
+      panel2.add(verticalPanel);
+      panel2.add(addRule);
       panel2.add(confirmButton);
       panel2.add(resultLabel);
       panel.add(scrollPanel);
+
       panel.setCellHorizontalAlignment(confirmButton, HorizontalPanel.ALIGN_CENTER);
       panel.setWidth("100%");
       panel.setHeight("100%");
@@ -308,6 +860,770 @@ public class SourceStructureExplorer extends Composite {
       panel.setCellHorizontalAlignment(buttonPanel, HorizontalPanel.ALIGN_CENTER);
     }
     initWidget(panel);
+  }
+
+  //feduss
+  private void deleteActionHandler(HorizontalPanel horizontalPanelThen, VerticalPanel innerVerticalPanel) {
+    int indexToRemove = Integer.parseInt(horizontalPanelThen.getTitle().split("Action ")[1]) - 1;
+    int thenPos = innerVerticalPanel.getWidgetIndex(horizontalPanelThen);
+    //Window.alert("Action index: " + (indexToRemove) + ", Action pos: " + thenPos);
+    int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+    //rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(indexToRemove).setThenSubj(null);
+    //rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(indexToRemove).setThenVerb(null);
+    rulesListBoxes.get(screenName).get(ruleIndex).getActions().remove(indexToRemove).setThenVerb(null);
+    rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().remove(indexToRemove);
+    boolean res = innerVerticalPanel.remove(thenPos);
+    for(HorizontalPanel thenPanel : rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel()){
+      int i = Integer.parseInt(thenPanel.getTitle().split("Action ")[1]) - 1;
+      if(i > indexToRemove){
+        thenPanel.setTitle("Action " + String.valueOf(i - 1));
+      }
+    }
+
+    if(rulesListBoxes.get(screenName).get(ruleIndex).getActions().size() == 1){
+      rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(0).getDeleteButton().setEnabled(false);
+    }
+  }
+
+  //feduss
+  private void ListBoxWhenSubjFieldClicked(ListBox subjList, ListBox verbList) {
+    int index = subjList.getSelectedIndex() - 1;
+    if(index >= 0){
+      //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
+
+      while(verbList.getItemCount() > 0){
+        verbList.removeItem(0);
+      }
+      verbList.addItem("");
+
+      MockComponent component = userViewsList.get(screenName).get(index);
+      String compType = component.getType();
+
+      switch(compType){
+        case "Button":
+          verbList.addItem("is clicked");
+          verbList.addItem("is focused");
+          verbList.addItem("is long clicked");
+          verbList.addItem("lost focus");
+          verbList.addItem("is touched down");
+          verbList.addItem("is touched up");
+          break;
+        case "DatePicker":
+          verbList.addItem("is clicked");
+          verbList.addItem("got focus");
+          verbList.addItem("is long clicked");
+          verbList.addItem("lost focus");
+          verbList.addItem("is touched down");
+          verbList.addItem("is touched up");
+          break;
+        case "Image":
+          verbList.addItem("is clicked");
+          break;
+        case "ListPicker":
+          verbList.addItem("is after picked");
+          verbList.addItem("is before picked");
+          verbList.addItem("got focus");
+          verbList.addItem("lost focus");
+          verbList.addItem("is touched down");
+          verbList.addItem("is touched up");
+          break;
+        case "ListView":
+          verbList.addItem("is after picked");
+          break;
+        case "TextBox":
+        case "PasswordTextBox":
+          verbList.addItem("got focus");
+          verbList.addItem("lost focus");
+          break;
+        case "Slider":
+          verbList.addItem("position changed to"); //todo insert position selection
+          break;
+        case "Spinner":
+          verbList.addItem("after selecting"); //todo insert "selection" selection
+          break;
+        case "Switch":
+          verbList.addItem("changed");
+          verbList.addItem("got focus");
+          verbList.addItem("lost focus");
+          break;
+        case "TimePicker":
+          verbList.addItem("after time set");
+          verbList.addItem("got focus");
+          verbList.addItem("lost focus");
+          verbList.addItem("is touched down");
+          verbList.addItem("is touched up");
+          break;
+        //TODO add notifier?
+        default:
+          Window.alert("NotHandledCase: " + compType);
+          verbList.addItem("is hidden");
+          verbList.addItem("is make visible");
+          verbList.addItem("is disabled");
+          verbList.addItem("is shown");
+          verbList.addItem("is visible");
+      }
+    }
+  }
+
+  //feduss
+  private void ListBoxIfSubjFieldClicked(ListBox subjList, ListBox verbList) {
+    int index = subjList.getSelectedIndex() - 1;
+    if(index >= 0) {
+      //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
+
+      while (verbList.getItemCount() > 0) {
+        verbList.removeItem(0);
+      }
+      verbList.addItem("");
+
+      MockComponent component = userViewsList.get(screenName).get(index);
+      String compType = component.getType();
+
+      switch (compType) {
+        case "Button":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("is enabled");
+          verbList.addItem("is not enabled");
+          verbList.addItem("font is bold");
+          verbList.addItem("font is not bold");
+          verbList.addItem("font is italic");
+          verbList.addItem("font is not italic");
+          verbList.addItem("font size is"); //todo add text input
+          verbList.addItem("font size is not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("image is"); //?? //todo add text input
+          verbList.addItem("image is not");//?? //todo add text input
+          verbList.addItem("shows feedback");
+          verbList.addItem("doesn't show feedback");
+          verbList.addItem("text is"); //todo add text input
+          verbList.addItem("text is not"); //todo add text input
+          verbList.addItem("text color is"); //todo add text input
+          verbList.addItem("text color is not"); //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "Label":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("font size is"); //todo add text input
+          verbList.addItem("font size is not"); //todo add text input
+          verbList.addItem("has margins");
+          verbList.addItem("doesn't have margins");
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("text is"); //todo add text input
+          verbList.addItem("text is not"); //todo add text input
+          verbList.addItem("text color is"); //todo add text input
+          verbList.addItem("text color is not"); //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "DatePicker":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("day is"); //todo add text input
+          verbList.addItem("day is not"); //todo add text input
+          verbList.addItem("is enabled");
+          verbList.addItem("is not enabled");
+          verbList.addItem("font is bold");
+          verbList.addItem("font is not bold");
+          verbList.addItem("font is italic");
+          verbList.addItem("font is not italic");
+          verbList.addItem("font size is"); //todo add text input
+          verbList.addItem("font size is not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("image is"); //?? //todo add text input
+          verbList.addItem("image is not");//?? //todo add text input
+          verbList.addItem("instant is"); //todo add text input --> ai2.appinventor.mit.edu/reference/components/userinterface.html
+          verbList.addItem("instant is not"); //todo add text input
+          verbList.addItem("month is"); //todo add text input
+          verbList.addItem("month is not"); //todo add text input
+          verbList.addItem("month in text is"); //todo add text input --> ai2.appinventor.mit.edu/reference/components/userinterface.html
+          verbList.addItem("month in text is not"); //todo add text input
+          verbList.addItem("shows feedback");
+          verbList.addItem("doesn't show feedback");
+          verbList.addItem("text is"); //todo add text input
+          verbList.addItem("text is not"); //todo add text input
+          verbList.addItem("text color is"); //todo add text input
+          verbList.addItem("text color is not"); //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          verbList.addItem("year is"); //todo add text input
+          verbList.addItem("year is not"); //todo add text input
+          break;
+        case "Image":
+          verbList.addItem("is clickable");
+          verbList.addItem("is not clickable");
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("picture is"); //todo add text input
+          verbList.addItem("picture is not"); //todo add text input
+          verbList.addItem("rotation angle is"); //todo add text input
+          verbList.addItem("rotation angle is not"); //todo add text input
+          verbList.addItem("scaling is"); //todo add text input
+          verbList.addItem("scaling is not"); //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "ListPicker":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("elements are");
+          verbList.addItem("elements are not");
+          verbList.addItem("is enabled");
+          verbList.addItem("is not enabled");
+          verbList.addItem("font is bold");
+          verbList.addItem("font is not bold");
+          verbList.addItem("font is italic");
+          verbList.addItem("font is not italic");
+          verbList.addItem("font size is"); //todo add text input
+          verbList.addItem("font size is not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("image is"); //?? //todo add text input
+          verbList.addItem("image is not");//?? //todo add text input
+          verbList.addItem("item background color is"); //todo add text input
+          verbList.addItem("item background color is not"); //todo add text input
+          verbList.addItem("item text color is"); //?? //todo add text input
+          verbList.addItem("item text color is not");//?? //todo add text input
+          verbList.addItem("selection is"); //todo add text input
+          verbList.addItem("selection is not"); //todo add text input
+          verbList.addItem("selection index is"); //?? //todo add text input
+          verbList.addItem("selection index is not");//?? //todo add text input
+          verbList.addItem("shows feedback");
+          verbList.addItem("doesn't show feedback");
+          verbList.addItem("shows filter bar");
+          verbList.addItem("doesn't show filter bar");
+          verbList.addItem("text is"); //?? //todo add text input
+          verbList.addItem("text is not");//?? //todo add text input
+          verbList.addItem("text color is"); //?? //todo add text input
+          verbList.addItem("text color is not");//?? //todo add text input
+          verbList.addItem("title is"); //?? //todo add text input
+          verbList.addItem("title is not");//?? //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "ListView":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("elements are"); //todo add text input
+          verbList.addItem("elements are not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("selection is"); //todo add text input
+          verbList.addItem("selection is not"); //todo add text input
+          verbList.addItem("selection color is");//?? //todo add text input
+          verbList.addItem("selection color is not");//?? //todo add text input
+          verbList.addItem("selection index is"); //?? //todo add text input
+          verbList.addItem("selection index is not");//?? //todo add text input
+          verbList.addItem("shows filter bar");
+          verbList.addItem("doesn't show filter bar");
+          verbList.addItem("text color is"); //?? //todo add text input
+          verbList.addItem("text color is not");//?? //todo add text input
+          verbList.addItem("text size is"); //?? //todo add text input
+          verbList.addItem("text size is not");//?? //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "PasswordTextBox":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("is enabled");
+          verbList.addItem("is not enabled");
+          verbList.addItem("font size is"); //todo add text input
+          verbList.addItem("font size is not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("hint is"); //todo add text input
+          verbList.addItem("hint is not"); //todo add text input
+          verbList.addItem("password is visible"); //todo add text input
+          verbList.addItem("password is not visible"); //todo add text input
+          verbList.addItem("text is"); //?? //todo add text input
+          verbList.addItem("text is not");//?? //todo add text input
+          verbList.addItem("text color is"); //?? //todo add text input
+          verbList.addItem("text color is not");//?? //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "Slider":
+          verbList.addItem("color left is"); //todo add text input
+          verbList.addItem("color left is not"); //todo add text input
+          verbList.addItem("max value is"); //todo add text input
+          verbList.addItem("max value is not"); //todo add text input
+          verbList.addItem("thumb is enabled");
+          verbList.addItem("thumb is not enabled");
+          verbList.addItem("thumb position is"); //todo add text input
+          verbList.addItem("thumb position is not"); //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "Spinner":
+          verbList.addItem("elements are"); //todo add text input
+          verbList.addItem("elements are not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("selection is"); //todo add text input
+          verbList.addItem("selection is not"); //todo add text input
+          verbList.addItem("prompt is"); //todo add text input
+          verbList.addItem("prompt is not"); //todo add text input
+          verbList.addItem("selection index is"); //?? //todo add text input
+          verbList.addItem("selection index is not");//?? //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "Switch":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("is enabled");
+          verbList.addItem("is not enabled");
+          verbList.addItem("font size is"); //todo add text input
+          verbList.addItem("font size is not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("is on");
+          verbList.addItem("is not on");
+          verbList.addItem("text is");  //todo add text input
+          verbList.addItem("text is not"); //todo add text input
+          verbList.addItem("text color is"); //todo add text input
+          verbList.addItem("text color is not"); //todo add text input
+          verbList.addItem("thumb color active is"); //todo add text input
+          verbList.addItem("thumb color active is not"); //todo add text input
+          verbList.addItem("thumb color inactive is"); //todo add text input
+          verbList.addItem("thumb color inactive is not"); //todo add text input
+          verbList.addItem("track color active is"); //todo add text input
+          verbList.addItem("track color active is not"); //todo add text input
+          verbList.addItem("track color inactive is"); //todo add text input
+          verbList.addItem("track color inactive is not"); //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "TextBox":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("is enabled");
+          verbList.addItem("is not enabled");
+          verbList.addItem("font size is"); //todo add text input
+          verbList.addItem("font size is not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("hint is"); //todo add text input
+          verbList.addItem("hint is not"); //todo add text input
+          verbList.addItem("is multiline");
+          verbList.addItem("is not multiline");
+          verbList.addItem("is number only");
+          verbList.addItem("is not number only");
+          verbList.addItem("is read only");
+          verbList.addItem("is not read only");
+          verbList.addItem("text is");  //todo add text input
+          verbList.addItem("text is not"); //todo add text input
+          verbList.addItem("text color is"); //todo add text input
+          verbList.addItem("text color is not"); //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        case "TimePicker":
+          verbList.addItem("background color is"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("background color is not"); //todo add text input //todo in logic there is the equal operator
+          verbList.addItem("is enabled");
+          verbList.addItem("is not enabled");
+          verbList.addItem("font is bold");
+          verbList.addItem("font is not bold");
+          verbList.addItem("font is italic");
+          verbList.addItem("font is not italic");
+          verbList.addItem("font size is"); //todo add text input
+          verbList.addItem("font size is not"); //todo add text input
+          verbList.addItem("height is"); //todo add text input
+          verbList.addItem("height is not"); //todo add text input
+          verbList.addItem("hour is"); //todo add text input
+          verbList.addItem("hour is not"); //todo add text input
+          verbList.addItem("image is"); //?? //todo add text input
+          verbList.addItem("image is not");//?? //todo add text input
+          verbList.addItem("instant is"); //todo add text input
+          verbList.addItem("instant is not"); //todo add text input
+          verbList.addItem("minute is"); //todo add text input
+          verbList.addItem("minute is not"); //todo add text input
+          verbList.addItem("shows feedback");
+          verbList.addItem("doesn't show feedback");
+          verbList.addItem("text is");  //todo add text input
+          verbList.addItem("text is not"); //todo add text input
+          verbList.addItem("text color is"); //todo add text input
+          verbList.addItem("text color is not"); //todo add text input
+          verbList.addItem("is visible");
+          verbList.addItem("is not visible");
+          verbList.addItem("width is"); //todo add text input
+          verbList.addItem("width is not"); //todo add text input
+          break;
+        //TODO add notifier?
+        default:
+          Window.alert("NotHandledCase: " + compType);
+      }
+    }
+  }
+
+  //feduss
+  private void ListBoxIfVerbFieldClicked(ListBox verbList, TextBox ifTextBox) {
+    int index = verbList.getSelectedIndex() - 1;
+    //Window.alert("index: " + String.valueOf(index));
+    if(index >= 0) {
+      String verb = verbList.getSelectedItemText();
+      //Window.alert("verb: " + verb);
+
+      switch (verb) {
+        case "background color is": //todo in logic there is the equal operator
+        case "background color is not":
+        case "font size is":
+        case "font size is not":
+        case "height is":
+        case "height is not":
+        case "image is":
+        case "image is not":
+        case "text is":
+        case "text is not":
+        case "text color is":
+        case "text color is not":
+        case "width is":
+        case "width is not":
+        case "day is":
+        case "day is not":
+        case "instant is": //todo info --> ai2.appinventor.mit.edu/reference/components/userinterface.html
+        case "instant is not":
+        case "month is":
+        case "month is not":
+        case "month in text is":
+        case "month in text is not":
+        case "year is":
+        case "year is not":
+        case "picture is":
+        case "picture is not":
+        case "rotation angle is":
+        case "rotation angle is not":
+        case "scaling is":
+        case "scaling is not":
+        case "item background color is":
+        case "item background color is not":
+        case "item text color is":
+        case "item text color is not":
+        case "selection is":
+        case "selection is not":
+        case "selection index is":
+        case "selection index is not":
+        case "title is":
+        case "title is not":
+        case "elements are":
+        case "elements are not":
+        case "selection color is":
+        case "selection color is not":
+        case "text size is":
+        case "text size is not":
+        case "hint is":
+        case "hint is not":
+        case "password is visible":
+        case "password is visible not":
+        case "color left is":
+        case "color left is not":
+        case "max value is":
+        case "max value is not":
+        case "thumb position is":
+        case "thumb position is not":
+        case "prompt is":
+        case "prompt is not":
+        case "thumb color active is":
+        case "thumb color active is not":
+        case "thumb color inactive":
+        case "thumb color inactive not":
+        case "track color active is":
+        case "track color active is not":
+        case "track color inactive is":
+        case "track color inactive is not":
+        case "hour is":
+        case "hour is not":
+        case "minute is":
+        case "minute is not":
+          //Window.alert("active");
+          ifTextBox.setVisible(true);
+          break;
+        //TODO add notifier?
+        default:
+          //Window.alert("inactive");
+          ifTextBox.setVisible(false);
+      }
+    }
+  }
+
+  //feduss
+  private void ListBoxThenSubjFieldClicked(ListBox subjList, ListBox verbList, String selected) {
+    int index = subjList.getSelectedIndex() - 1;
+    if(index >= 0) {
+      //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
+
+      MockComponent component = userViewsList.get(screenName).get(index);
+      String compType = component.getType();
+      String view = component.getPropertyValue("Name");
+
+      switch (compType) {
+        case "Button":
+          if (selected.toLowerCase().equals("set")) {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("enabled to"); //todo add text input
+            verbList.addItem("font bold to"); //todo add text input
+            verbList.addItem("font italic to"); //todo add text input
+            verbList.addItem("font size to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("image to"); //todo add text input
+            verbList.addItem("show feedback to"); //todo add text input
+            verbList.addItem("text to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "Label":
+          if (selected.toLowerCase().equals("set")) {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("font size to"); //todo add text input
+            verbList.addItem("has margins to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("text to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "DatePicker":
+          if (selected.toLowerCase().equals("call")) {
+            verbList.addItem("call " + view + " launch picker"); //todo add text input
+            verbList.addItem("call " + view + " set date to display (year/month/day) to"); //todo add text input
+            verbList.addItem("call " + view + " set date to display from instant"); //todo add text input
+          } else {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("enabled to"); //todo add text input
+            verbList.addItem("font bold to"); //todo add text input
+            verbList.addItem("font italic to"); //todo add text input
+            verbList.addItem("font size to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("image to"); //todo add text input
+            verbList.addItem("show feedback to"); //todo add text input
+            verbList.addItem("text to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "Image":
+          if (selected.toLowerCase().equals("set")) {
+            verbList.addItem("animation to"); //todo add text input
+            verbList.addItem("clickable to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("picture to"); //todo add text input
+            verbList.addItem("rotation angle to"); //todo add text input
+            verbList.addItem("scale picture to fit to"); //todo add text input
+            verbList.addItem("scaling to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "ListPicker":
+          if (selected.toLowerCase().equals("call")) {
+            verbList.addItem("open"); //todo add text input
+          } else {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("elements to"); //todo add text input
+            verbList.addItem("elements from string to"); //todo add text input
+            verbList.addItem("enabled to"); //todo add text input
+            verbList.addItem("font bold to"); //todo add text input
+            verbList.addItem("font italic to"); //todo add text input
+            verbList.addItem("font size to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("image to"); //todo add text input
+            verbList.addItem("item background color to"); //todo add text input
+            verbList.addItem("item text color to"); //todo add text input
+            verbList.addItem("selection to"); //todo add text input
+            verbList.addItem("selection index to"); //todo add text input
+            verbList.addItem("show feedback to"); //todo add text input
+            verbList.addItem("show filter bar to"); //todo add text input
+            verbList.addItem("text to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("title to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "ListView":
+          if (selected.toLowerCase().equals("set")) {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("elements to"); //todo add text input
+            verbList.addItem("elements from string to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("selection to"); //todo add text input
+            verbList.addItem("selection color to"); //todo add text input
+            verbList.addItem("selection index to"); //todo add text input
+            verbList.addItem("show filter bar to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("text size to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "PasswordTextBox":
+          if (selected.toLowerCase().equals("set")) {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("enabled to"); //todo add text input
+            verbList.addItem("font size to"); //todo add text input
+            verbList.addItem("heigth to"); //todo add text input
+            verbList.addItem("heigth percent to"); //todo add text input
+            verbList.addItem("hint to"); //todo add text input
+            verbList.addItem("password visible to"); //todo add text input
+            verbList.addItem("text to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "Slider":
+          if (selected.toLowerCase().equals("set")) {
+            verbList.addItem("color left to"); //todo add text input
+            verbList.addItem("color right to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("max value to"); //todo add text input
+            verbList.addItem("min value to"); //todo add text input
+            verbList.addItem("thumb enabled to"); //todo add text input
+            verbList.addItem("thumb position to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "Spinner":
+          if (selected.toLowerCase().equals("call")) {
+            verbList.addItem("display dropdown"); //todo add text input
+          } else {
+            verbList.addItem("elements to"); //todo add text input
+            verbList.addItem("elements from string to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("prompt to"); //todo add text input
+            verbList.addItem("selection to"); //todo add text input
+            verbList.addItem("selection index to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "Switch":
+          if (selected.toLowerCase().equals("set")) {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("enabled to"); //todo add text input
+            verbList.addItem("font size to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("on to"); //todo add text input
+            verbList.addItem("text to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("thumb color active to"); //todo add text input
+            verbList.addItem("thumb color inactive to"); //todo add text input
+            verbList.addItem("track color active to"); //todo add text input
+            verbList.addItem("track color inactive to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "TextBox":
+          if (selected.toLowerCase().equals("call")) {
+            verbList.addItem("hide keyboard"); //todo add text input
+            verbList.addItem("request focus"); //todo add text input
+          } else {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("enabled to"); //todo add text input
+            verbList.addItem("font size to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("hint to"); //todo add text input
+            verbList.addItem("multiline to"); //todo add text input
+            verbList.addItem("numbers only to"); //todo add text input
+            verbList.addItem("read only to"); //todo add text input
+            verbList.addItem("text to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        case "TimePicker":
+          if (selected.toLowerCase().equals("call")) {
+            verbList.addItem("launch picker"); //todo add text input
+            verbList.addItem("set time to display (hour/minute)"); //todo add text input
+            verbList.addItem("set time to display from instant"); //todo add text input
+          } else {
+            verbList.addItem("background color to"); //todo add text input
+            verbList.addItem("enabled to"); //todo add text input
+            verbList.addItem("font bold to"); //todo add text input
+            verbList.addItem("font italic to"); //todo add text input
+            verbList.addItem("font size to"); //todo add text input
+            verbList.addItem("height to"); //todo add text input
+            verbList.addItem("height percent to"); //todo add text input
+            verbList.addItem("image to"); //todo add text input
+            verbList.addItem("show feedback to"); //todo add text input
+            verbList.addItem("text to"); //todo add text input
+            verbList.addItem("text color to"); //todo add text input
+            verbList.addItem("visible to"); //todo add text input
+            verbList.addItem("width to"); //todo add text input
+            verbList.addItem("width percent to"); //todo add text input
+          }
+          break;
+        //TODO add notifier?
+        default:
+          Window.alert("NotHandledCase: " + compType);
+      }
+    }
+  }
+
+  //feduss
+  private void ListBoxThenVerbFieldClicked(String verbSelected, TextBox inputBox) {
+    if(verbSelected.equals("")){
+      inputBox.setVisible(false);
+    }
+    else{
+      inputBox.setVisible(true);
+    }
   }
 
   //feduss
@@ -333,12 +1649,12 @@ public class SourceStructureExplorer extends Composite {
       if(treeRoot.condition() != null){
         //Condition: if
         //Ex.: label1
-        String ConditionSubj = treeRoot.condition().statement().STRING().getText();
+        String ConditionSubj = treeRoot.condition().condition_statement().STRING().getText();
         ConditionSubj = ConditionSubj.substring(0,1).toUpperCase().concat(ConditionSubj.substring(1));
 
         //Ex.: is hidden
-        String ConditionVerbAction = treeRoot.condition().statement().VERB().getText() + " "
-                + treeRoot.condition().statement().ACTION().getText();
+        String ConditionVerbAction = treeRoot.condition().condition_statement().VERB().getText() + " "
+                + treeRoot.condition().condition_statement().ACTION().getText();
         temp = new JSONObject();
         temp.put("condSubj", new JSONString(ConditionSubj));
         temp.put("condVerbAct", new JSONString(ConditionVerbAction));
@@ -351,11 +1667,20 @@ public class SourceStructureExplorer extends Composite {
       //Actions
       temp = new JSONObject();
 
+      //ActionType
+      String ActionType = null;
+      if(treeRoot.action().action_body().action_statement() != null){
+        ActionType = treeRoot.action().action_body().action_statement().TYPE().getText();
+      }
+      else{
+        ActionType = "NoType";
+      }
+
       //ActionSubj
       //Ex.: label2
       String ActionSubj = null, ActionObj = null;
-      if(treeRoot.action().action_body().statement() != null){
-        ActionSubj = treeRoot.action().action_body().statement().STRING().getText();
+      if(treeRoot.action().action_body().action_statement() != null){
+        ActionSubj = treeRoot.action().action_body().action_statement().STRING().get(0).getText();
       }
       else if(treeRoot.action().action_body().open_page() != null){
         ActionObj = treeRoot.action().action_body().open_page().STRING().getText();
@@ -374,9 +1699,9 @@ public class SourceStructureExplorer extends Composite {
       //ActionVerb
       //Ex.: is shown
       String ActionVerb = null;
-      if(treeRoot.action().action_body().statement() != null){
-        ActionVerb = treeRoot.action().action_body().statement().VERB().getText() + " "
-                + treeRoot.action().action_body().statement().ACTION().getText();
+      if(treeRoot.action().action_body().action_statement() != null){
+        ActionVerb = treeRoot.action().action_body().action_statement().VERB().getText() + " "
+                + treeRoot.action().action_body().action_statement().STRING().get(1).getText();
       }
       else if(treeRoot.action().action_body().open_page() != null){
         ActionVerb = treeRoot.action().action_body().open_page().ACTION_PAGE().getText();
@@ -384,6 +1709,7 @@ public class SourceStructureExplorer extends Composite {
 
 
       JSONObject temp2 = new JSONObject();
+      temp2.put("actionType", new JSONString(ActionType));
       temp2.put("actionSubj", new JSONString(ActionSubj));
       temp2.put("actionVerb", new JSONString(ActionVerb));
       temp2.put("actionObj", new JSONString(ActionObj));
@@ -391,19 +1717,21 @@ public class SourceStructureExplorer extends Composite {
       temp.put("action" + 0, temp2);
       //Other_Actions
       for(int i = 0; i < treeRoot.anotherAction().size(); i++){
-        if(treeRoot.anotherAction(i).action_body().statement() != null){
-          ActionSubj = treeRoot.anotherAction(i).action_body().statement().STRING().getText();
+        if(treeRoot.anotherAction(i).action_body().action_statement() != null){
+          ActionType = treeRoot.anotherAction(i).action_body().action_statement().TYPE().getText();
+          ActionSubj = treeRoot.anotherAction(i).action_body().action_statement().STRING().get(0).getText();
           ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
           ActionObj = "NoObj";
         }
         else if(treeRoot.anotherAction(i).action_body().open_page() != null){
+          ActionType = "NoType";
           ActionSubj = "NoSubj";
           ActionObj = treeRoot.anotherAction(i).action_body().open_page().STRING().getText();
         }
 
-        if(treeRoot.anotherAction(i).action_body().statement() != null){
-          ActionVerb = ActionVerb = treeRoot.anotherAction(i).action_body().statement().VERB().getText() + " "
-                  + treeRoot.anotherAction(i).action_body().statement().ACTION().getText();
+        if(treeRoot.anotherAction(i).action_body().action_statement() != null){
+          ActionVerb = treeRoot.anotherAction(i).action_body().action_statement().VERB().getText() + " "
+                  + treeRoot.anotherAction(i).action_body().action_statement().STRING().get(1).getText();
         }
         else if(treeRoot.anotherAction(i).action_body().open_page() != null){
           ActionVerb = treeRoot.anotherAction(i).action_body().open_page().ACTION_PAGE().getText();
@@ -411,6 +1739,7 @@ public class SourceStructureExplorer extends Composite {
 
 
         temp2 = new JSONObject();
+        temp2.put("actionType", new JSONString(ActionType));
         temp2.put("actionSubj", new JSONString(ActionSubj));
         temp2.put("actionVerb", new JSONString(ActionVerb));
         temp2.put("actionObj", new JSONString(ActionObj));
@@ -422,6 +1751,20 @@ public class SourceStructureExplorer extends Composite {
       json.put("actions", temp);
     }
     return json;
+  }
+
+  //feduss: if the type of the block has a block like "when viewname etc etc" (ex.: when button1 is clicked)
+  public static boolean HasWhenBlock(String compType) {
+    boolean cond = false;
+    switch (compType) {
+      case "Button": case "DatePicker": case "Image": case "ListPicker": case "ListView": case "TextBox":
+      case "PasswordTextBox": case "Slider": case "Spinner": case "Switch": case "TimePicker" : cond = true; break;
+      case "Label" : cond = false; break;
+      //TODO add notifier?
+      default : cond = false;
+    };
+
+    return cond;
   }
 
   private void deleteItemFromTree() {

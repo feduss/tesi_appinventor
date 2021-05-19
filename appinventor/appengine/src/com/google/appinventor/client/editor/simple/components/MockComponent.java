@@ -81,7 +81,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 /**
  * Abstract superclass for all components in the visual designer.
  *

@@ -8,9 +8,11 @@ package com.google.appinventor.client;
 
 import com.google.appinventor.client.editor.FileEditor;
 import com.google.appinventor.client.editor.ProjectEditor;
+import com.google.appinventor.client.editor.simple.components.MockComponent;
 import com.google.appinventor.client.editor.youngandroid.BlocklyPanel;
 import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
 
+import com.google.appinventor.client.explorer.SourceStructureExplorer;
 import com.google.appinventor.client.explorer.commands.AddFormCommand;
 import com.google.appinventor.client.explorer.commands.ChainableCommand;
 import com.google.appinventor.client.explorer.commands.DeleteFileCommand;
@@ -37,15 +39,14 @@ import com.google.gwt.core.client.Scheduler;
 
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.*;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
+
+//feduss
+import com.google.appinventor.client.boxes.BlockSelectorBox;
 
 /**
  * The design toolbar houses command buttons in the Young Android Design
@@ -86,12 +87,24 @@ public class DesignToolbar extends Toolbar {
     public String currentScreen; // name of currently displayed screen
     private long projectId;
 
+    //feduss
+    private SourceStructureExplorer sourceStructureExplorer;
+    //////
+
     public DesignProject(String name, long projectId) {
       this.name = name;
       this.projectId = projectId;
       screens = Maps.newHashMap();
       // Screen1 is initial screen by default
       currentScreen = YoungAndroidSourceNode.SCREEN1_FORM_NAME;
+
+      //feduss
+      sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
+      sourceStructureExplorer.screenName = currentScreen;
+      //feduss, update lists adding new empty array for the item screen will have
+      sourceStructureExplorer.userViewsList.put(name, new ArrayList<MockComponent>());
+      //Window.alert("screename DesignToolbar sourceStructureExplorer screen: " + sourceStructureExplorer.screenName);
+
       // Let BlocklyPanel know which screen to send Yail for
       BlocklyPanel.setCurrentForm(projectId + "_" + currentScreen);
     }
@@ -100,6 +113,7 @@ public class DesignToolbar extends Toolbar {
     public boolean addScreen(String name, FileEditor formEditor, FileEditor blocksEditor) {
       if (!screens.containsKey(name)) {
         screens.put(name, new Screen(name, formEditor, blocksEditor));
+
         return true;
       } else {
         return false;
@@ -108,10 +122,79 @@ public class DesignToolbar extends Toolbar {
 
     public void removeScreen(String name) {
       screens.remove(name);
+
+      //feduss, update lists removing screen related items
+      sourceStructureExplorer.userViewsList.remove(name);
     }
 
     public void setCurrentScreen(String name) {
       currentScreen = name;
+
+      //feduss
+      sourceStructureExplorer.screenName = currentScreen;
+      //Window.alert("SetCurrentScreen: " + sourceStructureExplorer.screenName);
+      int size = sourceStructureExplorer.rulesListBoxes.get(currentScreen) == null ? 0 : sourceStructureExplorer.rulesListBoxes.get(currentScreen).size();
+
+      for(int i = 0; i < size; i++){
+        ListBox whenSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getWhenSubj();
+        ListBox ifSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getConditions().get(0).getIfSubj();
+        ListBox thenSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getActions().get(0).getThenSubj();
+        //feduss, update lists with the item of new page
+        //Window.alert("Removing " + sourceStructureExplorer.whenSubjListBox.getItemCount() + " item from whenSubjListBox");
+        while(whenSubjListBox.getItemCount() > 0){
+          whenSubjListBox.removeItem(0);
+        }
+
+        while(ifSubjListBox.getItemCount() > 0){
+          ifSubjListBox.removeItem(0);
+        }
+
+        while(thenSubjListBox.getItemCount() > 0){
+          thenSubjListBox.removeItem(0);
+        }
+      }
+
+
+
+      //Window.alert("whenSubjListBox size after remove: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
+
+      if(sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName) == null){
+        sourceStructureExplorer.userViewsList.put(sourceStructureExplorer.screenName, new ArrayList<MockComponent>());
+      }
+      if(sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName).size() == 0){
+        //Window.alert("Size 0");
+      }
+      else{
+        for(int i = 0; i < size; i++){
+          ListBox whenSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getWhenSubj();
+          ListBox whenVerbListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getWhenVerb();
+          ListBox ifSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getConditions().get(0).getIfSubj();
+          ListBox ifVerbListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getConditions().get(0).getIfVerb();
+          ListBox thenSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getActions().get(0).getThenSubj();
+          ListBox thenVerbListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getActions().get(0).getThenVerb();
+          //feduss, update lists with the item of new page
+          //Window.alert("Removing " + sourceStructureExplorer.whenSubjListBox.getItemCount() + " item from whenSubjListBox");
+          //Window.alert("Size " + sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName).size());
+          //whenSubjListBox.addItem("");
+          //ifSubjListBox.addItem("");
+          //thenSubjListBox.addItem("");
+
+          //whenVerbListBox.addItem("");
+          //ifVerbListBox.addItem("");
+          //thenVerbListBox.addItem("");
+
+          for(MockComponent item : sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName)){
+            if(SourceStructureExplorer.HasWhenBlock(item.getType())){
+              whenSubjListBox.addItem(item.getPropertyValue("Name"));
+            }
+            ifSubjListBox.addItem(item.getPropertyValue("Name"));
+            thenSubjListBox.addItem(item.getPropertyValue("Name"));
+          }
+          }
+      }
+
+      //Window.alert("whenSubjListBox size after add: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
+
     }
 
     public long getProjectId() {

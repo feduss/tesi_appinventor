@@ -16,9 +16,7 @@ THROW: 'throw';
 
 ARTICLE: 'the'|'a';
 
-//TYPE: 'button'|'label'|'input';
-
-VERB : 'is';
+VERB : 'is'|'visible to';
 
 COLON: ',';
 
@@ -29,6 +27,8 @@ OPEN: '(';
 CLOSE: ')';
 
 ACTION : 'hidden'|'make visible'|'disabled'|'shown'|'clicked'|'visible';
+
+TYPE: 'set'|'call';
 
 ACTION_PAGE : 'open';
 

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gwt.user.client.Window;
 /**
  * Abstract superclass for all container mock components.
  *
@@ -128,7 +129,6 @@ public abstract class MockContainer extends MockVisibleComponent implements Drop
    */
   public final void addVisibleComponent(MockComponent component, int beforeVisibleIndex) {
     List<MockComponent> visibleChildren = getShowingVisibleChildren();
-
     int beforeActualIndex;
     if ((beforeVisibleIndex == -1) || (beforeVisibleIndex >= visibleChildren.size())) {
       // Insert after last visible component

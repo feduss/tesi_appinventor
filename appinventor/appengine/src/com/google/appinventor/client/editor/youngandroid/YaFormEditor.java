@@ -69,13 +69,7 @@ import com.google.gwt.user.client.impl.WindowImpl;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.ListBox;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 //feduss
 import com.google.appinventor.client.boxes.BlockSelectorBox;
@@ -125,6 +119,9 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
   // References to other panels that we need to control.
   private final SourceStructureExplorer sourceStructureExplorer;
 
+  //feduss
+  private final SourceStructureExplorer sourceStructureExplorerAnt;
+
   // Panels that are used as the content of the palette and properties boxes.
   private final YoungAndroidPalettePanel palettePanel;
   private final PropertiesPanel designProperties;
@@ -155,9 +152,6 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
 
   private EditableProperties selectedProperties = null;
 
-  //feduss
-  public ArrayList<String> userViewsList = new ArrayList<>();
-
   /**
    * Creates a new YaFormEditor.
    *
@@ -173,6 +167,9 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
     // Get reference to the source structure explorer
     sourceStructureExplorer =
         SourceStructureBox.getSourceStructureBox().getSourceStructureExplorer();
+
+    //feduss
+    sourceStructureExplorerAnt = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
 
     // Create UI elements for the designer panels.
     nonVisibleComponentsPanel = new SimpleNonVisibleComponentsPanel();
@@ -376,12 +373,49 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
         onFormStructureChange();
         //feduss
         String view = component.getPropertyValue(PROPERTY_NAME_NAME);
-        SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
-        if(sourceStructureExplorer.userViewsList.size() > 0 && sourceStructureExplorer.userViewsList.contains(view)) {
-          Window.alert("removed!");
-          int index = sourceStructureExplorer.userViewsList.indexOf(view);
-          sourceStructureExplorer.whenSubjListBox.removeItem(index);
-          sourceStructureExplorer.userViewsList.remove(index);
+
+        if(sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).size() > 0) {
+          //Window.alert("removed!");
+          sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).remove(component);
+        }
+
+        boolean exit = false;
+        int i = 0;
+        //Remove item from whenSubj
+        while(!exit || i < sourceStructureExplorerAnt.whenSubjListBoxGeneric.getItemCount()){
+          if(sourceStructureExplorerAnt.whenSubjListBoxGeneric.getValue(i).equals(view)){
+            sourceStructureExplorerAnt.whenSubjListBoxGeneric.removeItem(i);
+            exit = true;
+          }
+          else{
+            i++;
+          }
+        }
+
+        exit = false;
+        i = 0;
+        //Remove item from ifSubj
+        while(!exit || i < sourceStructureExplorerAnt.ifSubjListBoxGeneric.getItemCount()){
+          if(sourceStructureExplorerAnt.ifSubjListBoxGeneric.getValue(i).equals(view)){
+            sourceStructureExplorerAnt.ifSubjListBoxGeneric.removeItem(i);
+            exit = true;
+          }
+          else{
+            i++;
+          }
+        }
+
+        exit = false;
+        i = 0;
+        //Remove item from thenSubj
+        while(!exit || i < sourceStructureExplorerAnt.thenSubjListBoxGeneric.getItemCount()){
+          if(sourceStructureExplorerAnt.thenSubjListBoxGeneric.getValue(i).equals(view)){
+            sourceStructureExplorerAnt.thenSubjListBoxGeneric.removeItem(i);
+            exit = true;
+          }
+          else{
+            i++;
+          }
         }
       }
     } else {
@@ -397,11 +431,17 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
 
       //feduss
       String view = component.getPropertyValue(PROPERTY_NAME_NAME);
-      SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
-      if(sourceStructureExplorer.userViewsList.size() == 0 || !sourceStructureExplorer.userViewsList.contains(view)) {
-        Window.alert("added!");
-        sourceStructureExplorer.whenSubjListBox.addItem(view);
-        sourceStructureExplorer.userViewsList.add(view);
+
+      if(sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).size() == 0 ||
+              !sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).contains(component)) {
+        //Window.alert("added!");
+        //"When" listbox can contain only view with "when" action...label hasn't, for ex.
+        if(SourceStructureExplorer.HasWhenBlock(component.getType())) {
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem(view);
+        }
+        sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem(view);
+        sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem(view);
+        sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).add(component);
       }
     } else {
       OdeLog.elog("onComponentAdded called when loadComplete is false");
@@ -415,16 +455,55 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
       updatePropertiesPanel(form.getSelectedComponents(), true);
 
       //feduss
-      String view = component.getPropertyValue(PROPERTY_NAME_NAME);
-      SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
-      if(sourceStructureExplorer.userViewsList.size() > 0 && sourceStructureExplorer.userViewsList.contains(view)) {
+      String view = oldName; //component.getPropertyValue(PROPERTY_NAME_NAME);
+      
+      if(sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).size() > 0 &&
+              sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).contains(component)) {
         Window.alert("renamed!");
-        int index = sourceStructureExplorer.userViewsList.indexOf(view);
-        sourceStructureExplorer.whenSubjListBox.removeItem(index);
-        sourceStructureExplorer.userViewsList.remove(index);
+        sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).remove(component);
+        sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).add(component);
+      }
 
-        sourceStructureExplorer.whenSubjListBox.addItem(view);
-        sourceStructureExplorer.userViewsList.add(view);
+      boolean exit = false;
+      int i = 0;
+      //Remove item from whenSubj
+      while(!exit || i < sourceStructureExplorerAnt.whenSubjListBoxGeneric.getItemCount()){
+        if(sourceStructureExplorerAnt.whenSubjListBoxGeneric.getValue(i).equals(view)){
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.removeItem(i);
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem(view);
+          exit = true;
+        }
+        else{
+          i++;
+        }
+      }
+
+      exit = false;
+      i = 0;
+      //Remove item from whenSubj
+      while(!exit || i < sourceStructureExplorerAnt.ifSubjListBoxGeneric.getItemCount()){
+        if(sourceStructureExplorerAnt.ifSubjListBoxGeneric.getValue(i).equals(view)){
+          sourceStructureExplorerAnt.ifSubjListBoxGeneric.removeItem(i);
+          sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem(view);
+          exit = true;
+        }
+        else{
+          i++;
+        }
+      }
+
+      exit = false;
+      i = 0;
+      //Remove item from whenSubj
+      while(!exit || i < sourceStructureExplorerAnt.thenSubjListBoxGeneric.getItemCount()){
+        if(sourceStructureExplorerAnt.thenSubjListBoxGeneric.getValue(i).equals(view)){
+          sourceStructureExplorerAnt.thenSubjListBoxGeneric.removeItem(i);
+          sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem(view);
+          exit = true;
+        }
+        else{
+          i++;
+        }
       }
     } else {
       OdeLog.elog("onComponentRenamed called when loadComplete is false");
@@ -698,14 +777,6 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
         properties.remove(MockComponent.PROPERTY_NAME_UUID);
       }
 
-      //feduss, add views added by users to antlr list
-      String view = componentName;//mockComponent.getPropertyValue(PROPERTY_NAME_NAME);
-      Window.alert("view: " + view);
-      SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
-      if(sourceStructureExplorer.userViewsList.size() == 0 || !sourceStructureExplorer.userViewsList.contains(view)) {
-        sourceStructureExplorer.whenSubjListBox.addItem(view);
-        sourceStructureExplorer.userViewsList.add(view);
-      }
       // Add the component to its parent component (and if it is non-visible, add it to the
       // nonVisibleComponent panel).
       parent.addComponent(mockComponent);
@@ -756,6 +827,47 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
     if (properties.containsKey("$Components")) {
       for (JSONValue nestedComponent : properties.get("$Components").asArray().getElements()) {
         createMockComponent(nestedComponent.asObject(), (MockContainer) mockComponent, substitution);
+      }
+    }
+
+    //feduss, add views added by users to antlr list
+    String view = componentName;//mockComponent.getPropertyValue(PROPERTY_NAME_NAME);
+    String screenName = sourceStructureExplorerAnt.screenName;
+    //Window.alert("screenName YaFormEditor screen: " + screenName + ", view: " + view);
+    //Form is the type of the screens
+    if(!componentType.equals("Form")){
+      //Window.alert("screen: " + screenName + ", " +  view + " restored1! Type: " + componentType);
+      if(sourceStructureExplorerAnt.userViewsList.get(screenName) == null){
+        //Window.alert("list is null...creating...");
+        sourceStructureExplorerAnt.userViewsList.put(screenName, new ArrayList<MockComponent>());
+        sourceStructureExplorerAnt.userViewsList.get(screenName).add(mockComponent);
+        if(SourceStructureExplorer.HasWhenBlock(componentType)){
+          //sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem("");
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem(view);
+        }
+
+        //sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem("");
+        sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem(view);
+
+        //sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem("");
+        sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem(view);
+
+        //sourceStructureExplorer.whenVerbListBoxGeneric.addItem("");
+        //sourceStructureExplorer.ifVerbListBoxGeneric.addItem("");
+        //sourceStructureExplorer.thenVerbListBoxGeneric.addItem("");
+        //Window.alert("screen: " + screenName + ", " +  view + " restored1! Type: " + componentType);
+      }
+      else if(!sourceStructureExplorerAnt.userViewsList.get(screenName).contains(mockComponent)){
+        //Window.alert("In if...size: " + sourceStructureExplorer.userViewsList.get(screenName));
+        if(SourceStructureExplorer.HasWhenBlock(componentType)) {
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem(view);
+        }
+        sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem(view);
+
+        sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem(view);
+        //Window.alert("restore if");
+        sourceStructureExplorerAnt.userViewsList.get(screenName).add(mockComponent);
+        //Window.alert(view + " restored2! Type: " + componentType);
       }
     }
 

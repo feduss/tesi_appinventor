@@ -302,6 +302,8 @@ public final class YaBlocksEditor extends FileEditor
     Ode.getInstance().getWorkColumns().insert(Ode.getInstance().getStructureAndAssets(), 3);
     Ode.getInstance().getStructureAndAssets().insert(BlockSelectorBox.getBlockSelectorBox(), 0);
     BlockSelectorBox.getBlockSelectorBox().setVisible(false);
+
+
     AssetListBox.getAssetListBox().setVisible(true);
 
     // Clear and hide the blocks selector tree

@@ -574,49 +574,64 @@ function connectBlocks(blockToBeConn, baseBlock, type) {
 }
 
 //feduss
-function getActionBlock(actionSubj, actionVerb, actionObj){
+function getActionBlock(actionType, actionSubj, actionVerb, actionObj){
   var actionBlock = null;
   var index = -1;
-  switch(actionVerb){
-    case "is hidden":
-      if(actionSubj.toLowerCase().includes("label")){
-        index = 15;
-      }
-      else if(actionSubj.toLowerCase().includes("button")){
-        index = 28;
-      }
-      var isHiddenBlock = createBlock.call(this, actionSubj, index); // "set actionSubj visibility to" block
-      var falseBlock = createBlock.call(this, "Logic", 1); // "false" block
-      connectBlocks.call(this, falseBlock, isHiddenBlock, "set");
-      actionBlock = isHiddenBlock;
-      break;
-    case "is visible":
-    case "is shown":
-      if(actionSubj.toLowerCase().includes("label")){
-        index = 15;
-      }
-      else if(actionSubj.toLowerCase().includes("button")){
-        index = 28;
-      }
-      var isHiddenBlock = createBlock.call(this, actionSubj, index); // "set actionSubj visibility to" block
-      var trueBlock = createBlock.call(this, "Logic", 0); // "true" block
-      connectBlocks.call(this, trueBlock, isHiddenBlock, "set");
-      actionBlock = isHiddenBlock;
-      break;
-    case "open":
-      alert("ACTION case open")
-      var openScreenBlock = createBlock.call(this, "Control", 9); //open another screen screename block
-      var screenNameBlock = createBlock.call(this, "Text", 0); //it's an empty text block
-      //screenNameBlock.comment = actionObj;
-      for (var i = 0, input; input = screenNameBlock.inputList[i]; i++) {
-        for (var j = 0, field; field = input.fieldRow[j]; j++) {
-          if(field.name == "TEXT") {
-            field.setText(actionObj);
+  //TODO edit with new set/call
+  if(true){
+    alert("Test: " + actionType + " " + actionVerb);
+    var temp = actionType + " " + actionVerb;
+    switch (temp){
+      case "set visible to true":
+        index = 14;
+        var visibleToBlock = createBlock.call(this, actionSubj, index); // "set actionSubj visibility to" block
+        var trueBlock = createBlock.call(this, "Logic", 0); // "true" block
+        connectBlocks.call(this, trueBlock, visibleToBlock, "set");
+        actionBlock = visibleToBlock;
+    }
+  }
+  else{
+    switch(actionVerb){
+      case "is hidden":
+        if(actionSubj.toLowerCase().includes("label")){
+          index = 15;
+        }
+        else if(actionSubj.toLowerCase().includes("button")){
+          index = 28;
+        }
+        var isHiddenBlock = createBlock.call(this, actionSubj, index); // "set actionSubj visibility to" block
+        var falseBlock = createBlock.call(this, "Logic", 1); // "false" block
+        connectBlocks.call(this, falseBlock, isHiddenBlock, "set");
+        actionBlock = isHiddenBlock;
+        break;
+      case "is visible":
+      case "is shown":
+        if(actionSubj.toLowerCase().includes("label")){
+          index = 15;
+        }
+        else if(actionSubj.toLowerCase().includes("button")){
+          index = 28;
+        }
+        var isHiddenBlock = createBlock.call(this, actionSubj, index); // "set actionSubj visibility to" block
+        var trueBlock = createBlock.call(this, "Logic", 0); // "true" block
+        connectBlocks.call(this, trueBlock, isHiddenBlock, "set");
+        actionBlock = isHiddenBlock;
+        break;
+      case "open":
+        alert("ACTION case open")
+        var openScreenBlock = createBlock.call(this, "Control", 9); //open another screen screename block
+        var screenNameBlock = createBlock.call(this, "Text", 0); //it's an empty text block
+        //screenNameBlock.comment = actionObj;
+        for (var i = 0, input; input = screenNameBlock.inputList[i]; i++) {
+          for (var j = 0, field; field = input.fieldRow[j]; j++) {
+            if(field.name == "TEXT") {
+              field.setText(actionObj);
+            }
           }
         }
-      }
-      connectBlocks.call(this, screenNameBlock, openScreenBlock, "open");
-      actionBlock = openScreenBlock;
+        connectBlocks.call(this, screenNameBlock, openScreenBlock, "open");
+        actionBlock = openScreenBlock;
+    }
   }
 
   return actionBlock;
@@ -695,10 +710,11 @@ function insertBlockRecursive(rule1) {
       //alert("MAIN ACTION")
       /*** ACTION ***/
           //test con una sola azione, senza ulteriori eventi triggherati
+      var actionType = rule1.actions.action0.actionType;
       var actionSubj = rule1.actions.action0.actionSubj;
       var actionVerb = rule1.actions.action0.actionVerb;
       var actionObj = rule1.actions.action0.actionObj;
-      var actionBlock = getActionBlock.call(this, actionSubj, actionVerb, actionObj);
+      var actionBlock = getActionBlock.call(this, actionType, actionSubj, actionVerb, actionObj);
 
       var innerBlockRule = rule1.actions.action0.innerRule;
       if (innerBlockRule != "") {
@@ -752,7 +768,7 @@ function insertBlockRecursive(rule1) {
 Blockly.Drawer.prototype.insertBlock = function (rule){
   //when button1 is clicked then label1 is hidden
 
-  //alert("rule: \n" + rule)
+  alert("rule: \n" + rule)
   var rule1 = JSON.parse(rule);
   var index = -1; //index is the number of block of flyout of that drawerName
 

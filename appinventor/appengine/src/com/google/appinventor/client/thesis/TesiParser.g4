@@ -2,21 +2,28 @@ parser grammar TesiParser;
 
 options {tokenVocab=TesiLexer;}
 
-block: event condition? action anotherAction*;
+block: event condition? action another_action*;
 
-event: WHEN STRING VERB ACTION;
+event: WHEN subj subj_type ACTION_WHEN_OBJ;
 
-condition : IF condition_statement;// (AND condition)*;
+condition : IF condition_statement (another_condition)*;
 
-action_body: action_statement (THROW OPEN block CLOSE)? | open_page;
+another_condition: ((AND|OR) condition_statement);
+
+action_body: action_statement (THROW OPEN_BRACKET block CLOSE_BRACKET)?;
 
 action: THEN action_body;
 
-anotherAction: AND action_body;
+another_action: AND action_body;
 
-condition_statement: STRING VERB ACTION;
+condition_statement: subj subj_type (NOT)? VERB ACTION_IF_OBJ | subj subj_type (NOT)? ACTION_IF_OBJ VERB value?;
 
-action_statement: TYPE STRING VERB STRING;
+action_statement: (SET subj subj_type ACTION_SET_OBJ value)|(CALL subj subj_type ACTION_CALL_OBJ value)
+                  |(OPEN ACTION_OPEN_OBJ value); //TYPE: set, ACTION_OBJ: background color to, value.STRING: blue (for ex.)
 
-open_page: ACTION_PAGE STRING;
+value: STRING;
+
+subj: STRING;
+
+subj_type: STRING;
 

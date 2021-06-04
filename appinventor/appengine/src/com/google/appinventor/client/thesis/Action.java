@@ -11,6 +11,7 @@ public class Action {
     private ListBox thenVerb;
     private TextBox thenTextBox;
     private Button deleteButton;
+    private String viewClickedType = "";
 
     public Action(int index, ListBox thenType, ListBox thenSubj, ListBox thenVerb, TextBox thenTextBox, Button deleteButton){
         this.setIndex(index);
@@ -67,5 +68,13 @@ public class Action {
 
     public void setDeleteButton(Button deleteButton) {
         this.deleteButton = deleteButton;
+    }
+
+    public String getViewClickedType() {
+        return viewClickedType;
+    }
+
+    public void setViewClickedType(String viewClickedType) {
+        this.viewClickedType = viewClickedType;
     }
 }

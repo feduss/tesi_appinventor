@@ -38,6 +38,16 @@ public interface TesiParserListener extends ParseTreeListener {
 	 */
 	void exitCondition(TesiParser.ConditionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link TesiParser#another_condition}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnother_condition(TesiParser.Another_conditionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link TesiParser#another_condition}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnother_condition(TesiParser.Another_conditionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link TesiParser#action_body}.
 	 * @param ctx the parse tree
 	 */
@@ -58,15 +68,15 @@ public interface TesiParserListener extends ParseTreeListener {
 	 */
 	void exitAction(TesiParser.ActionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link TesiParser#anotherAction}.
+	 * Enter a parse tree produced by {@link TesiParser#another_action}.
 	 * @param ctx the parse tree
 	 */
-	void enterAnotherAction(TesiParser.AnotherActionContext ctx);
+	void enterAnother_action(TesiParser.Another_actionContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link TesiParser#anotherAction}.
+	 * Exit a parse tree produced by {@link TesiParser#another_action}.
 	 * @param ctx the parse tree
 	 */
-	void exitAnotherAction(TesiParser.AnotherActionContext ctx);
+	void exitAnother_action(TesiParser.Another_actionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link TesiParser#condition_statement}.
 	 * @param ctx the parse tree
@@ -88,13 +98,33 @@ public interface TesiParserListener extends ParseTreeListener {
 	 */
 	void exitAction_statement(TesiParser.Action_statementContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link TesiParser#open_page}.
+	 * Enter a parse tree produced by {@link TesiParser#value}.
 	 * @param ctx the parse tree
 	 */
-	void enterOpen_page(TesiParser.Open_pageContext ctx);
+	void enterValue(TesiParser.ValueContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link TesiParser#open_page}.
+	 * Exit a parse tree produced by {@link TesiParser#value}.
 	 * @param ctx the parse tree
 	 */
-	void exitOpen_page(TesiParser.Open_pageContext ctx);
+	void exitValue(TesiParser.ValueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link TesiParser#subj}.
+	 * @param ctx the parse tree
+	 */
+	void enterSubj(TesiParser.SubjContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link TesiParser#subj}.
+	 * @param ctx the parse tree
+	 */
+	void exitSubj(TesiParser.SubjContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link TesiParser#subj_type}.
+	 * @param ctx the parse tree
+	 */
+	void enterSubj_type(TesiParser.Subj_typeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link TesiParser#subj_type}.
+	 * @param ctx the parse tree
+	 */
+	void exitSubj_type(TesiParser.Subj_typeContext ctx);
 }

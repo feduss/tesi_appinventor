@@ -305,6 +305,7 @@ function onMouseMove(block, supportBlock, secondCoords, type){
   var localConnection = null;
   var radiusConnection = Blockly.SNAP_RADIUS;
   switch(type){
+    case "left":
     case "open":
     case "if":
     case "ifcond":
@@ -345,8 +346,12 @@ function onMouseMove(block, supportBlock, secondCoords, type){
       closestConnection = supportBlock.inputList[1].connection;
       break;
     case "innerBlock":
+    case "nextCondition":
     case "nextAction":
       closestConnection = supportBlock.nextConnection;
+      break;
+    case "right":
+      closestConnection = supportBlock.inputList[1].connection;
       break;
   }
 
@@ -640,14 +645,31 @@ function getActionBlock(actionType, actionSubj, actionVerb, actionObj){
 function insertBlockRecursive(rule1) {
   //test statico
   if(rule1.event != null){
-    var whenSubject = rule1.event.whenSubj; //when whenSubject whenAction do
-    var condSubj = rule1.condition != null ?
-        rule1.condition.condSubj : //if condSubj
-        null;
 
-    var list = []//[whenSubject, condSubj, actionSubj];
+    var list = []//[whenSubject, cond0Subj, action0Subj, ecc];
+    var whenSubject = rule1.event.whenSubj; //when whenSubject whenAction do
     list.push(whenSubject)
-    list.push(condSubj)
+
+    for(var i = 0; i < rule1.conditionNumber; i++){
+      var condSubj = rule1.conditions["condition" + i] != null ?
+          rule1.conditions["condition" + i].condSubj : //if condSubj
+          null;
+      if(condSubj != null){
+        list.push(condSubj);
+      }
+    }
+
+    for (var i = 0; i < rule1.actionNumber; i++) {
+      //alert("OTHER ACTIONS " + t);
+      var actionSubj = rule1.actions["action" + i] != null ?
+          rule1.actions["action" + i].actionSubj :
+          null;
+      if (actionSubj != null && actionSubj !== "NoSubj") {
+        list.push(actionSubj);
+      }
+    }
+
+    i = 0;
 
 
     //Verifico che i subjects (es. Button1, Label1, ecc) esistano o meno, prima di creare i blocchi
@@ -656,14 +678,66 @@ function insertBlockRecursive(rule1) {
     if(errors == 0) {
       //alert("EVENT")
       /*** EVENT ***/
+      var whenSubjType = rule1.event.whenSubjType;
+      whenSubjType = whenSubjType.substring(0,1).toUpperCase() + whenSubjType.substring(1, whenSubjType.length);
       var whenAction = rule1.event.whenVerbAct;
+      var index = -1;
       switch (whenAction) {
-        case "is clicked":
-          //Il primo elemento della lista del whenSubject
-          // (Esempio: quando, nella palette, clicchi su button1 (whenSubject), si apre una lista (il flyout)...il primo elemento è isClicked (whenAction)
-          var whenBlock = createBlock.call(this, whenSubject, 0);
-          break;
+        case 'after date':
+          switch (whenSubjType){
+            case "DatePicker": index = 0; break;
+          }; break;
+        case 'after picking':
+          switch (whenSubjType){
+            case "ListView": index = 0; break;
+          };  break;
+        case 'after selecting':
+          switch (whenSubjType){
+            case "Spinner": index = 0; break;
+          };  break;
+        case 'after time set': switch (whenSubjType){
+            case "TimePicker": index = 0; break;
+          };  break;
+        case  'click': switch (whenSubjType){
+            case "Image": index = 0; break;
+          };  break;
+        case 'changed': switch (whenSubjType){
+            case "Switch": index = 0; break;
+          };  break;
+        case 'got focus': switch (whenSubjType){
+            case "Button": index = 1; break;
+            case "DatePicker": index = 1; break;
+            case "Switch": index = 1; break;
+            case "PasswordTextBox": index = 0; break;
+            case "TextBox": index = 1; break;
+          };  break;
+        case 'is clicked': switch (whenSubjType){
+            case "Button": index = 0; break;
+          };  break;
+        case 'long click': switch (whenSubjType){
+            case "Button": index = 2; break;
+          };  break;
+        case 'lost focus': switch (whenSubjType){
+            case "DatePicker": index = 0; break;
+          };  break;
+        case 'position changed': switch (whenSubjType){
+            case "Slider": index = 0; break;
+          };  break;
+        case 'touch down': switch (whenSubjType){
+          case "DatePicker": index = 3; break;
+          case "TimePicker": index = 3; break;
+          case "ListPicker": index = 0; break;
+          };  break;
+        case 'touch up': switch (whenSubjType){
+            case "DatePicker": index = 4; break;
+            case "TimePicker": index = 4; break;
+            case "ListPicker": index = 1; break;
+          };  break;
       }
+      alert("Post Event switch...whenSubjType: " + whenSubjType + "...whenAction: " + whenAction + "...index: " + index)
+      //Il primo elemento della lista del whenSubject
+      // (Esempio: quando, nella palette, clicchi su button1 (whenSubject), si apre una lista (il flyout)...il primo elemento è isClicked (whenAction)
+      var whenBlock = createBlock.call(this, whenSubject, index);
 
       /******/
       //alert("CONDITION")
@@ -672,60 +746,1679 @@ function insertBlockRecursive(rule1) {
       var mainCondBlock = null;
 
       //If "IF" condition is not null
-      if (rule1.condition != null) {
+      var firstIfBlock = null;
+      if (rule1.conditionNumber > 0) {
         mainCondBlock = createBlock.call(this, "Control", 0); //"if-then" block...primo elemento della lista quando si clicca su "Control" nella palette
 
-        var condVerbAct = rule1.condition.condVerbAct;
-        var index = -1;
-        switch (condVerbAct) {
-          case "is hidden":
-            if(condSubj.toLowerCase().includes("label")){
-              index = 14; //label visibility
-            }
-            else if(condSubj.toLowerCase().includes("button")){
-              index = 28; //button visibility
-            }
-            var condBlock = createBlock.call(this, condSubj, index); //"label is visible" block
+        var prevIfBlock = null, prevANDORBlock = null;
+        alert("rule1.conditionNumber: " + rule1.conditionNumber);
+        alert("rule1.conditions: " + rule1.conditions);
+        alert("rule1.condition0: " + rule1.conditions["condition0"]);
+        for (var f = 0; f < rule1.conditionNumber; f++) {
+          alert("Condition: " + f);
+          var condSubj = rule1.conditions["condition" + f] != null ?
+              rule1.conditions["condition" + f].condSubj : //if condSubj
+              null;
+          var condSubjType = rule1.conditions["condition" + f].condSubjType;
+          condSubjType = condSubjType.substring(0, 1).toUpperCase() + condSubjType.substring(1);
+          var condVerbAct = rule1.conditions["condition" + f].condVerbAct;
+          var condNOT = rule1.conditions["condition" + f].condNOT;
+          var condANDOR = rule1.conditions["condition" + f].condANDOR;
+          var condValue = rule1.conditions["condition" + f].condValue;
+          var index = -1;
+
+          alert("Pre switch");
+
+          switch (condVerbAct) {
+            case 'background color':
+              switch (condSubjType) {
+                case "Label":
+                  index = 0;
+                  break;
+                case "Button":
+                  index = 6;
+                  break;
+                case "DatePicker":
+                  index = 8;
+                  break;
+                case "ListPicker":
+                  index = 3;
+                  break;
+                case "ListView":
+                  index = 1;
+                  break;
+                case "PasswordTextBox":
+                  index = 3;
+                  break;
+                case "Switch":
+                  index = 3;
+                  break;
+                case "TextBox":
+                  index = 4;
+                  break;
+                case "TimePicker":
+                  index = 8;
+                  break;
+              }
+              ;
+              break;
+            case 'clickable':
+              switch (condSubjType) {
+                case "Image":
+                  index = 2;
+                  break;
+              }
+              ;
+              break;
+            case'color left':
+              switch (condSubjType) {
+                case "Slider":
+                  index = 3;
+                  break;
+              }
+              ;
+              break;
+            case'color right':
+              switch (condSubjType) {
+                case "Slider":
+                  index = 5;
+                  break;
+              }
+              ;
+              break;
+            case'day':
+              switch (condSubjType) {
+                case "DatePicker":
+                  index = 10;
+                  break;
+              }
+              ;
+              break;
+            case 'enabled':
+              switch (condSubjType) {
+                case "Button":
+                  index = 8;
+                  break;
+                case "DatePicker":
+                  index = 11;
+                  break;
+                case "ListPicker":
+                  index = 10;
+                  break;
+                case "PasswordTextBox":
+                  index = 7;
+                  break;
+                case "Switch":
+                  index = 7;
+                  break;
+                case "Textbox":
+                  index = 8;
+                  break;
+                case "TimePicker":
+                  index = 12;
+                  break;
+              }
+              ;
+              break;
+            case'elements':
+              switch (condSubjType) {
+                case "ListPicker":
+                  index = 7;
+                  break;
+                case "ListView":
+                  index = 5;
+                  break;
+                case "Spinner":
+                  index = 4;
+                  break;
+              }
+              ;
+              break;
+            case'font bold':
+              switch (condSubjType) {
+                case "Button":
+                  index = 10;
+                  break;
+                case "DatePicker":
+                  index = 13;
+                  break;
+                case "ListPicker":
+                  index = 12;
+                  break;
+                case "TimePicker":
+                  index = 14;
+                  break;
+              }
+              ;
+              break;
+            case'font italic':
+              switch (condSubjType) {
+                case "Button":
+                  index = 12;
+                  break;
+                case "DatePicker":
+                  index = 15;
+                  break;
+                case "ListPicker":
+                  index = 14;
+                  break;
+                case "TimePicker":
+                  index = 16;
+                  break;
+              }
+              ;
+              break;
+            case'font size':
+              switch (condSubjType) {
+                case "Button":
+                  index = 14;
+                  break;
+                case "Label":
+                  index = 2;
+                  break;
+                case "PasswordTextBox":
+                  index = 7;
+                  break;
+                case "DatePicker":
+                  index = 17;
+                  break;
+                case "ListPicker":
+                  index = 14;
+                  break;
+                case "Switch":
+                  index = 9;
+                  break;
+                case "Textbox":
+                  index = 10;
+                  break;
+                case "TimePicker":
+                  index = 18;
+                  break;
+              }
+              ;
+              break;
+            case 'html content':
+              switch (condSubjType) {
+                case "Label":
+                  index = 4;
+                  break;
+              }
+              ;
+              break;
+            case'has margins':
+              switch (condSubjType) {
+                case "Label":
+                  index = 5;
+                  break;
+              }
+              ;
+              break;
+            case'height':
+              switch (condSubjType) {
+                case "Label":
+                  index = 7;
+                  break;
+                case "Button":
+                  index = 16;
+                  break;
+                case "DatePicker":
+                  index = 19;
+                  break;
+                case "Image":
+                  index = 4;
+                  break;
+                case "ListPicker":
+                  index = 16;
+                  break;
+                case "ListView":
+                  index = 6;
+                  break;
+                case "PasswordTextBox":
+                  index = 9;
+                  break;
+                case "Spinner":
+                  index = 5;
+                  break;
+                case "Switch":
+                  index = 11;
+                  break;
+                case "Textbox":
+                  index = 12;
+                  break;
+                case "TimePicker":
+                  index = 20;
+                  break;
+              }
+              ;
+              break;
+            case'hint':
+              switch (condSubjType) {
+                case "PasswordTextBox":
+                  index = 12;
+                  break;
+                case "Textbox":
+                  index = 13;
+                  break;
+              }
+              ;
+              break;
+            case'hour':
+              switch (condSubjType) {
+                case "TimePicker":
+                  index = 23;
+                  break;
+              }
+              ;
+              break;
+            case 'image':
+              switch (condSubjType) {
+                case "Button":
+                  index = 19;
+                  break;
+                case "DatePicker":
+                  index = 22;
+                  break;
+                case "ListPicker":
+                  index = 19;
+                  break;
+                case "TimePicker":
+                  index = 22;
+                  break;
+              }
+              ;
+              break;
+            case'instant':
+              switch (condSubjType) {
+                case "DatePicker":
+                  index = 24;
+                  break;
+                case "TimePicker":
+                  index = 26;
+                  break;
+              }
+              ;
+              break;
+            case'item background color':
+              switch (condSubjType) {
+                case "ListPicker":
+                  index = 21;
+                  break;
+              }
+              ;
+              break;
+            case'item text color':
+              switch (condSubjType) {
+                case "ListPicker":
+                  index = 23;
+                  break;
+              }
+              ;
+              break;
+            case 'month':
+              switch (condSubjType) {
+                case "DatePicker":
+                  index = 25;
+                  break;
+              }
+              ;
+              break;
+            case'month in text':
+              switch (condSubjType) {
+                case "DatePicker":
+                  index = 26;
+                  break;
+              }
+              ;
+              break;
+            case'max value':
+              switch (condSubjType) {
+                case "Slider":
+                  index = 6;
+                  break;
+              }
+              ;
+              break;
+            case'min value':
+              switch (condSubjType) {
+                case "Slider":
+                  index = 8;
+                  break;
+              }
+              ;
+              break;
+            case'multi line':
+              switch (condSubjType) {
+                case "Textbox":
+                  index = 15;
+                  break;
+              }
+              ;
+              break;
+            case'minute':
+              switch (condSubjType) {
+                case "TimePicker":
+                  index = 27;
+                  break;
+              }
+              ;
+              break;
+            case 'numbers only':
+              switch (condSubjType) {
+                case "Textbox":
+                  index = 17;
+                  break;
+              }
+              ;
+              break;
+            case 'on':
+              switch (condSubjType) {
+                case "Switch":
+                  index = 12;
+                  break;
+              }
+              ;
+              break;
+            case 'picture':
+              switch (condSubjType) {
+                case "Image":
+                  index = 7;
+                  break;
+              }
+              ;
+              break;
+            case'password visible':
+              switch (condSubjType) {
+                case "PasswordTextBox":
+                  index = 14;
+                  break;
+              }
+              ;
+              break;
+            case'prompt':
+              switch (condSubjType) {
+                case "Spinner":
+                  index = 8;
+                  break;
+              }
+              ;
+              break;
+            case 'rotation angle':
+              switch (condSubjType) {
+                case "Image":
+                  index = 9;
+                  break;
+              }
+              ;
+              break;
+            case'read only':
+              switch (condSubjType) {
+                case "Textbox":
+                  index = 19;
+                  break;
+              }
+              ;
+              break;
+            case 'show feedback':
+              switch (condSubjType) {
+                case "Button":
+                  index = 21;
+                  break;
+                case "DatePicker":
+                  index = 27;
+                  break;
+                case "ListPicker":
+                  index = 29;
+                  break;
+                case "TimePicker":
+                  index = 26;
+                  break;
+              }
+              ;
+              break;
+            case'scaling':
+              switch (condSubjType) {
+                case "Image":
+                  index = 12;
+                  break;
+              }
+              ;
+              break;
+            case'selection':
+              switch (condSubjType) {
+                case "ListPicker":
+                  index = 25;
+                  break;
+                case "ListView":
+                  index = 9;
+                  break;
+                case "Spinner":
+                  index = 10;
+                  break;
+              }
+              ;
+              break;
+            case'selection color':
+              switch (condSubjType) {
+                case "ListView":
+                  index = 11;
+                  break;
+              }
+              ;
+              break;
+            case'selection index':
+              switch (condSubjType) {
+                case "ListPicker":
+                  index = 27;
+                  break;
+                case "ListView":
+                  index = 13;
+                  break;
+                case "Spinner":
+                  index = 12;
+                  break;
+              }
+              ;
+              break;
+            case'show filter bar':
+              switch (condSubjType) {
+                case "ListPicker":
+                  index = 31;
+                  break;
+                case "ListView":
+                  index = 15;
+                  break;
+              }
+              ;
+              break;
+            case 'text':
+              switch (condSubjType) {
+                case "Label":
+                  index = 10;
+                  break;
+                case "Button":
+                  index = 23;
+                  break;
+                case "DatePicker":
+                  index = 29;
+                  break;
+                case "ListPicker":
+                  index = 33;
+                  break;
+                case "PasswordTextBox":
+                  index = 16;
+                  break;
+                case "Switch":
+                  index = 14;
+                  break;
+                case "TimePicker":
+                  index = 28;
+                  break;
+              }
+              ;
+              break;
+            case'text color':
+              switch (condSubjType) {
+                case "Label":
+                  index = 12;
+                  break;
+                case "Button":
+                  index = 25;
+                  break;
+                case "DatePicker":
+                  index = 31;
+                  break;
+                case "ListPicker":
+                  index = 37;
+                  break;
+                case "ListView":
+                  index = 19;
+                  break;
+                case "PasswordTextBox":
+                  index = 20;
+                  break;
+                case "Switch":
+                  index = 16;
+                  break;
+                case "TimePicker":
+                  index = 30;
+                  break;
+              }
+              ;
+              break;
+            case'text size':
+              switch (condSubjType) {
+                case "ListView":
+                  index = 21;
+                  break;
+              }
+              ;
+              break;
+            case'title':
+              switch (condSubjType) {
+                case "ListPicker":
+                  index = 39;
+                  break;
+              }
+              ;
+              break;
+            case'thumb enabled':
+              switch (condSubjType) {
+                case "Slider":
+                  index = 12;
+                  break;
+              }
+              ;
+              break;
+            case'thumb position':
+              switch (condSubjType) {
+                case "Slider":
+                  index = 14;
+                  break;
+              }
+              ;
+              break;
+            case 'thumb color active':
+              switch (condSubjType) {
+                case "Switch":
+                  index = 20;
+                  break;
+              }
+              ;
+              break;
+            case'thumb color inactive':
+              switch (condSubjType) {
+                case "Switch":
+                  index = 22;
+                  break;
+              }
+              ;
+              break;
+            case'track color active':
+              switch (condSubjType) {
+                case "Switch":
+                  index = 24;
+                  break;
+              }
+              ;
+              break;
+            case'track color inactive':
+              switch (condSubjType) {
+                case "Switch":
+                  index = 26;
+                  break;
+              }
+              ;
+              break;
+            case 'visible':
+              switch (condSubjType) {
+                case "Label":
+                  index = 14;
+                  break;
+                case "Button":
+                  index = 27;
+                  break;
+                case "DatePicker":
+                  index = 33;
+                  break;
+                case "Image":
+                  index = 14;
+                  break;
+                case "ListPicker":
+                  index = 41;
+                  break;
+                case "ListView":
+                  index = 23;
+                  break;
+                case "PasswordTextBox":
+                  index = 20;
+                  break;
+                case "Slider":
+                  index = 15;
+                  break;
+                case "Spinner":
+                  index = 15;
+                  break;
+                case "Switch":
+                  index = 26;
+                  break;
+                case "Textbox":
+                  index = 25;
+                  break;
+                case "TimePicker":
+                  index = 34;
+                  break;
+              }
+              ;
+              break;
+            case 'width':
+              switch (condSubjType) {
+                case "Label":
+                  index = 16;
+                  break;
+                case "Button":
+                  index = 29;
+                  break;
+                case "DatePicker":
+                  index = 35;
+                  break;
+                case "Image":
+                  index = 16;
+                  break;
+                case "ListPicker":
+                  index = 42;
+                  break;
+                case "ListView":
+                  index = 23;
+                  break;
+                case "PasswordTextBox":
+                  index = 22;
+                  break;
+                case "Slider":
+                  index = 16;
+                  break;
+                case "Spinner":
+                  index = 16;
+                  break;
+                case "Switch":
+                  index = 28;
+                  break;
+                case "Textbox":
+                  index = 27;
+                  break;
+                case "TimePicker":
+                  index = 36;
+                  break;
+              }
+              ;
+              break;
+            case 'year':
+              switch (condSubjType) {
+                case "DatePicker":
+                  index = 38;
+                  break;
+                  ;
+                  break;
+              }
+              ;
+
+          }
+
+          alert("Post Condition" + f + " switch...condVerbAct: " + condVerbAct + "...condSubjType: " + condSubjType + "...index: " + index)
+
+          var condBlock = createBlock.call(this, condSubj, index);
+
+          if (f == 0) {
+            firstIfBlock = condBlock;
+          }
+
+          //Attach NOT block To ConditionBlock
+          if (condNOT != null && condNOT.toLowerCase().includes("not")) {
             var notBlock = createBlock.call(this, "Logic", 2); // "not" block
+            connectBlocks.call(this, condBlock, notBlock, "notcond"); //connect not block to condblock
 
-            connectBlocks.call(this, condBlock, notBlock, "notcond");
-            connectBlocks.call(this, notBlock, mainCondBlock, "ifcond");
-            break;
-          case "is visible":
-          case "is shown":
-            if(condSubj.toLowerCase().contains("label")){
-              index = 14;
+            if(condValue != "NoValue"){
+              var equalBlock = createBlock.call(this, "Logic", 3); // == block
+              var valueBlock = createBlock.call(this, "Text", 0);
+              for (var k = 0, input; input = actionValueBlock.inputList[k]; k++) {
+                for (var j = 0, field; field = input.fieldRow[j]; j++) {
+                  if(field.name == "TEXT") {
+                    field.setText(condValue);
+                  }
+                }
+              }
+              connectBlocks.call(this, notBlock, equalBlock, "right");
+              connectBlocks.call(this, valueBlock, equalBlock, "left");
+              notBlock = equalBlock;
             }
-            else if(condSubj.toLowerCase().contains("button")){
-              index = 28;
+
+            //If is the first condition, assign the cond block to var first if block
+            if (f == 0) {
+              firstIfBlock = notBlock;
+            //If it's not the first condblock:
+            } else {
+              var ANDORBlock  = null;
+              //Creation of ANDOR block
+              if(condANDOR == "AND"){
+                ANDORBlock  = createBlock.call(this, "Logic", 4); //AND block
+              }
+              else{
+                ANDORBlock  = createBlock.call(this, "Logic", 5); //OR block
+              }
+
+              //if if the first ANDOR block, connect the firstifblock to the left, and the new ifblock to the right
+              if(f == 1){
+                connectBlocks.call(this, firstIfBlock, ANDORBlock, "left");
+                connectBlocks.call(this, notBlock, ANDORBlock, "right");
+                firstIfBlock = ANDORBlock;
+              }
+              //if it's not the first ANDOR block, connect it to the prev ANDOR block and the new cond block to the new ANDOR block
+              else if (f < (rule1.conditionNumber - 2)){
+                connectBlocks.call(this, notBlock, ANDORBlock, "left");
+                connectBlocks.call(this, ANDORBlock, prevANDORBlock, "right");
+              }
+              //if it's the last condblock/andorblock, connect it to the prev ANDOR block and the first ANDBlock to the if
+              else{
+                connectBlocks.call(this, notBlock, ANDORBlock, "left");
+                connectBlocks.call(this, ANDORBlock, prevANDORBlock, "right");
+                connectBlocks.call(this, firstIfBlock, mainCondBlock, "ifcond");
+              }
+              prevANDORBlock = ANDORBlock;
             }
-            var condBlock = createBlock.call(this, condSubj, index); //"label is visible" block
-            connectBlocks.call(this, condBlock, mainCondBlock, "ifcond");
-            break;
+          }
+          else {
+            if(condValue != "NoValue"){
+              var equalBlock = createBlock.call(this, "Logic", 3); // == block
+              var valueBlock = createBlock.call(this, "Text", 0);
+              for (var k = 0, input; input = actionValueBlock.inputList[k]; k++) {
+                for (var j = 0, field; field = input.fieldRow[j]; j++) {
+                  if(field.name == "TEXT") {
+                    field.setText(condValue);
+                  }
+                }
+              }
+              connectBlocks.call(this, condBlock, equalBlock, "right");
+              connectBlocks.call(this, valueBlock, equalBlock, "left");
+              condBlock = equalBlock;
+            }
+            //If is the first condition, assign the cond block to var first if block
+            if (f == 0) {
+              firstIfBlock = condBlock;
+              //If it's not the first condblock:
+            } else {
+              var ANDORBlock  = null;
+              //Creation of ANDOR block
+              if(condANDOR == "AND"){
+                ANDORBlock  = createBlock.call(this, "Logic", 4); //AND block
+              }
+              else{
+                ANDORBlock  = createBlock.call(this, "Logic", 5); //OR block
+              }
+
+              //if if the first ANDOR block, connect the firstifblock to the left, and the new ifblock to the right
+              if(f == 1){
+                connectBlocks.call(this, firstIfBlock, ANDORBlock, "left");
+                connectBlocks.call(this, condBlock, ANDORBlock, "right");
+                firstIfBlock = ANDORBlock;
+              }
+              //if it's not the first ANDOR block, connect it to the prev ANDOR block and the new cond block to the new ANDOR block
+              else if (f < (rule1.conditionNumber - 2)){
+                connectBlocks.call(this, condBlock, ANDORBlock, "left");
+                connectBlocks.call(this, ANDORBlock, prevANDORBlock, "right");
+              }
+              //if it's the last condblock/andorblock, connect it to the prev ANDOR block and the first ANDBlock to the if
+              else{
+                connectBlocks.call(this, condBlock, ANDORBlock, "left");
+                connectBlocks.call(this, ANDORBlock, prevANDORBlock, "right");
+                connectBlocks.call(this, firstIfBlock, mainCondBlock, "ifcond");
+              }
+              prevANDORBlock = ANDORBlock;
+            }
+          }
+
         }
-
       }
 
       /******/
       //alert("MAIN ACTION")
       /*** ACTION ***/
-          //test con una sola azione, senza ulteriori eventi triggherati
-      var actionType = rule1.actions.action0.actionType;
-      var actionSubj = rule1.actions.action0.actionSubj;
-      var actionVerb = rule1.actions.action0.actionVerb;
-      var actionObj = rule1.actions.action0.actionObj;
-      var actionBlock = getActionBlock.call(this, actionType, actionSubj, actionVerb, actionObj);
 
-      var innerBlockRule = rule1.actions.action0.innerRule;
+      var firstActionBlock = null, prevActionBlock = null;
+      //alert("rule1.actionNumber: " + rule1.actionNumber);
+      for (var m = 0; m < rule1.actionNumber; m++) {
+        //alert("ACTIONS " + m);
+        var actionSubj = rule1.actions["action" + m] != null ?
+            rule1.actions["action" + m].actionSubj :
+            null;
+        var actionType = rule1.actions["action" + m].actionType;
+        var actionSubj = rule1.actions["action" + m].actionSubj;
+        var actionVerb = rule1.actions["action" + m].actionVerb;
+        var actionObj = rule1.actions["action" + m].actionObj;
+        var actionSubjType = rule1.actions["action" + m].actionSubjType;
+        var actionValue = rule1.actions["action" + m].actionValue;
+        actionSubjType = actionSubjType.substring(0,1).toUpperCase() + actionSubjType.substring(1, actionSubjType.length);
+
+        //alert("actionType: " + actionType + "\nactionValue: " + actionValue + "\nm: " + m);
+        if(actionType.toLowerCase().includes("open")){
+          var actionBlock = createBlock.call(this, "Control", 9);
+        }
+        else{
+          var formattedVerb = actionVerb.replace("set ", "").replace("call ", "").replace(" to", "");
+          switch (formattedVerb) {
+            case 'background color':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 1;
+                  break;
+                case "Button":
+                  index = 9;
+                  break;
+                case "DatePicker":
+                  index = 11;
+                  break;
+                case "ListPicker":
+                  index = 36
+                  break;
+                case "ListView":
+                  index = 2;
+                  break;
+                case "PasswordTextBox":
+                  index = 4;
+                  break;
+                case "Switch":
+                  index = 6;
+                  break;
+                case "TextBox":
+                  index = 7;
+                  break;
+                case "TimePicker":
+                  index = 11;
+                  break;
+              }
+              ;
+              break;
+            case 'animation':
+              switch (actionSubjType){
+                case "Image":
+                  index = 1;
+                  break;
+              };
+              break;
+            case 'clickable':
+              switch (actionSubjType) {
+                case "Image":
+                  index = 3;
+                  break;
+              }
+              ;
+              break;
+            case'color left':
+              switch (actionSubjType) {
+                case "Slider":
+                  index = 4;
+                  break;
+              }
+              ;
+              break;
+            case'color right':
+              switch (actionSubjType) {
+                case "Slider":
+                  index = 6;
+                  break;
+              }
+              ;
+              break;
+            case'date to display':
+              switch (actionSubjType) {
+                case "DatePicker":
+                  index = 8;
+                  break;
+              }
+              ;
+              break;
+            case'date to display from instance':
+              switch (actionSubjType) {
+                case "DatePicker":
+                  index = 9;
+                  break;
+              }
+              ;
+              break;
+            case'launch picker':
+              switch (actionSubjType) {
+                case "DatePicker":
+                  index = 7;
+                  break;
+                case "TimePicker":
+                  index = 7;
+                  break;
+              }
+              ;
+              break;
+            case'open':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 2;
+                  break;
+              }
+              ;
+              break;
+            case'request focus':
+              switch (actionSubjType) {
+                case "PasswordTextBox":
+                  index = 2;
+                  break;
+                case "TextBox":
+                  index = 3;
+                  break;
+              }
+              ;
+              break;
+            case'display dropdown':
+              switch (actionSubjType) {
+                case "Spinner":
+                  index = 1;
+                  break;
+              }
+              ;
+              break;
+            case'hide keyboard':
+              switch (actionSubjType) {
+                case "TextBox":
+                  index = 2;
+                  break;
+              }
+              ;
+              break;
+            case'time to display':
+              switch (actionSubjType) {
+                case "TimePicker":
+                  index = 8;
+                  break;
+              }
+              ;
+              break;
+            case'time to display from instance':
+              switch (actionSubjType) {
+                case "TimePicker":
+                  index = 9;
+                  break;
+              }
+              ;
+              break;
+            case 'enabled':
+              switch (actionSubjType) {
+                case "Button":
+                  index = 11;
+                  break;
+                case "DatePicker":
+                  index = 12;
+                  break;
+                case "ListPicker":
+                  index = 11;
+                  break;
+                case "PasswordTextBox":
+                  index = 6;
+                  break;
+                case "Switch":
+                  index = 8;
+                  break;
+                case "Textbox":
+                  index = 9;
+                  break;
+                case "TimePicker":
+                  index = 13;
+                  break;
+              }
+              ;
+              break;
+            case'elements':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 8;
+                  break;
+                case "ListView":
+                  index = 6;
+                  break;
+                case "Spinner":
+                  index = 5;
+                  break;
+              }
+              ;
+              break;
+            case'elements from string':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 9;
+                  break;
+                case "ListView":
+                  index = 7;
+                  break;
+                case "Spinner":
+                  index = 6;
+                  break;
+              }
+              ;
+              break;
+            case'font bold':
+              switch (actionSubjType) {
+                case "Button":
+                  index = 11;
+                  break;
+                case "DatePicker":
+                  index = 14;
+                  break;
+                case "ListPicker":
+                  index = 11;
+                  break;
+                case "TimePicker":
+                  index = 15;
+                  break;
+              }
+              ;
+              break;
+            case'font italic':
+              switch (actionSubjType) {
+                case "Button":
+                  index = 13;
+                  break;
+                case "DatePicker":
+                  index = 16;
+                  break;
+                case "ListPicker":
+                  index = 13;
+                  break;
+                case "TimePicker":
+                  index = 17;
+                  break;
+              }
+              ;
+              break;
+            case'font size':
+              switch (actionSubjType) {
+                case "Button":
+                  index = 15;
+                  break;
+                case "Label":
+                  index = 3;
+                  break;
+                case "PasswordTextBox":
+                  index = 8;
+                  break;
+                case "DatePicker":
+                  index = 18;
+                  break;
+                case "ListPicker":
+                  index = 15;
+                  break;
+                case "Switch":
+                  index = 10;
+                  break;
+                case "Textbox":
+                  index = 11;
+                  break;
+                case "TimePicker":
+                  index = 19;
+                  break;
+              }
+              ;
+              break;
+            case'has margins':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 6;
+                  break;
+              }
+              ;
+              break;
+            case'height':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 8;
+                  break;
+                case "Button":
+                  index = 17;
+                  break;
+                case "DatePicker":
+                  index = 20;
+                  break;
+                case "Image":
+                  index = 5;
+                  break;
+                case "ListPicker":
+                  index = 17;
+                  break;
+                case "ListView":
+                  index = 7;
+                  break;
+                case "PasswordTextBox":
+                  index = 10;
+                  break;
+                case "Spinner":
+                  index = 6;
+                  break;
+                case "Switch":
+                  index = 12;
+                  break;
+                case "Textbox":
+                  index = 13;
+                  break;
+                case "TimePicker":
+                  index = 21;
+                  break;
+              }
+              ;
+              break;
+            case'height percent':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 9;
+                  break;
+                case "Button":
+                  index = 18;
+                  break;
+                case "DatePicker":
+                  index = 21;
+                  break;
+                case "Image":
+                  index = 6;
+                  break;
+                case "ListPicker":
+                  index = 18;
+                  break;
+                case "ListView":
+                  index = 8;
+                  break;
+                case "PasswordTextBox":
+                  index = 11;
+                  break;
+                case "Spinner":
+                  index = 7;
+                  break;
+                case "Switch":
+                  index = 13;
+                  break;
+                case "Textbox":
+                  index = 14;
+                  break;
+                case "TimePicker":
+                  index = 22;
+                  break;
+                case 'Slider':
+                  index = 5;
+              }
+              ;
+              break;
+            case'hint':
+              switch (actionSubjType) {
+                case "PasswordTextBox":
+                  index = 13;
+                  break;
+                case "Textbox":
+                  index = 14;
+                  break;
+              }
+              ;
+              break;
+            case 'image':
+              switch (actionSubjType) {
+                case "Button":
+                  index = 20;
+                  break;
+                case "DatePicker":
+                  index = 23;
+                  break;
+                case "ListPicker":
+                  index = 20;
+                  break;
+                case "TimePicker":
+                  index = 23;
+                  break;
+              }
+              ;
+              break;
+            case'item background color':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 22;
+                  break;
+              }
+              ;
+              break;
+            case'item text color':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 24;
+                  break;
+              }
+              ;
+              break;
+            case 'max value':
+              switch (actionSubjType) {
+                case "Slider":
+                  index = 7;
+                  break;
+              }
+              ;
+              break;
+            case 'min value':
+              switch (actionSubjType) {
+                case "Slider":
+                  index = 9;
+                  break;
+              }
+              ;
+              break;
+            case 'multi line':
+              switch (actionSubjType) {
+                case "Textbox":
+                  index = 16;
+                  break;
+              }
+              ;
+              break;
+            case 'numbers only':
+              switch (actionSubjType) {
+                case "Textbox":
+                  index = 18;
+                  break;
+              }
+              ;
+              break;
+            case 'on':
+              switch (actionSubjType) {
+                case "Switch":
+                  index = 13;
+                  break;
+              }
+              ;
+              break;
+            case 'picture':
+              switch (actionSubjType) {
+                case "Image":
+                  index = 8;
+                  break;
+              }
+              ;
+              break;
+            case 'password visible':
+              switch (actionSubjType) {
+                case "PasswordTextBox":
+                  index = 15;
+                  break;
+              }
+              ;
+              break;
+            case 'prompt':
+              switch (actionSubjType) {
+                case "Spinner":
+                  index = 9;
+                  break;
+              }
+              ;
+              break;
+            case 'rotation angle':
+              switch (actionSubjType) {
+                case "Image":
+                  index = 10;
+                  break;
+              }
+              ;
+              break;
+            case 'read only':
+              switch (actionSubjType) {
+                case "Textbox":
+                  index = 20;
+                  break;
+              }
+              ;
+              break;
+            case 'show feedback':
+              switch (actionSubjType) {
+                case "Button":
+                  index = 22;
+                  break;
+                case "DatePicker":
+                  index = 28;
+                  break;
+                case "ListPicker":
+                  index = 30;
+                  break;
+                case "TimePicker":
+                  index = 27;
+                  break;
+              }
+              ;
+              break;
+            case'scaling':
+              switch (actionSubjType) {
+                case "Image":
+                  index = 13;
+                  break;
+              }
+              ;
+              break;
+            case'selection':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 26;
+                  break;
+                case "ListView":
+                  index = 10;
+                  break;
+                case "Spinner":
+                  index = 11;
+                  break;
+              }
+              ;
+              break;
+            case 'selection color':
+              switch (actionSubjType) {
+                case "ListView":
+                  index = 12;
+                  break;
+              }
+              ;
+              break;
+            case 'selection index':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 28;
+                  break;
+                case "ListView":
+                  index = 14;
+                  break;
+                case "Spinner":
+                  index = 13;
+                  break;
+              }
+              ;
+              break;
+            case 'show filter bar':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 32;
+                  break;
+                case "ListView":
+                  index = 16;
+                  break;
+              }
+              ;
+              break;
+            case 'text':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 11;
+                  break;
+                case "Button":
+                  index = 24;
+                  break;
+                case "DatePicker":
+                  index = 30;
+                  break;
+                case "ListPicker":
+                  index = 34;
+                  break;
+                case "PasswordTextBox":
+                  index = 17;
+                  break;
+                case "Switch":
+                  index = 15;
+                  break;
+                case "TimePicker":
+                  index = 29;
+                  break;
+              }
+              ;
+              break;
+            case'text color':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 13;
+                  break;
+                case "Button":
+                  index = 26;
+                  break;
+                case "DatePicker":
+                  index = 32;
+                  break;
+                case "ListPicker":
+                  index = 36;
+                  break;
+                case "ListView":
+                  index = 18;
+                  break;
+                case "PasswordTextBox":
+                  index = 19;
+                  break;
+                case "Switch":
+                  index = 17;
+                  break;
+                case "TimePicker":
+                  index = 31;
+                  break;
+              }
+              ;
+              break;
+            case'text size':
+              switch (actionSubjType) {
+                case "ListView":
+                  index = 22;
+                  break;
+              }
+              ;
+              break;
+            case'title':
+              switch (actionSubjType) {
+                case "ListPicker":
+                  index = 40;
+                  break;
+              }
+              ;
+              break;
+            case'thumb enabled':
+              switch (actionSubjType) {
+                case "Slider":
+                  index = 13;
+                  break;
+              }
+              ;
+              break;
+            case'thumb position':
+              switch (actionSubjType) {
+                case "Slider":
+                  index = 15;
+                  break;
+              }
+              ;
+              break;
+            case 'thumb color active':
+              switch (actionSubjType) {
+                case "Switch":
+                  index = 21;
+                  break;
+              }
+              ;
+              break;
+            case'thumb color inactive':
+              switch (actionSubjType) {
+                case "Switch":
+                  index = 23;
+                  break;
+              }
+              ;
+              break;
+            case'track color active':
+              switch (actionSubjType) {
+                case "Switch":
+                  index = 25;
+                  break;
+              }
+              ;
+              break;
+            case'track color inactive':
+              switch (actionSubjType) {
+                case "Switch":
+                  index = 27;
+                  break;
+              }
+              ;
+              break;
+            case 'visible':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 15;
+                  break;
+                case "Button":
+                  index = 28;
+                  break;
+                case "DatePicker":
+                  index = 34;
+                  break;
+                case "Image":
+                  index = 15;
+                  break;
+                case "ListPicker":
+                  index = 39;
+                  break;
+                case "ListView":
+                  index = 21;
+                  break;
+                case "PasswordTextBox":
+                  index = 22;
+                  break;
+                case "Slider":
+                  index = 14;
+                  break;
+                case "Spinner":
+                  index = 14;
+                  break;
+                case "Switch":
+                  index = 28;
+                  break;
+                case "Textbox":
+                  index = 26;
+                  break;
+                case "TimePicker":
+                  index = 32;
+                  break;
+              }
+              ;
+              break;
+            case 'width':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 17;
+                  break;
+                case "Button":
+                  index = 29;
+                  break;
+                case "DatePicker":
+                  index = 36;
+                  break;
+                case "Image":
+                  index = 17;
+                  break;
+                case "ListPicker":
+                  index = 41;
+                  break;
+                case "ListView":
+                  index = 24;
+                  break;
+                case "PasswordTextBox":
+                  index = 23;
+                  break;
+                case "Slider":
+                  index = 17;
+                  break;
+                case "Spinner":
+                  index = 17;
+                  break;
+                case "Switch":
+                  index = 29;
+                  break;
+                case "Textbox":
+                  index = 28;
+                  break;
+                case "TimePicker":
+                  index = 35;
+                  break;
+              }
+              ;
+              break;
+            case 'width percent':
+              switch (actionSubjType) {
+                case "Label":
+                  index = 18;
+                  break;
+                case "Button":
+                  index = 31;
+                  break;
+                case "DatePicker":
+                  index = 37;
+                  break;
+                case "Image":
+                  index = 18;
+                  break;
+                case "ListPicker":
+                  index = 43;
+                  break;
+                case "ListView":
+                  index = 25;
+                  break;
+                case "PasswordTextBox":
+                  index = 24;
+                  break;
+                case "Slider":
+                  index = 18;
+                  break;
+                case "Spinner":
+                  index = 18;
+                  break;
+                case "Switch":
+                  index = 30;
+                  break;
+                case "Textbox":
+                  index = 29;
+                  break;
+                case "TimePicker":
+                  index = 36;
+                  break;
+              }
+              ;
+              break;
+          };
+
+          var actionBlock = createBlock.call(this, actionSubj, index);
+        }
+        //alert("ok action block\nm: " + m)
+        var actionValueBlock = null;
+        switch (actionValue){
+          case "true": actionValueBlock = createBlock.call(this, "Logic", 0); break;
+          case "false": actionValueBlock = createBlock.call(this, "Logic", 1); break;
+          default: actionValueBlock = createBlock.call(this, "Text", 0);
+            for (var k = 0, input; input = actionValueBlock.inputList[k]; k++) {
+              for (var j = 0, field; field = input.fieldRow[j]; j++) {
+                if(field.name == "TEXT") {
+                  field.setText(actionValue);
+                }
+              }
+            }
+        }
+
+        //alert("ok action value block\nm: " + m)
+
+        connectBlocks.call(this, actionValueBlock, actionBlock, "open")
+
+        //alert("Post Action" + m + " switch...formattedVerb: " + formattedVerb + "...actionSubjType: " + actionSubjType + "...index: " + index)
+
+
+        //var actionBlock = getActionBlock.call(this, actionType, actionSubj, actionVerb, actionObj);
+
+
+        //alert("action block creato")
+
+        if(m == 0){
+          //alert("m == 0")
+          firstActionBlock = actionBlock;
+          prevActionBlock = actionBlock;
+        }
+        else{
+          //alert("else")
+          connectBlocks.call(this, actionBlock, prevActionBlock, "nextAction");//connect new if after the prev one TODO idk if "ifcond" params is correct or not
+          prevActionBlock = actionBlock;
+        }
+      }
+
+      /*var innerBlockRule = rule1.actions.action0.innerRule;
       if (innerBlockRule != "") {
         //alert("MAIN ACTION INNER BLOCK: \n " + innerBlockRule)
         var lastInnerBlock = insertBlockRecursive.call(this, innerBlockRule);
         //connectBlocks.call(this, lastInnerBlock, actionBlock, "innerBlock");
-      }
+      }*/
       /******/
 
       /*** ANOTHER ACTION ***/
-      var numOtherActions = rule1.otherActionNumber;
+      /*var numOtherActions = rule1.otherActionNumber;
       //alert("numOtherActions: " + numOtherActions);
       if (numOtherActions > 0) {
         var prevConnBlock = actionBlock; //lastInnerBlock == null ? actionBlock : lastInnerBlock;
@@ -744,17 +2437,20 @@ function insertBlockRecursive(rule1) {
             //connectBlocks.call(this, lastAnotherInnerBlock, anotherActionBlock, "innerBlock");
           }
         }
-      }
+      }*/
 
 
       /******/
 
-      if (rule1.condition == null) {
+      alert("Pre last connections")
+
+      if (rule1.conditionNumber == 0) {
         //alert("Click ok to connect isHiddenBlock with whenBlock");
-        connectBlocks.call(this, actionBlock, whenBlock, "when");
+        connectBlocks.call(this, firstActionBlock, whenBlock, "when");
       } else {
         //alert("Click ok to connect isHiddenBlock to mainCondBlock");
-        connectBlocks.call(this, actionBlock, mainCondBlock, "ifblock");
+        connectBlocks.call(this, firstIfBlock, mainCondBlock, "ifcond");
+        connectBlocks.call(this, firstActionBlock, mainCondBlock, "ifblock");
         //alert("Click ok to connect mainCondBlock to whenBlock");
         connectBlocks.call(this, mainCondBlock, whenBlock, "if");
       }

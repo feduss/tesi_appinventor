@@ -17,33 +17,37 @@ public class TesiParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		WHITESPACE=1, WHEN=2, IF=3, AND=4, THEN=5, ELSE=6, THROW=7, ARTICLE=8, 
-		VERB=9, COLON=10, SEMICOLON=11, OPEN=12, CLOSE=13, ACTION=14, TYPE=15, 
-		ACTION_PAGE=16, STRING=17;
+		WHITESPACE=1, WHEN=2, IF=3, AND=4, OR=5, NOT=6, THEN=7, ELSE=8, THROW=9, 
+		ARTICLE=10, VERB=11, SET=12, CALL=13, ACTION_WHEN_OBJ=14, ACTION_IF_OBJ=15, 
+		ACTION_SET_OBJ=16, ACTION_CALL_OBJ=17, ACTION_OPEN_OBJ=18, COLON=19, SEMICOLON=20, 
+		OPEN_BRACKET=21, CLOSE_BRACKET=22, OPEN=23, STRING=24;
 	public static final int
-		RULE_block = 0, RULE_event = 1, RULE_condition = 2, RULE_action_body = 3, 
-		RULE_action = 4, RULE_anotherAction = 5, RULE_condition_statement = 6, 
-		RULE_action_statement = 7, RULE_open_page = 8;
+		RULE_block = 0, RULE_event = 1, RULE_condition = 2, RULE_another_condition = 3, 
+		RULE_action_body = 4, RULE_action = 5, RULE_another_action = 6, RULE_condition_statement = 7, 
+		RULE_action_statement = 8, RULE_value = 9, RULE_subj = 10, RULE_subj_type = 11;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"block", "event", "condition", "action_body", "action", "anotherAction", 
-			"condition_statement", "action_statement", "open_page"
+			"block", "event", "condition", "another_condition", "action_body", "action", 
+			"another_action", "condition_statement", "action_statement", "value", 
+			"subj", "subj_type"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, null, "'when'", "'if'", "'and'", "'then'", "'else'", "'throw'", 
-			null, null, "','", "';'", "'('", "')'", null, null, "'open'"
+			null, null, "'when'", "'if'", "'AND'", "'OR'", "'not'", "'then'", "'else'", 
+			"'throw'", null, "'is'", "'set'", "'call'", null, null, null, null, "'another screen with name'", 
+			"','", "';'", "'('", "')'", "'open'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, "WHITESPACE", "WHEN", "IF", "AND", "THEN", "ELSE", "THROW", "ARTICLE", 
-			"VERB", "COLON", "SEMICOLON", "OPEN", "CLOSE", "ACTION", "TYPE", "ACTION_PAGE", 
-			"STRING"
+			null, "WHITESPACE", "WHEN", "IF", "AND", "OR", "NOT", "THEN", "ELSE", 
+			"THROW", "ARTICLE", "VERB", "SET", "CALL", "ACTION_WHEN_OBJ", "ACTION_IF_OBJ", 
+			"ACTION_SET_OBJ", "ACTION_CALL_OBJ", "ACTION_OPEN_OBJ", "COLON", "SEMICOLON", 
+			"OPEN_BRACKET", "CLOSE_BRACKET", "OPEN", "STRING"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -107,11 +111,11 @@ public class TesiParser extends Parser {
 		public ConditionContext condition() {
 			return getRuleContext(ConditionContext.class,0);
 		}
-		public List<AnotherActionContext> anotherAction() {
-			return getRuleContexts(AnotherActionContext.class);
+		public List<Another_actionContext> another_action() {
+			return getRuleContexts(Another_actionContext.class);
 		}
-		public AnotherActionContext anotherAction(int i) {
-			return getRuleContext(AnotherActionContext.class,i);
+		public Another_actionContext another_action(int i) {
+			return getRuleContext(Another_actionContext.class,i);
 		}
 		public BlockContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -125,6 +129,11 @@ public class TesiParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitBlock(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitBlock(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final BlockContext block() throws RecognitionException {
@@ -134,31 +143,31 @@ public class TesiParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(18);
+			setState(24);
 			event();
-			setState(20);
+			setState(26);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			if (_la==IF) {
 				{
-				setState(19);
+				setState(25);
 				condition();
 				}
 			}
 
-			setState(22);
+			setState(28);
 			action();
-			setState(26);
+			setState(32);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==AND) {
 				{
 				{
-				setState(23);
-				anotherAction();
+				setState(29);
+				another_action();
 				}
 				}
-				setState(28);
+				setState(34);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -177,9 +186,13 @@ public class TesiParser extends Parser {
 
 	public static class EventContext extends ParserRuleContext {
 		public TerminalNode WHEN() { return getToken(TesiParser.WHEN, 0); }
-		public TerminalNode STRING() { return getToken(TesiParser.STRING, 0); }
-		public TerminalNode VERB() { return getToken(TesiParser.VERB, 0); }
-		public TerminalNode ACTION() { return getToken(TesiParser.ACTION, 0); }
+		public SubjContext subj() {
+			return getRuleContext(SubjContext.class,0);
+		}
+		public Subj_typeContext subj_type() {
+			return getRuleContext(Subj_typeContext.class,0);
+		}
+		public TerminalNode ACTION_WHEN_OBJ() { return getToken(TesiParser.ACTION_WHEN_OBJ, 0); }
 		public EventContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -192,6 +205,11 @@ public class TesiParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitEvent(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitEvent(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final EventContext event() throws RecognitionException {
@@ -200,14 +218,14 @@ public class TesiParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(29);
+			setState(35);
 			match(WHEN);
-			setState(30);
-			match(STRING);
-			setState(31);
-			match(VERB);
-			setState(32);
-			match(ACTION);
+			setState(36);
+			subj();
+			setState(37);
+			subj_type();
+			setState(38);
+			match(ACTION_WHEN_OBJ);
 			}
 		}
 		catch (RecognitionException re) {
@@ -226,6 +244,12 @@ public class TesiParser extends Parser {
 		public Condition_statementContext condition_statement() {
 			return getRuleContext(Condition_statementContext.class,0);
 		}
+		public List<Another_conditionContext> another_condition() {
+			return getRuleContexts(Another_conditionContext.class);
+		}
+		public Another_conditionContext another_condition(int i) {
+			return getRuleContext(Another_conditionContext.class,i);
+		}
 		public ConditionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -238,18 +262,97 @@ public class TesiParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitCondition(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitCondition(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ConditionContext condition() throws RecognitionException {
 		ConditionContext _localctx = new ConditionContext(_ctx, getState());
 		enterRule(_localctx, 4, RULE_condition);
+		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(34);
+			setState(40);
 			match(IF);
-			setState(35);
+			setState(41);
 			condition_statement();
+			setState(45);
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			while (_la==AND || _la==OR) {
+				{
+				{
+				setState(42);
+				another_condition();
+				}
+				}
+				setState(47);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+			}
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class Another_conditionContext extends ParserRuleContext {
+		public Condition_statementContext condition_statement() {
+			return getRuleContext(Condition_statementContext.class,0);
+		}
+		public TerminalNode AND() { return getToken(TesiParser.AND, 0); }
+		public TerminalNode OR() { return getToken(TesiParser.OR, 0); }
+		public Another_conditionContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_another_condition; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterAnother_condition(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitAnother_condition(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitAnother_condition(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final Another_conditionContext another_condition() throws RecognitionException {
+		Another_conditionContext _localctx = new Another_conditionContext(_ctx, getState());
+		enterRule(_localctx, 6, RULE_another_condition);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			{
+			setState(48);
+			_la = _input.LA(1);
+			if ( !(_la==AND || _la==OR) ) {
+			_errHandler.recoverInline(this);
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
+				consume();
+			}
+			setState(49);
+			condition_statement();
+			}
 			}
 		}
 		catch (RecognitionException re) {
@@ -268,14 +371,11 @@ public class TesiParser extends Parser {
 			return getRuleContext(Action_statementContext.class,0);
 		}
 		public TerminalNode THROW() { return getToken(TesiParser.THROW, 0); }
-		public TerminalNode OPEN() { return getToken(TesiParser.OPEN, 0); }
+		public TerminalNode OPEN_BRACKET() { return getToken(TesiParser.OPEN_BRACKET, 0); }
 		public BlockContext block() {
 			return getRuleContext(BlockContext.class,0);
 		}
-		public TerminalNode CLOSE() { return getToken(TesiParser.CLOSE, 0); }
-		public Open_pageContext open_page() {
-			return getRuleContext(Open_pageContext.class,0);
-		}
+		public TerminalNode CLOSE_BRACKET() { return getToken(TesiParser.CLOSE_BRACKET, 0); }
 		public Action_bodyContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -288,48 +388,38 @@ public class TesiParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitAction_body(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitAction_body(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Action_bodyContext action_body() throws RecognitionException {
 		Action_bodyContext _localctx = new Action_bodyContext(_ctx, getState());
-		enterRule(_localctx, 6, RULE_action_body);
+		enterRule(_localctx, 8, RULE_action_body);
 		int _la;
 		try {
-			setState(46);
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(51);
+			action_statement();
+			setState(57);
 			_errHandler.sync(this);
-			switch (_input.LA(1)) {
-			case TYPE:
-				enterOuterAlt(_localctx, 1);
+			_la = _input.LA(1);
+			if (_la==THROW) {
 				{
-				setState(37);
-				action_statement();
-				setState(43);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				if (_la==THROW) {
-					{
-					setState(38);
-					match(THROW);
-					setState(39);
-					match(OPEN);
-					setState(40);
-					block();
-					setState(41);
-					match(CLOSE);
-					}
+				setState(52);
+				match(THROW);
+				setState(53);
+				match(OPEN_BRACKET);
+				setState(54);
+				block();
+				setState(55);
+				match(CLOSE_BRACKET);
 				}
+			}
 
-				}
-				break;
-			case ACTION_PAGE:
-				enterOuterAlt(_localctx, 2);
-				{
-				setState(45);
-				open_page();
-				}
-				break;
-			default:
-				throw new NoViableAltException(this);
 			}
 		}
 		catch (RecognitionException re) {
@@ -360,17 +450,22 @@ public class TesiParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitAction(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitAction(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ActionContext action() throws RecognitionException {
 		ActionContext _localctx = new ActionContext(_ctx, getState());
-		enterRule(_localctx, 8, RULE_action);
+		enterRule(_localctx, 10, RULE_action);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(48);
+			setState(59);
 			match(THEN);
-			setState(49);
+			setState(60);
 			action_body();
 			}
 		}
@@ -385,34 +480,39 @@ public class TesiParser extends Parser {
 		return _localctx;
 	}
 
-	public static class AnotherActionContext extends ParserRuleContext {
+	public static class Another_actionContext extends ParserRuleContext {
 		public TerminalNode AND() { return getToken(TesiParser.AND, 0); }
 		public Action_bodyContext action_body() {
 			return getRuleContext(Action_bodyContext.class,0);
 		}
-		public AnotherActionContext(ParserRuleContext parent, int invokingState) {
+		public Another_actionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_anotherAction; }
+		@Override public int getRuleIndex() { return RULE_another_action; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterAnotherAction(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterAnother_action(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitAnotherAction(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitAnother_action(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitAnother_action(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final AnotherActionContext anotherAction() throws RecognitionException {
-		AnotherActionContext _localctx = new AnotherActionContext(_ctx, getState());
-		enterRule(_localctx, 10, RULE_anotherAction);
+	public final Another_actionContext another_action() throws RecognitionException {
+		Another_actionContext _localctx = new Another_actionContext(_ctx, getState());
+		enterRule(_localctx, 12, RULE_another_action);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(51);
+			setState(62);
 			match(AND);
-			setState(52);
+			setState(63);
 			action_body();
 			}
 		}
@@ -428,9 +528,18 @@ public class TesiParser extends Parser {
 	}
 
 	public static class Condition_statementContext extends ParserRuleContext {
-		public TerminalNode STRING() { return getToken(TesiParser.STRING, 0); }
+		public SubjContext subj() {
+			return getRuleContext(SubjContext.class,0);
+		}
+		public Subj_typeContext subj_type() {
+			return getRuleContext(Subj_typeContext.class,0);
+		}
 		public TerminalNode VERB() { return getToken(TesiParser.VERB, 0); }
-		public TerminalNode ACTION() { return getToken(TesiParser.ACTION, 0); }
+		public TerminalNode ACTION_IF_OBJ() { return getToken(TesiParser.ACTION_IF_OBJ, 0); }
+		public TerminalNode NOT() { return getToken(TesiParser.NOT, 0); }
+		public ValueContext value() {
+			return getRuleContext(ValueContext.class,0);
+		}
 		public Condition_statementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -443,20 +552,77 @@ public class TesiParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitCondition_statement(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitCondition_statement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Condition_statementContext condition_statement() throws RecognitionException {
 		Condition_statementContext _localctx = new Condition_statementContext(_ctx, getState());
-		enterRule(_localctx, 12, RULE_condition_statement);
+		enterRule(_localctx, 14, RULE_condition_statement);
+		int _la;
 		try {
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(54);
-			match(STRING);
-			setState(55);
-			match(VERB);
-			setState(56);
-			match(ACTION);
+			setState(83);
+			_errHandler.sync(this);
+			switch ( getInterpreter().adaptivePredict(_input,7,_ctx) ) {
+			case 1:
+				enterOuterAlt(_localctx, 1);
+				{
+				setState(65);
+				subj();
+				setState(66);
+				subj_type();
+				setState(68);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				if (_la==NOT) {
+					{
+					setState(67);
+					match(NOT);
+					}
+				}
+
+				setState(70);
+				match(VERB);
+				setState(71);
+				match(ACTION_IF_OBJ);
+				}
+				break;
+			case 2:
+				enterOuterAlt(_localctx, 2);
+				{
+				setState(73);
+				subj();
+				setState(74);
+				subj_type();
+				setState(76);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				if (_la==NOT) {
+					{
+					setState(75);
+					match(NOT);
+					}
+				}
+
+				setState(78);
+				match(ACTION_IF_OBJ);
+				setState(79);
+				match(VERB);
+				setState(81);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				if (_la==STRING) {
+					{
+					setState(80);
+					value();
+					}
+				}
+
+				}
+				break;
 			}
 		}
 		catch (RecognitionException re) {
@@ -471,12 +637,21 @@ public class TesiParser extends Parser {
 	}
 
 	public static class Action_statementContext extends ParserRuleContext {
-		public TerminalNode TYPE() { return getToken(TesiParser.TYPE, 0); }
-		public List<TerminalNode> STRING() { return getTokens(TesiParser.STRING); }
-		public TerminalNode STRING(int i) {
-			return getToken(TesiParser.STRING, i);
+		public TerminalNode SET() { return getToken(TesiParser.SET, 0); }
+		public SubjContext subj() {
+			return getRuleContext(SubjContext.class,0);
 		}
-		public TerminalNode VERB() { return getToken(TesiParser.VERB, 0); }
+		public Subj_typeContext subj_type() {
+			return getRuleContext(Subj_typeContext.class,0);
+		}
+		public TerminalNode ACTION_SET_OBJ() { return getToken(TesiParser.ACTION_SET_OBJ, 0); }
+		public ValueContext value() {
+			return getRuleContext(ValueContext.class,0);
+		}
+		public TerminalNode CALL() { return getToken(TesiParser.CALL, 0); }
+		public TerminalNode ACTION_CALL_OBJ() { return getToken(TesiParser.ACTION_CALL_OBJ, 0); }
+		public TerminalNode OPEN() { return getToken(TesiParser.OPEN, 0); }
+		public TerminalNode ACTION_OPEN_OBJ() { return getToken(TesiParser.ACTION_OPEN_OBJ, 0); }
 		public Action_statementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -489,21 +664,110 @@ public class TesiParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitAction_statement(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitAction_statement(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Action_statementContext action_statement() throws RecognitionException {
 		Action_statementContext _localctx = new Action_statementContext(_ctx, getState());
-		enterRule(_localctx, 14, RULE_action_statement);
+		enterRule(_localctx, 16, RULE_action_statement);
+		try {
+			setState(100);
+			_errHandler.sync(this);
+			switch (_input.LA(1)) {
+			case SET:
+				enterOuterAlt(_localctx, 1);
+				{
+				{
+				setState(85);
+				match(SET);
+				setState(86);
+				subj();
+				setState(87);
+				subj_type();
+				setState(88);
+				match(ACTION_SET_OBJ);
+				setState(89);
+				value();
+				}
+				}
+				break;
+			case CALL:
+				enterOuterAlt(_localctx, 2);
+				{
+				{
+				setState(91);
+				match(CALL);
+				setState(92);
+				subj();
+				setState(93);
+				subj_type();
+				setState(94);
+				match(ACTION_CALL_OBJ);
+				setState(95);
+				value();
+				}
+				}
+				break;
+			case OPEN:
+				enterOuterAlt(_localctx, 3);
+				{
+				{
+				setState(97);
+				match(OPEN);
+				setState(98);
+				match(ACTION_OPEN_OBJ);
+				setState(99);
+				value();
+				}
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class ValueContext extends ParserRuleContext {
+		public TerminalNode STRING() { return getToken(TesiParser.STRING, 0); }
+		public ValueContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_value; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterValue(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitValue(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitValue(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final ValueContext value() throws RecognitionException {
+		ValueContext _localctx = new ValueContext(_ctx, getState());
+		enterRule(_localctx, 18, RULE_value);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(58);
-			match(TYPE);
-			setState(59);
-			match(STRING);
-			setState(60);
-			match(VERB);
-			setState(61);
+			setState(102);
 			match(STRING);
 			}
 		}
@@ -518,32 +782,76 @@ public class TesiParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Open_pageContext extends ParserRuleContext {
-		public TerminalNode ACTION_PAGE() { return getToken(TesiParser.ACTION_PAGE, 0); }
+	public static class SubjContext extends ParserRuleContext {
 		public TerminalNode STRING() { return getToken(TesiParser.STRING, 0); }
-		public Open_pageContext(ParserRuleContext parent, int invokingState) {
+		public SubjContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_open_page; }
+		@Override public int getRuleIndex() { return RULE_subj; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterOpen_page(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterSubj(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitOpen_page(this);
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitSubj(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitSubj(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Open_pageContext open_page() throws RecognitionException {
-		Open_pageContext _localctx = new Open_pageContext(_ctx, getState());
-		enterRule(_localctx, 16, RULE_open_page);
+	public final SubjContext subj() throws RecognitionException {
+		SubjContext _localctx = new SubjContext(_ctx, getState());
+		enterRule(_localctx, 20, RULE_subj);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(63);
-			match(ACTION_PAGE);
-			setState(64);
+			setState(104);
+			match(STRING);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class Subj_typeContext extends ParserRuleContext {
+		public TerminalNode STRING() { return getToken(TesiParser.STRING, 0); }
+		public Subj_typeContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_subj_type; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).enterSubj_type(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof TesiParserListener ) ((TesiParserListener)listener).exitSubj_type(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof TesiParserVisitor ) return ((TesiParserVisitor<? extends T>)visitor).visitSubj_type(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final Subj_typeContext subj_type() throws RecognitionException {
+		Subj_typeContext _localctx = new Subj_typeContext(_ctx, getState());
+		enterRule(_localctx, 22, RULE_subj_type);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(106);
 			match(STRING);
 			}
 		}
@@ -559,23 +867,32 @@ public class TesiParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\23E\4\2\t\2\4\3\t"+
-		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\3\2\3\2\5\2"+
-		"\27\n\2\3\2\3\2\7\2\33\n\2\f\2\16\2\36\13\2\3\3\3\3\3\3\3\3\3\3\3\4\3"+
-		"\4\3\4\3\5\3\5\3\5\3\5\3\5\3\5\5\5.\n\5\3\5\5\5\61\n\5\3\6\3\6\3\6\3\7"+
-		"\3\7\3\7\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\n\3\n\3\n\3\n\2\2\13\2"+
-		"\4\6\b\n\f\16\20\22\2\2\2?\2\24\3\2\2\2\4\37\3\2\2\2\6$\3\2\2\2\b\60\3"+
-		"\2\2\2\n\62\3\2\2\2\f\65\3\2\2\2\168\3\2\2\2\20<\3\2\2\2\22A\3\2\2\2\24"+
-		"\26\5\4\3\2\25\27\5\6\4\2\26\25\3\2\2\2\26\27\3\2\2\2\27\30\3\2\2\2\30"+
-		"\34\5\n\6\2\31\33\5\f\7\2\32\31\3\2\2\2\33\36\3\2\2\2\34\32\3\2\2\2\34"+
-		"\35\3\2\2\2\35\3\3\2\2\2\36\34\3\2\2\2\37 \7\4\2\2 !\7\23\2\2!\"\7\13"+
-		"\2\2\"#\7\20\2\2#\5\3\2\2\2$%\7\5\2\2%&\5\16\b\2&\7\3\2\2\2\'-\5\20\t"+
-		"\2()\7\t\2\2)*\7\16\2\2*+\5\2\2\2+,\7\17\2\2,.\3\2\2\2-(\3\2\2\2-.\3\2"+
-		"\2\2.\61\3\2\2\2/\61\5\22\n\2\60\'\3\2\2\2\60/\3\2\2\2\61\t\3\2\2\2\62"+
-		"\63\7\7\2\2\63\64\5\b\5\2\64\13\3\2\2\2\65\66\7\6\2\2\66\67\5\b\5\2\67"+
-		"\r\3\2\2\289\7\23\2\29:\7\13\2\2:;\7\20\2\2;\17\3\2\2\2<=\7\21\2\2=>\7"+
-		"\23\2\2>?\7\13\2\2?@\7\23\2\2@\21\3\2\2\2AB\7\22\2\2BC\7\23\2\2C\23\3"+
-		"\2\2\2\6\26\34-\60";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\32o\4\2\t\2\4\3\t"+
+		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4"+
+		"\f\t\f\4\r\t\r\3\2\3\2\5\2\35\n\2\3\2\3\2\7\2!\n\2\f\2\16\2$\13\2\3\3"+
+		"\3\3\3\3\3\3\3\3\3\4\3\4\3\4\7\4.\n\4\f\4\16\4\61\13\4\3\5\3\5\3\5\3\6"+
+		"\3\6\3\6\3\6\3\6\3\6\5\6<\n\6\3\7\3\7\3\7\3\b\3\b\3\b\3\t\3\t\3\t\5\t"+
+		"G\n\t\3\t\3\t\3\t\3\t\3\t\3\t\5\tO\n\t\3\t\3\t\3\t\5\tT\n\t\5\tV\n\t\3"+
+		"\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\5\ng\n\n\3"+
+		"\13\3\13\3\f\3\f\3\r\3\r\3\r\2\2\16\2\4\6\b\n\f\16\20\22\24\26\30\2\3"+
+		"\3\2\6\7\2l\2\32\3\2\2\2\4%\3\2\2\2\6*\3\2\2\2\b\62\3\2\2\2\n\65\3\2\2"+
+		"\2\f=\3\2\2\2\16@\3\2\2\2\20U\3\2\2\2\22f\3\2\2\2\24h\3\2\2\2\26j\3\2"+
+		"\2\2\30l\3\2\2\2\32\34\5\4\3\2\33\35\5\6\4\2\34\33\3\2\2\2\34\35\3\2\2"+
+		"\2\35\36\3\2\2\2\36\"\5\f\7\2\37!\5\16\b\2 \37\3\2\2\2!$\3\2\2\2\" \3"+
+		"\2\2\2\"#\3\2\2\2#\3\3\2\2\2$\"\3\2\2\2%&\7\4\2\2&\'\5\26\f\2\'(\5\30"+
+		"\r\2()\7\20\2\2)\5\3\2\2\2*+\7\5\2\2+/\5\20\t\2,.\5\b\5\2-,\3\2\2\2.\61"+
+		"\3\2\2\2/-\3\2\2\2/\60\3\2\2\2\60\7\3\2\2\2\61/\3\2\2\2\62\63\t\2\2\2"+
+		"\63\64\5\20\t\2\64\t\3\2\2\2\65;\5\22\n\2\66\67\7\13\2\2\678\7\27\2\2"+
+		"89\5\2\2\29:\7\30\2\2:<\3\2\2\2;\66\3\2\2\2;<\3\2\2\2<\13\3\2\2\2=>\7"+
+		"\t\2\2>?\5\n\6\2?\r\3\2\2\2@A\7\6\2\2AB\5\n\6\2B\17\3\2\2\2CD\5\26\f\2"+
+		"DF\5\30\r\2EG\7\b\2\2FE\3\2\2\2FG\3\2\2\2GH\3\2\2\2HI\7\r\2\2IJ\7\21\2"+
+		"\2JV\3\2\2\2KL\5\26\f\2LN\5\30\r\2MO\7\b\2\2NM\3\2\2\2NO\3\2\2\2OP\3\2"+
+		"\2\2PQ\7\21\2\2QS\7\r\2\2RT\5\24\13\2SR\3\2\2\2ST\3\2\2\2TV\3\2\2\2UC"+
+		"\3\2\2\2UK\3\2\2\2V\21\3\2\2\2WX\7\16\2\2XY\5\26\f\2YZ\5\30\r\2Z[\7\22"+
+		"\2\2[\\\5\24\13\2\\g\3\2\2\2]^\7\17\2\2^_\5\26\f\2_`\5\30\r\2`a\7\23\2"+
+		"\2ab\5\24\13\2bg\3\2\2\2cd\7\31\2\2de\7\24\2\2eg\5\24\13\2fW\3\2\2\2f"+
+		"]\3\2\2\2fc\3\2\2\2g\23\3\2\2\2hi\7\32\2\2i\25\3\2\2\2jk\7\32\2\2k\27"+
+		"\3\2\2\2lm\7\32\2\2m\31\3\2\2\2\13\34\"/;FNSUf";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

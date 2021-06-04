@@ -10,6 +10,7 @@ public class Rule {
     private int index;
     private ListBox whenSubj;
     private ListBox whenVerb;
+    private String viewClickedType = "";
     private ArrayList<Condition> conditions;
     private ArrayList<Action> actions;
     private VerticalPanel rulePanel; //contains the vertical panel, whose title contains the number of the rule
@@ -89,5 +90,13 @@ public class Rule {
 
     public void setRulesThenPanel(ArrayList<HorizontalPanel> rulesThenPanel) {
         this.rulesThenPanel = rulesThenPanel;
+    }
+
+    public String getViewClickedType() {
+        return viewClickedType;
+    }
+
+    public void setViewClickedType(String viewClickedType) {
+        this.viewClickedType = viewClickedType;
     }
 }

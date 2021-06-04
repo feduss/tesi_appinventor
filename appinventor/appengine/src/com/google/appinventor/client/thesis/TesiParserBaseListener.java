@@ -52,6 +52,18 @@ public class TesiParserBaseListener implements TesiParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAnother_condition(TesiParser.Another_conditionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAnother_condition(TesiParser.Another_conditionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAction_body(TesiParser.Action_bodyContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -76,13 +88,13 @@ public class TesiParserBaseListener implements TesiParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAnotherAction(TesiParser.AnotherActionContext ctx) { }
+	@Override public void enterAnother_action(TesiParser.Another_actionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAnotherAction(TesiParser.AnotherActionContext ctx) { }
+	@Override public void exitAnother_action(TesiParser.Another_actionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -112,13 +124,37 @@ public class TesiParserBaseListener implements TesiParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterOpen_page(TesiParser.Open_pageContext ctx) { }
+	@Override public void enterValue(TesiParser.ValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitOpen_page(TesiParser.Open_pageContext ctx) { }
+	@Override public void exitValue(TesiParser.ValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSubj(TesiParser.SubjContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSubj(TesiParser.SubjContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSubj_type(TesiParser.Subj_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSubj_type(TesiParser.Subj_typeContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

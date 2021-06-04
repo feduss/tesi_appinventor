@@ -209,11 +209,17 @@ public class SourceStructureExplorer extends Composite {
       Button addRule = new Button();
       addRule.setText("Add rule");
 
+
+      final Button confirmButton = new Button();
+      confirmButton.setText("PARSE");
+      confirmButton.setEnabled(false);
+
       addRule.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent clickEvent) {
           //Vertical layout of the rule
           //Window.alert("Screenanme: " + screenName);
+          confirmButton.setEnabled(true);
           final VerticalPanel innerVerticalPanel = new VerticalPanel();
           if(rulesListBoxes.size() == 0){
             rulesListBoxes.put(screenName, new ArrayList<Rule>());
@@ -251,7 +257,9 @@ public class SourceStructureExplorer extends Composite {
           whenSubjListBox.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent changeEvent) {
-              ListBoxWhenSubjFieldClicked(whenSubjListBox, whenVerbListBox);
+              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+              String viewClickedType = ListBoxWhenSubjFieldClicked(whenSubjListBox, whenVerbListBox);
+              rulesListBoxes.get(screenName).get(ruleIndex).setViewClickedType(viewClickedType);
             }
           });
 
@@ -267,12 +275,13 @@ public class SourceStructureExplorer extends Composite {
           actionTypeListBox.addItem("");
           actionTypeListBox.addItem("Set");
           actionTypeListBox.addItem("Call");
+          actionTypeListBox.addItem("Open");
 
           final ListBox actionSubjListBox = new ListBox();
-          actionSubjListBox.addItem("");
+          //actionSubjListBox.addItem("");
           actionSubjListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
           final ListBox actionVerbListBox = new ListBox();
-          actionVerbListBox.addItem("");
+          //actionVerbListBox.addItem("");
           actionVerbListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
 
           final TextBox thenTextBox = new TextBox();
@@ -297,7 +306,7 @@ public class SourceStructureExplorer extends Composite {
           rulesListBoxes.get(screenName).get(newRule.getIndex()).getActions().add(new Action(0, actionTypeListBox,
                   actionSubjListBox, actionVerbListBox, thenTextBox, deleteMainAction));
 
-          Label thenLabel = new Label();
+          final Label thenLabel = new Label();
           thenLabel.setText("Then");
           thenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
           HorizontalPanel thenLabelContainer = new HorizontalPanel();
@@ -325,22 +334,48 @@ public class SourceStructureExplorer extends Composite {
               String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
                       .getThenType().getValue(actionTypeListBox.getSelectedIndex());
               String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                      .getThenSubj().getValue(actionSubjListBox.getSelectedIndex());
+                      .getThenSubj() != null ?
+                        actionSubjListBox.getSelectedIndex() != -1 ?
+                        rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                                .getThenSubj().getValue(actionSubjListBox.getSelectedIndex()) : null
+                      : null;
               boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
+
+              if(actionTypeListBox.getSelectedItemText().equals("Open")){
+                while (actionSubjListBox.getItemCount() > 0) {
+                  actionSubjListBox.removeItem(0);
+                }
+                while (actionVerbListBox.getItemCount() > 0) {
+                  actionVerbListBox.removeItem(0);
+                }
+                actionSubjListBox.addItem("");
+                actionVerbListBox.addItem("");
+                actionSubjListBox.addItem("another screen");
+              }
+              else{
+                while (actionSubjListBox.getItemCount() > 0) {
+                  actionSubjListBox.removeItem(0);
+                }
+                actionSubjListBox.addItem("");
+                actionVerbListBox.addItem("");
+                for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
+                  actionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+                }
+              }
+
               if(actionSubjSelected){
-                int index = actionTypeListBox.getSelectedIndex() - 1;
-                if(index >= 0){
-                  ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType);
-                }
-                else{
-                  if(actionVerbListBox.getItemCount() > 0){
-                    while(actionVerbListBox.getItemCount() > 0){
-                      actionVerbListBox.removeItem(0);
+                  int index = actionTypeListBox.getSelectedIndex() - 1;
+                  if (index >= 0) {
+                    ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType, index);
+                  } else {
+                    if (actionVerbListBox.getItemCount() > 0) {
+                      while (actionVerbListBox.getItemCount() > 0) {
+                        actionVerbListBox.removeItem(0);
+                      }
                     }
+                    thenTextBox.setText("");
+                    thenTextBox.setVisible(false);
                   }
-                  thenTextBox.setText("");
-                  thenTextBox.setVisible(false);
-                }
               }
             }
           });
@@ -356,7 +391,8 @@ public class SourceStructureExplorer extends Composite {
 
               int index = actionSubjListBox.getSelectedIndex() - 1;
               if(index >= 0){
-                ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType);
+                String viewClickedType = ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType, index);
+                rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex).setViewClickedType(viewClickedType);
               }
               else{
                 if(actionVerbListBox.getItemCount() > 0){
@@ -426,12 +462,13 @@ public class SourceStructureExplorer extends Composite {
               otherActionTypeListBox.addItem("");
               otherActionTypeListBox.addItem("Set");
               otherActionTypeListBox.addItem("Call");
+              otherActionTypeListBox.addItem("Open");
 
               final ListBox otherActionSubjListBox = new ListBox();
-              otherActionSubjListBox.addItem("");
+              //otherActionSubjListBox.addItem("");
               otherActionSubjListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
               final ListBox otherActionVerbListBox = new ListBox();
-              otherActionVerbListBox.addItem("");
+              //otherActionVerbListBox.addItem("");
               otherActionVerbListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
               final TextBox thenTextBox = new TextBox();
               thenTextBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
@@ -453,7 +490,7 @@ public class SourceStructureExplorer extends Composite {
               hiddenIndexLabel.setVisible(false);
               hiddenIndexLabel.setText(String.valueOf(index));
 
-              Label thenLabel = new Label();
+              final Label thenLabel = new Label();
               thenLabel.setText("Then");
               thenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
               HorizontalPanel thenLabelContainer = new HorizontalPanel();
@@ -489,12 +526,39 @@ public class SourceStructureExplorer extends Composite {
                   String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
                           .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
                   String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                          .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex());
+                          .getThenSubj() != null ?
+                          otherActionSubjListBox.getSelectedIndex() != -1 ?
+                          rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                                  .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex()) : null
+                          : null;
                   boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
+
+                  if(otherActionTypeListBox.getSelectedItemText().equals("Open")){
+                    while (otherActionSubjListBox.getItemCount() > 0) {
+                      otherActionSubjListBox.removeItem(0);
+                    }
+                    while (otherActionVerbListBox.getItemCount() > 0) {
+                      otherActionVerbListBox.removeItem(0);
+                    }
+                    otherActionSubjListBox.addItem("");
+                    otherActionVerbListBox.addItem("");
+                    otherActionSubjListBox.addItem("another screen");
+                  }
+                  else{
+                    while (otherActionSubjListBox.getItemCount() > 0) {
+                      otherActionSubjListBox.removeItem(0);
+                    }
+                    otherActionSubjListBox.addItem("");
+                    otherActionVerbListBox.addItem("");
+                    for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
+                      otherActionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+                    }
+                  }
+
                   if(actionSubjSelected){
                     int index = otherActionTypeListBox.getSelectedIndex() - 1;
                     if(index >= 0){
-                      ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType);
+                      ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType, index);
                     }
                     else{
                       if(otherActionVerbListBox.getItemCount() > 0){
@@ -523,7 +587,8 @@ public class SourceStructureExplorer extends Composite {
 
                   int index = otherActionSubjListBox.getSelectedIndex() - 1;
                   if(index >= 0){
-                    ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType);
+                    String viewClickedType = ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType, index);
+                    rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex).setViewClickedType(viewClickedType);
                   }
                   else{
                     if(otherActionVerbListBox.getItemCount() > 0){
@@ -549,10 +614,6 @@ public class SourceStructureExplorer extends Composite {
                 }
               });
 
-              rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(index).setThenType(otherActionTypeListBox);
-              rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(index).setThenSubj(otherActionSubjListBox);
-              rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(index).setThenVerb(otherActionVerbListBox);
-
               int lastThenIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() - 1;
               int temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().get(lastThenIndex)) + 1;
               //Window.alert("Action will be insert in position: " + String.valueOf(temp));
@@ -575,12 +636,26 @@ public class SourceStructureExplorer extends Composite {
           addCond.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent clickEvent) {
+
+              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+              int size = rulesListBoxes.get(screenName).get(ruleIndex).getConditions().size();
+
+              HorizontalPanel ifLabelContainer = new HorizontalPanel();
+              final ListBox andOrListBox = new ListBox();
+
               Label ifLabel = new Label();
               ifLabel.setText("If");
               ifLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-              HorizontalPanel ifLabelContainer = new HorizontalPanel();
               ifLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
               ifLabelContainer.add(ifLabel);
+
+              if(size != 0){
+                ifLabel.setText("");
+                andOrListBox.addItem("");
+                andOrListBox.addItem("AND");
+                andOrListBox.addItem("OR");
+                andOrListBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
+              }
 
               final ListBox ifSubjListBox = new ListBox();
               ifSubjListBox.addItem("");
@@ -590,12 +665,11 @@ public class SourceStructureExplorer extends Composite {
 
               //rulesListBoxes.get(rulesListBoxesCount - 1).setIfSubj(ifSubjListBox);
               //rulesListBoxes.get(rulesListBoxesCount - 1).setIfVerb(ifVerbListBox);
-              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
 
               final TextBox ifTextBox = new TextBox();
               ifTextBox.getElement().getStyle().setWidth(150, Style.Unit.PX);
               String heightStr = ifVerbListBox.getElement().getStyle().getHeight();
-              double height = 250.0;
+              double height = 25.0;
               if(heightStr != null && !heightStr.equals("")){
                 height = Double.parseDouble(heightStr);
               }
@@ -613,7 +687,13 @@ public class SourceStructureExplorer extends Composite {
               horizontalPanelIf.setTitle("Condition " +
                       String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
               horizontalPanelIf.add(ifLabelContainer);
-              horizontalPanelIf.add(new HTML("<hr  style=\"width:75px;\" />"));
+              HTML line = new HTML("<hr  style=\"width:75px;\" />");
+              horizontalPanelIf.add(line);
+              if(size != 0){
+                rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(size).setANDOR(andOrListBox);
+                horizontalPanelIf.add(andOrListBox);
+                horizontalPanelIf.add(new HTML("<hr  style=\"width:75px;\" />"));
+              }
               horizontalPanelIf.add(ifSubjListBox);
               horizontalPanelIf.add(new HTML("<hr  style=\"width:75px;\" />"));
               horizontalPanelIf.add(ifVerbListBox);
@@ -623,7 +703,10 @@ public class SourceStructureExplorer extends Composite {
               ifSubjListBox.addChangeHandler(new ChangeHandler() {
                 @Override
                 public void onChange(ChangeEvent changeEvent) {
-                  ListBoxIfSubjFieldClicked(ifSubjListBox, ifVerbListBox);
+                  int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+                  int conditionIndex = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
+                  String viewClickedType = ListBoxIfSubjFieldClicked(ifSubjListBox, ifVerbListBox);
+                  rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(conditionIndex).setViewClickedType(viewClickedType);
                 }
               });
 
@@ -701,12 +784,16 @@ public class SourceStructureExplorer extends Composite {
 
               verticalPanel.remove(rulesListBoxes.get(screenName).get(indexToRemove).getRulePanel());
               rulesListBoxes.get(screenName).remove(indexToRemove);
+
+              if(rulesListBoxes.get(screenName).size() == 0){
+                confirmButton.setEnabled(false);
+              }
             }
           });
 
           for(int i = 0; i < whenSubjListBoxGeneric.getItemCount(); i++){
             whenSubjListBox.addItem(whenSubjListBoxGeneric.getValue(i));
-          }
+          }/*
           for(int i = 0; i < whenVerbListBoxGeneric.getItemCount(); i++){
             whenVerbListBox.addItem(whenVerbListBoxGeneric.getValue(i));
           }
@@ -715,7 +802,7 @@ public class SourceStructureExplorer extends Composite {
           }
           for(int i = 0; i < thenVerbListBoxGeneric.getItemCount(); i++){
             actionVerbListBox.addItem(thenVerbListBoxGeneric.getValue(i));
-          }
+          }*/
 
 
           verticalPanel.add(innerVerticalPanel);
@@ -738,8 +825,6 @@ public class SourceStructureExplorer extends Composite {
       resultLabel = new Label();
       //resultLabel.setWidth("100%"); //fill width
       resultLabel.setText(MESSAGES.resultLabelAntLR());
-      Button confirmButton = new Button();
-      confirmButton.setText("PARSE");
       confirmButton.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent clickEvent) {
@@ -748,7 +833,9 @@ public class SourceStructureExplorer extends Composite {
                 for(Rule rule : rulesListBoxes.get(screenName)) {
                   String value = "";
                   //EVENT
-                  value += "when " + rule.getWhenSubj().getSelectedItemText() + " " + rule.getWhenVerb().getSelectedItemText() + " ";
+                  value += "when " + rule.getWhenSubj().getSelectedItemText() + " " +
+                          rule.getViewClickedType() + " " +
+                          rule.getWhenVerb().getSelectedItemText() + " ";
 
                   //CONDITION
                   if(rule.getConditions() != null && rule.getConditions().size() > 0){
@@ -756,36 +843,51 @@ public class SourceStructureExplorer extends Composite {
                     int i = 0;
                     for(Condition condition : rule.getConditions()){
                       if(i > 0){
-                        value += " AND ";
+                        value += " " + condition.getANDOR().getSelectedItemText().toUpperCase() + " ";
                       }
-                      value += condition.getIfSubj().getSelectedItemText() + " " +
-                              condition.getIfVerb().getSelectedItemText() + " " +
-                              condition.getIfTextBox().getText();
+                      String conditionVerb = condition.getIfVerb().getSelectedItemText().contains("not") ?
+                              "not " + condition.getIfVerb().getSelectedItemText().replace("not ", "") :
+                              condition.getIfVerb().getSelectedItemText();
+                      value += condition.getIfSubj().getSelectedItemText().toLowerCase() + " " +
+                              condition.getViewClickedType().toLowerCase() + " " +
+                              conditionVerb.toLowerCase() + " " +
+                              condition.getIfTextBox().getText().toLowerCase();
                       i++;
                     }
                   }
 
                   //ACTION
-                  value += " then ";
+                  value += "then ";
                   int i = 0;
                   for(Action action : rule.getActions()){
+                    //Window.alert("Parsing action " + i + " with type " + action.getThenType().getSelectedItemText());
                     if(i > 0){
                       value += " AND ";
                     }
-                    value += action.getThenType().getSelectedItemText() + " " +
-                            action.getThenSubj().getSelectedItemText() + " " +
-                            action.getThenVerb().getSelectedItemText() + " " +
-                            action.getThenTextBox().getText();
+                    if(action.getThenType().getSelectedItemText().contains("Open")) {
+                      Window.alert("open: \naction.getThenType().getSelectedItemText(): " + action.getThenType().getSelectedItemText() + "\n" +
+                              "action.getThenSubj().getSelectedItemText(): " + action.getThenSubj().getSelectedItemText());
+                    }
+                    value += action.getThenType().getSelectedItemText().contains("Open") ?
+                            action.getThenType().getSelectedItemText().toLowerCase() + " " +
+                                    action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
+                                    action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
+                                    action.getThenTextBox().getText() :
+                            action.getThenType().getSelectedItemText().toLowerCase() + " " +
+                                    action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
+                                    action.getViewClickedType().toLowerCase() + " " +
+                                    action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
+                                    action.getThenTextBox().getText().toLowerCase();
                     i++;
                   }
 
-                  Window.alert("Rule " + ruleCount + ": \n" + value.toLowerCase(Locale.ROOT));
+                  Window.alert("Rule " + ruleCount + ": \n" + value);
                   ruleCount++;
 
                   //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
                   ///Custom Lexer ->  A lexer takes the individual characters and transforms them
                   // in tokens, the atoms that the parser uses to create the logical structure
-                  TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(value.toLowerCase(Locale.ROOT)));
+                  TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(value));
                   tesiLexer.removeErrorListeners();
                   //Create syntax error listener
                   SyntaxErrorListener errorListener = new SyntaxErrorListener();
@@ -807,13 +909,15 @@ public class SourceStructureExplorer extends Composite {
                   TesiParserBaseVisitor visitor = new TesiParserBaseVisitor();
                   visitor.visit(treeRoot);
 
+                  //Window.alert("Parsed");
                   if(tesiParser.getNumberOfSyntaxErrors() == 0){
                     //Se ha riconosciuto regole
                     if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
                       resultLabel.setText("Rule detected successfully");
 
+                      //Window.alert("before getJson");
                       JSONObject ruleJSON = getJSONBlock(treeRoot);
-
+                      //Window.alert("after getJson");
 
                       //Window.alert("Json: \n" + rule.toString());
 
@@ -866,7 +970,7 @@ public class SourceStructureExplorer extends Composite {
   private void deleteActionHandler(HorizontalPanel horizontalPanelThen, VerticalPanel innerVerticalPanel) {
     int indexToRemove = Integer.parseInt(horizontalPanelThen.getTitle().split("Action ")[1]) - 1;
     int thenPos = innerVerticalPanel.getWidgetIndex(horizontalPanelThen);
-    //Window.alert("Action index: " + (indexToRemove) + ", Action pos: " + thenPos);
+    Window.alert("Action index: " + (indexToRemove) + ", Action pos: " + thenPos);
     int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
     //rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(indexToRemove).setThenSubj(null);
     //rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(indexToRemove).setThenVerb(null);
@@ -886,7 +990,7 @@ public class SourceStructureExplorer extends Composite {
   }
 
   //feduss
-  private void ListBoxWhenSubjFieldClicked(ListBox subjList, ListBox verbList) {
+  private String ListBoxWhenSubjFieldClicked(ListBox subjList, ListBox verbList) {
     int index = subjList.getSelectedIndex() - 1;
     if(index >= 0){
       //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
@@ -962,11 +1066,14 @@ public class SourceStructureExplorer extends Composite {
           verbList.addItem("is shown");
           verbList.addItem("is visible");
       }
+
+      return compType;
     }
+    return "";
   }
 
   //feduss
-  private void ListBoxIfSubjFieldClicked(ListBox subjList, ListBox verbList) {
+  private String ListBoxIfSubjFieldClicked(ListBox subjList, ListBox verbList) {
     int index = subjList.getSelectedIndex() - 1;
     if(index >= 0) {
       //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
@@ -1282,7 +1389,10 @@ public class SourceStructureExplorer extends Composite {
         default:
           Window.alert("NotHandledCase: " + compType);
       }
+
+      return compType;
     }
+    return "";
   }
 
   //feduss
@@ -1376,11 +1486,14 @@ public class SourceStructureExplorer extends Composite {
   }
 
   //feduss
-  private void ListBoxThenSubjFieldClicked(ListBox subjList, ListBox verbList, String selected) {
-    int index = subjList.getSelectedIndex() - 1;
-    if(index >= 0) {
-      //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
+  private String ListBoxThenSubjFieldClicked(ListBox subjList, ListBox verbList, String selected, int index) {
+    //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
 
+    if(selected.toLowerCase().equals("open")){
+      //subjList.addItem("another screen");
+      verbList.addItem("with name");
+    }
+    else {
       MockComponent component = userViewsList.get(screenName).get(index);
       String compType = component.getType();
       String view = component.getPropertyValue("Name");
@@ -1457,7 +1570,7 @@ public class SourceStructureExplorer extends Composite {
           break;
         case "ListPicker":
           if (selected.toLowerCase().equals("call")) {
-            verbList.addItem("open"); //todo add text input
+            verbList.addItem("open list"); //todo add text input
           } else {
             verbList.addItem("background color to"); //todo add text input
             verbList.addItem("elements to"); //todo add text input
@@ -1613,7 +1726,9 @@ public class SourceStructureExplorer extends Composite {
         default:
           Window.alert("NotHandledCase: " + compType);
       }
+      return compType;
     }
+    return "";
   }
 
   //feduss
@@ -1635,120 +1750,218 @@ public class SourceStructureExplorer extends Composite {
 
       //Event: when
       //Ex.: button1
-      String BlockName = treeRoot.event().STRING().getText();
+      String BlockName = treeRoot.event().subj().getText();
       BlockName = BlockName.substring(0,1).toUpperCase().concat(BlockName.substring(1));
 
+      String BlockType = treeRoot.event().subj_type().getText();
+
       //Ex.: is clicked
-      String EventVerbAction = treeRoot.event().VERB().getText() + " " + treeRoot.event().ACTION().getText();
+      String EventVerbAction = treeRoot.event().ACTION_WHEN_OBJ().getText();
 
       JSONObject temp = new JSONObject();
       temp.put("whenSubj", new JSONString(BlockName));
+      temp.put("whenSubjType", new JSONString(BlockType));
       temp.put("whenVerbAct", new JSONString(EventVerbAction));
       json.put("event", temp);
+
+      //Window.alert("When ok");
 
       if(treeRoot.condition() != null){
         //Condition: if
         //Ex.: label1
-        String ConditionSubj = treeRoot.condition().condition_statement().STRING().getText();
+        String ConditionSubj = treeRoot.condition().condition_statement().subj().getText();
         ConditionSubj = ConditionSubj.substring(0,1).toUpperCase().concat(ConditionSubj.substring(1));
 
+        String ConditionSubjType = treeRoot.condition().condition_statement().subj_type().getText();
+
         //Ex.: is hidden
-        String ConditionVerbAction = treeRoot.condition().condition_statement().VERB().getText() + " "
-                + treeRoot.condition().condition_statement().ACTION().getText();
+        String ConditionVerbAction = /*treeRoot.condition().condition_statement().VERB().getText() + " "
+                + */treeRoot.condition().condition_statement().ACTION_IF_OBJ().getText();
+
+        String ConditionNOT = treeRoot.condition().condition_statement().NOT() != null ?
+                "NOT" :
+                "";
+
+        String CondValue = "NoValue";
+        if(treeRoot.condition().condition_statement().value() != null){
+          CondValue = treeRoot.condition().condition_statement().value().getText();
+        }
+
         temp = new JSONObject();
-        temp.put("condSubj", new JSONString(ConditionSubj));
-        temp.put("condVerbAct", new JSONString(ConditionVerbAction));
-        json.put("condition", temp);
+        JSONObject temp2 = new JSONObject();
+        temp2.put("condSubj", new JSONString(ConditionSubj));
+        temp2.put("condSubjType", new JSONString(ConditionSubjType));
+        temp2.put("condVerbAct", new JSONString(ConditionVerbAction));
+        temp2.put("condNOT", new JSONString(ConditionNOT));
+        temp2.put("condANDOR", new JSONString("NOANDOR"));
+        temp2.put("condValue", new JSONString(CondValue));
+        temp.put("condition" + 0, temp2);
+
+        int count = 1;
+
+        for(int i = 0; i < treeRoot.condition().another_condition().size(); i++){
+
+          String CondANDOR = "NOANDOR";
+          CondValue = "NoValue";
+
+          if(treeRoot.condition().another_condition(i).AND() != null){
+            CondANDOR = "AND";
+          }
+          else if(treeRoot.condition().another_condition(i).OR() != null){
+            CondANDOR = "OR";
+          }
+
+          if(treeRoot.condition().another_condition(i).condition_statement().value() != null){
+            CondValue = treeRoot.condition().another_condition(i).condition_statement().value().getText();
+          }
+
+          ConditionSubj = treeRoot.condition().another_condition(i).condition_statement().subj().getText();
+          ConditionSubj = ConditionSubj.substring(0,1).toUpperCase().concat(ConditionSubj.substring(1));
+
+          //Ex.: is hidden
+          ConditionVerbAction = /*treeRoot.condition().another_condition(i).condition_statement().VERB().getText() + " "
+                  + */treeRoot.condition().condition_statement().ACTION_IF_OBJ().getText();
+
+          ConditionNOT = treeRoot.condition().another_condition(i).condition_statement().NOT() != null ?
+                  "NOT" :
+                  "";
+
+          //temp = new JSONObject();
+          temp2 = new JSONObject();
+          temp2.put("condSubj", new JSONString(ConditionSubj));
+          temp2.put("condSubjType", new JSONString(ConditionSubjType));
+          temp2.put("condVerbAct", new JSONString(ConditionVerbAction));
+          temp2.put("condNOT", new JSONString(ConditionNOT));
+          temp2.put("condANDOR", new JSONString(CondANDOR));
+          temp2.put("condValue", new JSONString(CondValue));
+          temp.put("condition" + (i + 1), temp2);
+          count++;
+        }
+        json.put("conditions", temp);
+        json.put("conditionNumber", new JSONString(String.valueOf(count)));
       }
 
-      int size = treeRoot.anotherAction().size();
+      //Window.alert("Conditions ok");
+
+      int size = treeRoot.another_action().size() + 1;
       System.out.println("Size: " + String.valueOf(size));
-      json.put("otherActionNumber", new JSONString(String.valueOf(size)));
+      json.put("actionNumber", new JSONString(String.valueOf(size)));
       //Actions
       temp = new JSONObject();
 
       //ActionType
       String ActionType = null;
       if(treeRoot.action().action_body().action_statement() != null){
-        ActionType = treeRoot.action().action_body().action_statement().TYPE().getText();
+        if(treeRoot.action().action_body().action_statement().SET() != null){
+          ActionType = treeRoot.action().action_body().action_statement().SET().getText();
+        }
+        else if(treeRoot.action().action_body().action_statement().CALL() != null){
+          ActionType = treeRoot.action().action_body().action_statement().CALL().getText();
+        }
+        else if(treeRoot.action().action_body().action_statement().OPEN() != null){
+          ActionType = treeRoot.action().action_body().action_statement().OPEN().getText();
+        }
       }
       else{
         ActionType = "NoType";
       }
 
+      //Window.alert("ActionType: " + ActionType);
+
       //ActionSubj
       //Ex.: label2
-      String ActionSubj = null, ActionObj = null;
-      if(treeRoot.action().action_body().action_statement() != null){
-        ActionSubj = treeRoot.action().action_body().action_statement().STRING().get(0).getText();
-      }
-      else if(treeRoot.action().action_body().open_page() != null){
-        ActionObj = treeRoot.action().action_body().open_page().STRING().getText();
+      String ActionSubj = null, ActionSubjType = null;
+      if(treeRoot.action().action_body().action_statement() != null && treeRoot.action().action_body().action_statement().OPEN() == null){
+        ActionSubj = treeRoot.action().action_body().action_statement().subj().getText();
       }
 
       if(ActionSubj != null){
         ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
-        ActionObj = "NoObj";
       }
       else{
         ActionSubj = "NoSubj";
       }
 
+      //Window.alert("ActionSubj: " + ActionSubj);
+
+      ActionSubjType = treeRoot.action().action_body().action_statement().subj_type() != null ?
+              treeRoot.action().action_body().action_statement().subj_type().getText() : "NoSubjType" ;
+
+      //Window.alert("ActionSubjType: " + ActionSubjType);
+
       ////////////////
 
       //ActionVerb
       //Ex.: is shown
-      String ActionVerb = null;
-      if(treeRoot.action().action_body().action_statement() != null){
-        ActionVerb = treeRoot.action().action_body().action_statement().VERB().getText() + " "
-                + treeRoot.action().action_body().action_statement().STRING().get(1).getText();
+      String ActionVerb = null, ActionValue = null;
+      if(treeRoot.action().action_body().action_statement() != null &&
+              treeRoot.action().action_body().action_statement().OPEN() == null){
+        ActionVerb = treeRoot.action().action_body().action_statement().ACTION_SET_OBJ() != null ?
+                treeRoot.action().action_body().action_statement().ACTION_SET_OBJ().getText() :
+                treeRoot.action().action_body().action_statement().ACTION_CALL_OBJ().getText();
+
+        ActionValue = treeRoot.action().action_body().action_statement().value().getText();
       }
-      else if(treeRoot.action().action_body().open_page() != null){
-        ActionVerb = treeRoot.action().action_body().open_page().ACTION_PAGE().getText();
+      else{
+        ActionVerb =treeRoot.action().action_body().action_statement().ACTION_OPEN_OBJ().getText();
+        ActionValue = treeRoot.action().action_body().action_statement().value().getText();
       }
 
+      //Window.alert("ActionVerb: " + ActionVerb);
 
       JSONObject temp2 = new JSONObject();
       temp2.put("actionType", new JSONString(ActionType));
       temp2.put("actionSubj", new JSONString(ActionSubj));
+      temp2.put("actionSubjType", new JSONString(ActionSubjType));
       temp2.put("actionVerb", new JSONString(ActionVerb));
-      temp2.put("actionObj", new JSONString(ActionObj));
+      temp2.put("actionValue", new JSONString(ActionValue));
       temp2.put("innerRule", getJSONBlock(treeRoot.action().action_body().block())); //block innestato
       temp.put("action" + 0, temp2);
       //Other_Actions
-      for(int i = 0; i < treeRoot.anotherAction().size(); i++){
-        if(treeRoot.anotherAction(i).action_body().action_statement() != null){
-          ActionType = treeRoot.anotherAction(i).action_body().action_statement().TYPE().getText();
-          ActionSubj = treeRoot.anotherAction(i).action_body().action_statement().STRING().get(0).getText();
+      for(int i = 0; i < treeRoot.another_action().size(); i++){
+        if(treeRoot.another_action(i).action_body().action_statement() != null){
+          if(treeRoot.another_action(i).action_body().action_statement().SET() != null){
+            ActionType = treeRoot.another_action(i).action_body().action_statement().SET().getText();
+          }
+          else if(treeRoot.another_action(i).action_body().action_statement().CALL() != null){
+            ActionType = treeRoot.another_action(i).action_body().action_statement().CALL().getText();
+          }
+          else if(treeRoot.another_action(i).action_body().action_statement().OPEN() != null){
+            ActionType = treeRoot.another_action(i).action_body().action_statement().OPEN().getText();
+          }
+
+          ActionSubj = treeRoot.another_action(i).action_body().action_statement().subj().getText();
           ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
-          ActionObj = "NoObj";
-        }
-        else if(treeRoot.anotherAction(i).action_body().open_page() != null){
-          ActionType = "NoType";
-          ActionSubj = "NoSubj";
-          ActionObj = treeRoot.anotherAction(i).action_body().open_page().STRING().getText();
+
+          ActionSubjType = treeRoot.another_action(i).action_body().action_statement().subj_type() != null ?
+                  treeRoot.another_action(i).action_body().action_statement().subj_type().getText() : "NoSubjType" ;
         }
 
-        if(treeRoot.anotherAction(i).action_body().action_statement() != null){
-          ActionVerb = treeRoot.anotherAction(i).action_body().action_statement().VERB().getText() + " "
-                  + treeRoot.anotherAction(i).action_body().action_statement().STRING().get(1).getText();
+        if(treeRoot.another_action(i).action_body().action_statement() != null &&
+                treeRoot.another_action(i).action_body().action_statement().OPEN() == null){
+          ActionVerb = treeRoot.another_action(i).action_body().action_statement().ACTION_SET_OBJ() != null ?
+                  treeRoot.another_action(i).action_body().action_statement().ACTION_SET_OBJ().getText() :
+                  treeRoot.another_action(i).action_body().action_statement().ACTION_CALL_OBJ().getText();
+          ActionValue = treeRoot.another_action(i).action_body().action_statement().value().getText();
         }
-        else if(treeRoot.anotherAction(i).action_body().open_page() != null){
-          ActionVerb = treeRoot.anotherAction(i).action_body().open_page().ACTION_PAGE().getText();
+        else{
+          ActionVerb = treeRoot.another_action(i).action_body().action_statement().ACTION_OPEN_OBJ().getText();
+          ActionValue = treeRoot.another_action(i).action_body().action_statement().value().getText();
         }
 
 
         temp2 = new JSONObject();
         temp2.put("actionType", new JSONString(ActionType));
         temp2.put("actionSubj", new JSONString(ActionSubj));
+        temp2.put("actionSubjType", new JSONString(ActionSubjType));
         temp2.put("actionVerb", new JSONString(ActionVerb));
-        temp2.put("actionObj", new JSONString(ActionObj));
-        temp2.put("innerRule", getJSONBlock(treeRoot.anotherAction(i).action_body().block())); //block innestato
+        temp2.put("actionValue", new JSONString(ActionValue));
+        temp2.put("innerRule", getJSONBlock(treeRoot.another_action(i).action_body().block())); //block innestato
         temp.put("action" + (i + 1), temp2);
-
 
       }
       json.put("actions", temp);
+      //Window.alert("Actions ok");
     }
     return json;
   }
@@ -1759,9 +1972,9 @@ public class SourceStructureExplorer extends Composite {
     switch (compType) {
       case "Button": case "DatePicker": case "Image": case "ListPicker": case "ListView": case "TextBox":
       case "PasswordTextBox": case "Slider": case "Spinner": case "Switch": case "TimePicker" : cond = true; break;
-      case "Label" : cond = false; break;
+      case "Label" : break;
       //TODO add notifier?
-      default : cond = false;
+      default : ;
     };
 
     return cond;

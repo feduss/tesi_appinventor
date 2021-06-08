@@ -10,5 +10,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="android" level="project" />
     <orderEntry type="library" name="2.8.1-patched" level="project" />
+    <orderEntry type="library" name="impl" level="project" />
   </component>
 </module>

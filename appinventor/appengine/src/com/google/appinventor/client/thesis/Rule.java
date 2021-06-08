@@ -16,6 +16,7 @@ public class Rule {
     private VerticalPanel rulePanel; //contains the vertical panel, whose title contains the number of the rule
     private ArrayList<HorizontalPanel> rulesIfPanel; //contains the HorizontalPanel of if(condition)
     private ArrayList<HorizontalPanel> rulesThenPanel; //contains the HorizontalPanel of then(action)
+    private String block_id; //id of the main block of the rule, useful to delete the block when the rule is deleted
 
 
     public Rule(int index){
@@ -24,6 +25,7 @@ public class Rule {
         this.setActions(new ArrayList<Action>());
         this.setRulesIfPanel(new ArrayList<HorizontalPanel>());
         this.setRulesThenPanel(new ArrayList<HorizontalPanel>());
+        this.setBlock_id(null);
     }
 
     public int getIndex() {
@@ -98,5 +100,13 @@ public class Rule {
 
     public void setViewClickedType(String viewClickedType) {
         this.viewClickedType = viewClickedType;
+    }
+
+    public String getBlock_id() {
+        return block_id;
+    }
+
+    public void setBlock_id(String block_id) {
+        this.block_id = block_id;
     }
 }

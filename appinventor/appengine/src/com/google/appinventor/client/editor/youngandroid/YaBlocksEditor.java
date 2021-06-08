@@ -6,6 +6,7 @@
 package com.google.appinventor.client.editor.youngandroid;
 
 import com.google.appinventor.client.*;
+import com.google.appinventor.client.boxes.AntRulesSelectorBox;
 import com.google.appinventor.client.boxes.AssetListBox;
 import com.google.appinventor.client.boxes.BlockSelectorBox;
 import com.google.appinventor.client.boxes.PaletteBox;
@@ -248,6 +249,7 @@ public final class YaBlocksEditor extends FileEditor
       //feduss hide media box in Rules view
       if(ThesisVariables.enableRules){
         AssetListBox.getAssetListBox().setVisible(false);
+        AntRulesSelectorBox.getAntRulesSelectorBox().setVisible(true);
       }
       else{
         AssetListBox.getAssetListBox().setVisible(true);
@@ -302,6 +304,9 @@ public final class YaBlocksEditor extends FileEditor
     Ode.getInstance().getWorkColumns().insert(Ode.getInstance().getStructureAndAssets(), 3);
     Ode.getInstance().getStructureAndAssets().insert(BlockSelectorBox.getBlockSelectorBox(), 0);
     BlockSelectorBox.getBlockSelectorBox().setVisible(false);
+
+    //feduss
+    AntRulesSelectorBox.getAntRulesSelectorBox().setVisible(false);
 
 
     AssetListBox.getAssetListBox().setVisible(true);
@@ -512,8 +517,12 @@ public final class YaBlocksEditor extends FileEditor
   }
 
   //feduss
-  public void insertBlock(String rule){
-    blocksArea.insertBlock(rule);
+  public String insertBlock(String rule){
+    return blocksArea.insertBlock(rule);
+  }
+
+  public boolean deleteBlock(String id){
+    return blocksArea.deleteBlock(id);
   }
 
   public void showGenericBlocks(String drawerName) {

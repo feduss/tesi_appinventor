@@ -26,13 +26,13 @@ SET : 'set';
 
 CALL : 'call';
 
-ACTION_WHEN_OBJ : 'after date'|'after picking'|'after selecting'|'after time set'|
-                  'click'|'changed'|
+ACTION_WHEN_OBJ : 'after date'|'after selecting'|'after time set'|
+                  'changed'|
                   'got focus'|
-                  'is clicked'|
-                  'long click'|'lost focus'|
-                  'position changed'|
-                  'touch down'|'touch up'
+                  'is long clicked'|'is clicked'|'is after picked'|'is before picked'|
+                  'is touched down'|'is touched up'
+                  'lost focus'|
+                  'position changed to'
                   ;
 
 ACTION_IF_OBJ : 'background color'|

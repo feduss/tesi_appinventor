@@ -280,7 +280,12 @@ Blockly.WorkspaceSvg.prototype.showBuiltin = function(name) {
 
 //feduss
 Blockly.WorkspaceSvg.prototype.insertBlock = function (rule) {
-  this.drawer_.insertBlock(rule);
+  return this.drawer_.insertBlock(rule);
+}
+
+//feduss
+Blockly.WorkspaceSvg.prototype.deleteBlock = function (id){
+  return this.drawer_.deleteBlock(id);
 }
 
 /**

@@ -642,10 +642,19 @@ function getActionBlock(actionType, actionSubj, actionVerb, actionObj){
   return actionBlock;
 }
 
+Blockly.Drawer.prototype.deleteBlock = function(id){
+  //Blockly.selected.dispose(false, true);
+  var block = this.workspace_.blockDB_[id];
+  block.dispose(false, true);
+  return true;
+}
+
 function insertBlockRecursive(rule1) {
   //test statico
+  var id = "";
   if(rule1.event != null){
 
+    //alert("Pre check sintassi")
     var list = []//[whenSubject, cond0Subj, action0Subj, ecc];
     var whenSubject = rule1.event.whenSubj; //when whenSubject whenAction do
     list.push(whenSubject)
@@ -674,6 +683,8 @@ function insertBlockRecursive(rule1) {
 
     //Verifico che i subjects (es. Button1, Label1, ecc) esistano o meno, prima di creare i blocchi
     var errors = checkSubjSyntax.call(this, list)
+
+    //alert("post check sintassi")
 
     if(errors == 0) {
       //alert("EVENT")
@@ -734,11 +745,11 @@ function insertBlockRecursive(rule1) {
             case "ListPicker": index = 1; break;
           };  break;
       }
-      alert("Post Event switch...whenSubjType: " + whenSubjType + "...whenAction: " + whenAction + "...index: " + index)
+      //alert("Post Event switch...whenSubjType: " + whenSubjType + "...whenAction: " + whenAction + "...index: " + index)
       //Il primo elemento della lista del whenSubject
       // (Esempio: quando, nella palette, clicchi su button1 (whenSubject), si apre una lista (il flyout)...il primo elemento è isClicked (whenAction)
       var whenBlock = createBlock.call(this, whenSubject, index);
-
+      id = whenBlock.id;
       /******/
       //alert("CONDITION")
       /*** CONDITION ***/
@@ -751,11 +762,8 @@ function insertBlockRecursive(rule1) {
         mainCondBlock = createBlock.call(this, "Control", 0); //"if-then" block...primo elemento della lista quando si clicca su "Control" nella palette
 
         var prevIfBlock = null, prevANDORBlock = null;
-        alert("rule1.conditionNumber: " + rule1.conditionNumber);
-        alert("rule1.conditions: " + rule1.conditions);
-        alert("rule1.condition0: " + rule1.conditions["condition0"]);
         for (var f = 0; f < rule1.conditionNumber; f++) {
-          alert("Condition: " + f);
+          //alert("Condition: " + f);
           var condSubj = rule1.conditions["condition" + f] != null ?
               rule1.conditions["condition" + f].condSubj : //if condSubj
               null;
@@ -767,7 +775,8 @@ function insertBlockRecursive(rule1) {
           var condValue = rule1.conditions["condition" + f].condValue;
           var index = -1;
 
-          alert("Pre switch");
+          //alert("Pre switch: \ncondSubj: " + condSubj + "\ncondSubj: " + condSubj + "\ncondVerbAct: " + condVerbAct +
+          //"\ncondNOT: " + condNOT + "\ncondANDOR: " + condANDOR + "\ncondValue: " + condValue);
 
           switch (condVerbAct) {
             case 'background color':
@@ -1443,9 +1452,10 @@ function insertBlockRecursive(rule1) {
 
           }
 
-          alert("Post Condition" + f + " switch...condVerbAct: " + condVerbAct + "...condSubjType: " + condSubjType + "...index: " + index)
-
           var condBlock = createBlock.call(this, condSubj, index);
+
+          alert("cond block creato, index: " + index)
+
 
           if (f == 0) {
             firstIfBlock = condBlock;
@@ -1453,26 +1463,58 @@ function insertBlockRecursive(rule1) {
 
           //Attach NOT block To ConditionBlock
           if (condNOT != null && condNOT.toLowerCase().includes("not")) {
+            //alert("c'è un not")
             var notBlock = createBlock.call(this, "Logic", 2); // "not" block
             connectBlocks.call(this, condBlock, notBlock, "notcond"); //connect not block to condblock
 
             if(condValue != "NoValue"){
               var equalBlock = createBlock.call(this, "Logic", 3); // == block
-              var valueBlock = createBlock.call(this, "Text", 0);
-              for (var k = 0, input; input = actionValueBlock.inputList[k]; k++) {
-                for (var j = 0, field; field = input.fieldRow[j]; j++) {
-                  if(field.name == "TEXT") {
-                    field.setText(condValue);
-                  }
+              var valueBlock = null;
+              if(condVerbAct.includes("color")){
+                switch (condValue.toLowerCase()){
+                  case "black": valueBlock = createBlock.call(this, "Colors", 0); break;
+                  case "white": valueBlock = createBlock.call(this, "Colors", 1); break;
+                  case "red": valueBlock = createBlock.call(this, "Colors", 2); break;
+                  case "pink": valueBlock = createBlock.call(this, "Colors", 3); break;
+                  case "yellow": valueBlock = createBlock.call(this, "Colors", 5); break;
+                  case "green": valueBlock = createBlock.call(this, "Colors", 6); break;
+                  case "blue": valueBlock = createBlock.call(this, "Colors", 8); break;
+                  case "grey": valueBlock = createBlock.call(this, "Colors", 10); break;
+                  default:
+                    //alert("Selected color not available. Will be use \"black\" as default");
+                    valueBlock = createBlock.call(this, "Colors", 0);
                 }
               }
-              connectBlocks.call(this, notBlock, equalBlock, "right");
-              connectBlocks.call(this, valueBlock, equalBlock, "left");
+              else{
+                switch (condValue.toLowerCase()){
+                  case "true": valueBlock = createBlock.call(this, "Logic", 0); break;
+                  case "false": valueBlock = createBlock.call(this, "Logic", 1); break;
+                  default: valueBlock = createBlock.call(this, "Text", 0);
+                    for (var k = 0, input; input = valueBlock.inputList[k]; k++) {
+                      for (var j = 0, field; field = input.fieldRow[j]; j++) {
+                        if(field.name == "TEXT") {
+                          field.setText(condValue);
+                        }
+                      }
+                    }
+                }
+              }
+
+
+              //alert("Post Condition" + f + "\nswitch...condVerbAct: " + condVerbAct + "\ncondSubjType: "
+              //    + condSubjType + "\nvalueBlock: " + valueBlock + "\nindex: " + index)
+
+              connectBlocks.call(this, notBlock, equalBlock, "left");
+              connectBlocks.call(this, valueBlock, equalBlock, "right");
               notBlock = equalBlock;
+            }
+            else{
+              //alert("niente value")
             }
 
             //If is the first condition, assign the cond block to var first if block
             if (f == 0) {
+              //alert("primo if")
               firstIfBlock = notBlock;
             //If it's not the first condblock:
             } else {
@@ -1487,8 +1529,11 @@ function insertBlockRecursive(rule1) {
 
               //if if the first ANDOR block, connect the firstifblock to the left, and the new ifblock to the right
               if(f == 1){
+                //alert("secondo if")
                 connectBlocks.call(this, firstIfBlock, ANDORBlock, "left");
+                //alert("connesso a sx")
                 connectBlocks.call(this, notBlock, ANDORBlock, "right");
+                //alert("connesso a dx")
                 firstIfBlock = ANDORBlock;
               }
               //if it's not the first ANDOR block, connect it to the prev ANDOR block and the new cond block to the new ANDOR block
@@ -1508,20 +1553,50 @@ function insertBlockRecursive(rule1) {
           else {
             if(condValue != "NoValue"){
               var equalBlock = createBlock.call(this, "Logic", 3); // == block
-              var valueBlock = createBlock.call(this, "Text", 0);
-              for (var k = 0, input; input = actionValueBlock.inputList[k]; k++) {
-                for (var j = 0, field; field = input.fieldRow[j]; j++) {
-                  if(field.name == "TEXT") {
-                    field.setText(condValue);
-                  }
+              var valueBlock = null;
+              if(condVerbAct.includes("color")){
+                switch (condValue.toLowerCase()){
+                  case "black": valueBlock = createBlock.call(this, "Colors", 0); break;
+                  case "white": valueBlock = createBlock.call(this, "Colors", 1); break;
+                  case "red": valueBlock = createBlock.call(this, "Colors", 2); break;
+                  case "pink": valueBlock = createBlock.call(this, "Colors", 3); break;
+                  case "yellow": valueBlock = createBlock.call(this, "Colors", 5); break;
+                  case "green": valueBlock = createBlock.call(this, "Colors", 6); break;
+                  case "blue": valueBlock = createBlock.call(this, "Colors", 8); break;
+                  case "grey": valueBlock = createBlock.call(this, "Colors", 10); break;
+                  default:
+                    //alert("Selected color not available. Will be use \"black\" as default");
+                    valueBlock = createBlock.call(this, "Colors", 0);
                 }
               }
-              connectBlocks.call(this, condBlock, equalBlock, "right");
-              connectBlocks.call(this, valueBlock, equalBlock, "left");
+              else{
+                switch (condValue.toLowerCase()){
+                  case "true": valueBlock = createBlock.call(this, "Logic", 0); break;
+                  case "false": valueBlock = createBlock.call(this, "Logic", 1); break;
+                  default: valueBlock = createBlock.call(this, "Text", 0);
+                    for (var k = 0, input; input = valueBlock.inputList[k]; k++) {
+                      for (var j = 0, field; field = input.fieldRow[j]; j++) {
+                        if(field.name == "TEXT") {
+                          field.setText(condValue);
+                        }
+                      }
+                    }
+                }
+              }
+
+              //alert("Post Condition" + f + "\nswitch...condVerbAct: " + condVerbAct + "\ncondSubjType: "
+              //    + condSubjType + "\nvalueBlock: " + valueBlock + "\nindex: " + index)
+
+              connectBlocks.call(this, condBlock, equalBlock, "left");
+              connectBlocks.call(this, valueBlock, equalBlock, "right");
               condBlock = equalBlock;
+            }
+            else{
+              //alert("niente value")
             }
             //If is the first condition, assign the cond block to var first if block
             if (f == 0) {
+              //alert("primo ig")
               firstIfBlock = condBlock;
               //If it's not the first condblock:
             } else {
@@ -1536,8 +1611,11 @@ function insertBlockRecursive(rule1) {
 
               //if if the first ANDOR block, connect the firstifblock to the left, and the new ifblock to the right
               if(f == 1){
+                //alert("secondo if")
                 connectBlocks.call(this, firstIfBlock, ANDORBlock, "left");
+                //alert("connesso a sx")
                 connectBlocks.call(this, condBlock, ANDORBlock, "right");
+                //alert("connesso a dx")
                 firstIfBlock = ANDORBlock;
               }
               //if it's not the first ANDOR block, connect it to the prev ANDOR block and the new cond block to the new ANDOR block
@@ -2372,30 +2450,43 @@ function insertBlockRecursive(rule1) {
         }
         //alert("ok action block\nm: " + m)
         var actionValueBlock = null;
-        switch (actionValue){
-          case "true": actionValueBlock = createBlock.call(this, "Logic", 0); break;
-          case "false": actionValueBlock = createBlock.call(this, "Logic", 1); break;
-          default: actionValueBlock = createBlock.call(this, "Text", 0);
-            for (var k = 0, input; input = actionValueBlock.inputList[k]; k++) {
-              for (var j = 0, field; field = input.fieldRow[j]; j++) {
-                if(field.name == "TEXT") {
-                  field.setText(actionValue);
+        //alert("actionValue: " + actionValue);
+        if(formattedVerb.includes("color")){
+          switch (actionValue.toLowerCase()){
+            case "black": actionValueBlock = createBlock.call(this, "Colors", 0); break;
+            case "white": actionValueBlock = createBlock.call(this, "Colors", 1); break;
+            case "red": actionValueBlock = createBlock.call(this, "Colors", 2); break;
+            case "pink": actionValueBlock = createBlock.call(this, "Colors", 3); break;
+            case "yellow": actionValueBlock = createBlock.call(this, "Colors", 5); break;
+            case "green": actionValueBlock = createBlock.call(this, "Colors", 6); break;
+            case "blue": actionValueBlock = createBlock.call(this, "Colors", 8); break;
+            case "grey": actionValueBlock = createBlock.call(this, "Colors", 10); break;
+            default:
+              alert("Selected color not available. Will be use \"black\" as default");
+              actionValueBlock = createBlock.call(this, "Colors", 0);
+          }
+        }
+        else{
+          switch (actionValue.toLowerCase()){
+            case "true": actionValueBlock = createBlock.call(this, "Logic", 0); break;
+            case "false": actionValueBlock = createBlock.call(this, "Logic", 1); break;
+            default: actionValueBlock = createBlock.call(this, "Text", 0);
+              for (var k = 0, input; input = actionValueBlock.inputList[k]; k++) {
+                for (var j = 0, field; field = input.fieldRow[j]; j++) {
+                  if(field.name == "TEXT") {
+                    field.setText(actionValue);
+                  }
                 }
               }
-            }
+          }
         }
 
         //alert("ok action value block\nm: " + m)
 
+        //alert("Post Action" + m + "\nswitch...formattedVerb: " + formattedVerb + "\nactionSubjType: " + actionSubjType +
+        //    "\nactionValueBlock:" + actionValueBlock + "\nindex: " + index)
         connectBlocks.call(this, actionValueBlock, actionBlock, "open")
 
-        //alert("Post Action" + m + " switch...formattedVerb: " + formattedVerb + "...actionSubjType: " + actionSubjType + "...index: " + index)
-
-
-        //var actionBlock = getActionBlock.call(this, actionType, actionSubj, actionVerb, actionObj);
-
-
-        //alert("action block creato")
 
         if(m == 0){
           //alert("m == 0")
@@ -2408,43 +2499,12 @@ function insertBlockRecursive(rule1) {
           prevActionBlock = actionBlock;
         }
       }
-
-      /*var innerBlockRule = rule1.actions.action0.innerRule;
-      if (innerBlockRule != "") {
-        //alert("MAIN ACTION INNER BLOCK: \n " + innerBlockRule)
-        var lastInnerBlock = insertBlockRecursive.call(this, innerBlockRule);
-        //connectBlocks.call(this, lastInnerBlock, actionBlock, "innerBlock");
-      }*/
       /******/
 
-      /*** ANOTHER ACTION ***/
-      /*var numOtherActions = rule1.otherActionNumber;
-      //alert("numOtherActions: " + numOtherActions);
-      if (numOtherActions > 0) {
-        var prevConnBlock = actionBlock; //lastInnerBlock == null ? actionBlock : lastInnerBlock;
-        for (var t = 1; t <= numOtherActions; t++) {
-          //alert("OTHER ACTIONS " + t);
-          var actionSubj = rule1.actions["action" + t].actionSubj;
-          var actionVerb = rule1.actions["action" + t].actionVerb;
-          var actionObj = rule1.actions["action" + t].actionObj;
-          var anotherActionBlock = getActionBlock.call(this, actionSubj, actionVerb, actionObj);
-          connectBlocks.call(this, anotherActionBlock, prevConnBlock, "nextAction");
+      //alert("Pre last connections")
 
-          var anotherInnerBlockRule = rule1.actions["action" + t].innerRule;
-          if (anotherInnerBlockRule != "") {
-            //alert("OTHER ACTIONS " + t + " INNER BLOCK");
-            var lastAnotherInnerBlock = insertBlockRecursive.call(this, anotherInnerBlockRule);
-            //connectBlocks.call(this, lastAnotherInnerBlock, anotherActionBlock, "innerBlock");
-          }
-        }
-      }*/
-
-
-      /******/
-
-      alert("Pre last connections")
-
-      if (rule1.conditionNumber == 0) {
+      if (rule1.conditionNumber == null || rule1.conditionNumber == 0) {
+        //alert("no if: \n firstActionBlock: " + firstActionBlock + "\nwhenBlock: " + whenBlock);
         //alert("Click ok to connect isHiddenBlock with whenBlock");
         connectBlocks.call(this, firstActionBlock, whenBlock, "when");
       } else {
@@ -2454,10 +2514,41 @@ function insertBlockRecursive(rule1) {
         //alert("Click ok to connect mainCondBlock to whenBlock");
         connectBlocks.call(this, mainCondBlock, whenBlock, "if");
       }
+
+      return id;
+      /*var fs = require('fs');
+      fs.readFile('appinventor/appengine/src/com/google/appinventor/client/thesis/rules.json',
+          'utf8', function readFileCallback(err, data){
+        if (err){
+          alert("file json doesn't exist")
+          //json doesn't exist, so i create it
+          var obj = {
+            screenName: []
+          };
+          obj[screenName].push({ruleNumber: 1,rule0:rule1});
+          var json = JSON.stringify(obj);
+          alert("json: \n" + json)
+          fs.writeFile('appinventor/appengine/src/com/google/appinventor/client/thesis/rules.json', json, 'utf8', callback);
+          return true;
+        } else {
+          alert("file json exists")
+          obj = JSON.parse(data); //now it an object
+          var ruleNumberValue = obj.ruleNumber
+          if(obj.updateRule == "false"){
+            ruleNumberValue = obj.ruleNumber + 1;
+          }
+          var ruleName = "rule" + (ruleNumberValue - 1);
+          obj[screenName].ruleNumber = ruleNumberValue;
+          obj[screenName][ruleName] = rule1;
+          var json = JSON.stringify(obj); //convert it back to json
+          alert("json: \n" + json)
+          fs.writeFile('appinventor/appengine/src/com/google/appinventor/client/thesis/rules.json', json, 'utf8', callback); // write it back
+          return true;
+        }});*/
     }
   }
 
-    return whenBlock;
+    return null;
 }
 
 //feduss
@@ -2468,7 +2559,7 @@ Blockly.Drawer.prototype.insertBlock = function (rule){
   var rule1 = JSON.parse(rule);
   var index = -1; //index is the number of block of flyout of that drawerName
 
-  insertBlockRecursive.call(this, rule1);
+  return insertBlockRecursive.call(this, rule1);
 
 }
 

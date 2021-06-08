@@ -193,6 +193,8 @@ public class DesignToolbar extends Toolbar {
           }
       }
 
+      sourceStructureExplorer.SetupPage();
+
       //Window.alert("whenSubjListBox size after add: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
 
     }

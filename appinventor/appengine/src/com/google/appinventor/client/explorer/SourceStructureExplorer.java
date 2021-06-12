@@ -7,6 +7,7 @@
 package com.google.appinventor.client.explorer;
 
 import com.google.appinventor.client.Ode;
+import com.google.appinventor.client.boxes.AntRulesSelectorBox;
 import com.google.appinventor.client.editor.simple.components.MockComponent;
 import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
 import com.google.appinventor.client.thesis.*;
@@ -57,7 +58,7 @@ public class SourceStructureExplorer extends Composite {
   //Screen -> list of views
   public HashMap<String, ArrayList<MockComponent>> userViewsList = new HashMap<>();
 
-  public HashMap<String, ArrayList<Rule>> rulesListBoxes =  new HashMap<String, ArrayList<Rule>>(); //Screen -> list of rules
+  public HashMap<String, ArrayList<Rule>> rulesListBoxes = null; //Screen -> list of rules
 
   public String screenName = null;
 
@@ -67,6 +68,10 @@ public class SourceStructureExplorer extends Composite {
   private String tempBlockID = null;
 
   Label ruleStatus; //"In Progress" or "Created"
+  private Rule toBeAddRule = null;
+  private VerticalPanel verticalPanel = null; //vertical panel of antlr page
+  private VerticalPanel innerVerticalPanel = null; //vertical panel of the rule to be added
+  public HashMap<String, Boolean> screenSetupCount = new HashMap<String, Boolean>(); //ScreenName -> Boolean (if the setup for that screen has been already done or not.
   //////
 
   /**
@@ -206,7 +211,10 @@ public class SourceStructureExplorer extends Composite {
       scrollPanel.setWidth("800px");  // wide enough to avoid a horizontal scrollbar most of the time --> 1000 is enough
       scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
-      SetupPage();
+      rulesListBoxes = new HashMap<String, ArrayList<Rule>>();
+      /*if(screenName != null){
+        SetupPage();
+      }*/
     }
     else{
       panel.add(scrollPanel);
@@ -221,13 +229,13 @@ public class SourceStructureExplorer extends Composite {
   public void SetupPage() {
 
     //reset della pagina
-    while (panel2.getWidgetCount() > 0){
+    /*while (panel2.getWidgetCount() > 0){
       panel2.remove(0);
-    }
+    }*/
 
     //TODO aggiungere caricamento regole da file
 
-    final VerticalPanel verticalPanel = new VerticalPanel();
+    verticalPanel = new VerticalPanel();
     verticalPanel.getElement().setAttribute("cellpadding", "5");
 
     Button addRule = new Button();
@@ -238,97 +246,293 @@ public class SourceStructureExplorer extends Composite {
     confirmButton.setText("PARSE");
     confirmButton.setEnabled(false);
 
-    addRule.addClickHandler(new ClickHandler() {
+    //Window.alert("Pre addemptyrule");
+
+    //Window.alert("0");
+    innerVerticalPanel = new VerticalPanel();
+    //Window.alert("1");
+    if(rulesListBoxes ==  null){
+      //Window.alert("is null");
+      rulesListBoxes = new HashMap<String, ArrayList<Rule>>();
+    }
+    if(rulesListBoxes.get(screenName) == null || rulesListBoxes.size() == 0){
+      //Window.alert("size 0");
+      rulesListBoxes.put(screenName, new ArrayList<Rule>());
+    }
+    //Window.alert("2 \nscreenName: " + screenName + "\nrulesListBoxes.get(screenName): " + rulesListBoxes.get(screenName));
+    //Window.alert("2.\nrulesListBoxes.get(screenName).size(): " + rulesListBoxes.get(screenName).size());
+
+    toBeAddRule = new Rule(rulesListBoxes.get(screenName).size());
+    //Window.alert("2a");
+    toBeAddRule.setInnerVerticalPanel(innerVerticalPanel);
+    //Window.alert("2b");
+    rulesListBoxes.get(screenName).add(toBeAddRule);
+    //Window.alert("2c");
+    int ruleIndex = rulesListBoxes.get(screenName).size() - 1;
+    //Window.alert("2d");
+    String StringIndex = String.valueOf(ruleIndex + 1);
+    //Window.alert("2d");
+    innerVerticalPanel.setTitle("Rule " + StringIndex); //useful to recognize which rule i'm editing, etc
+    //Window.alert("2e");
+    rulesListBoxes.get(screenName).get(ruleIndex).setRulePanel(innerVerticalPanel);
+
+    //Window.alert("Pre When Layout");
+
+    Label whenLabel = new Label();
+    whenLabel.setText("When");
+    whenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    HorizontalPanel whenLabelContainer = new HorizontalPanel();
+    whenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
+    whenLabelContainer.add(whenLabel);
+
+    final ListBox whenSubjListBox = new ListBox();
+    whenSubjListBox.addItem("");
+    whenSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+    final ListBox whenVerbListBox = new ListBox();
+    whenVerbListBox.addItem("");
+    whenVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+
+    /*if(rulesListBoxes.get(screenName) == null){
+      rulesListBoxes.put(screenName, new ArrayList<Rule>());
+    }*/
+    toBeAddRule.setWhenSubj(whenSubjListBox);
+    toBeAddRule.setWhenVerb(whenVerbListBox);
+
+    //These listboxes are populated in YaFormEditor and DesignToolbar
+    //When a "when subject" is selected, the list of "when verb" is changed
+    whenSubjListBox.addChangeHandler(new ChangeHandler() {
+      @Override
+      public void onChange(ChangeEvent changeEvent) {
+        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        String viewClickedType = ListBoxWhenSubjFieldClicked(whenSubjListBox, whenVerbListBox);
+        rulesListBoxes.get(screenName).get(ruleIndex).setViewClickedType(viewClickedType);
+      }
+    });
+
+    final HorizontalPanel horizontalPanelWhen = new HorizontalPanel();
+    horizontalPanelWhen.add(whenLabelContainer);
+    horizontalPanelWhen.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelWhen.add(whenSubjListBox);
+    horizontalPanelWhen.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelWhen.add(whenVerbListBox);
+
+    //Window.alert("Pre Action Layout");
+
+    final ListBox actionTypeListBox = new ListBox();
+    actionTypeListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+    actionTypeListBox.addItem("");
+    actionTypeListBox.addItem("Set");
+    actionTypeListBox.addItem("Call");
+    actionTypeListBox.addItem("Open");
+
+    final ListBox actionSubjListBox = new ListBox();
+    //actionSubjListBox.addItem("");
+    actionSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+    final ListBox actionVerbListBox = new ListBox();
+    //actionVerbListBox.addItem("");
+    actionVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+
+    final TextBox thenTextBox = new TextBox();
+    thenTextBox.setVisible(false);
+    thenTextBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+    double height = 25.0;
+    thenTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
+
+    final Button deleteMainAction = new Button();
+    deleteMainAction.setText("DEL");
+    deleteMainAction.setEnabled(false);
+
+    if(toBeAddRule.getActions() == null){
+      toBeAddRule.setActions(new ArrayList<Action>());
+    }
+
+    final HorizontalPanel horizontalPanelAction = new HorizontalPanel();
+
+    //the first action of the rule has index 0 and is empty
+    toBeAddRule.getActions().add(new Action(0, horizontalPanelAction, actionTypeListBox,
+            actionSubjListBox, actionVerbListBox, thenTextBox, deleteMainAction));
+
+    final Label thenLabel = new Label();
+    thenLabel.setText("Then");
+    thenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    HorizontalPanel thenLabelContainer = new HorizontalPanel();
+    thenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
+    thenLabelContainer.add(thenLabel);
+    horizontalPanelAction.setTitle("Action 1");
+    horizontalPanelAction.add(thenLabelContainer);
+    horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelAction.add(actionTypeListBox);
+    horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelAction.add(actionSubjListBox);
+    horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelAction.add(actionVerbListBox);
+    horizontalPanelAction.add(thenTextBox);
+    horizontalPanelAction.add(deleteMainAction);
+    //same of when subj
+    actionTypeListBox.addChangeHandler(new ChangeHandler() {
+      @Override
+      public void onChange(ChangeEvent changeEvent) {
+        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+        //selected is the action type select by the user
+        String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                .getThenType().getValue(actionTypeListBox.getSelectedIndex());
+        String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                .getThenSubj() != null ?
+                actionSubjListBox.getSelectedIndex() != -1 ?
+                        rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                                .getThenSubj().getValue(actionSubjListBox.getSelectedIndex()) : null
+                : null;
+        boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
+
+        if(actionTypeListBox.getSelectedItemText().equals("Open")){
+          while (actionSubjListBox.getItemCount() > 0) {
+            actionSubjListBox.removeItem(0);
+          }
+          while (actionVerbListBox.getItemCount() > 0) {
+            actionVerbListBox.removeItem(0);
+          }
+          actionSubjListBox.addItem("");
+          actionVerbListBox.addItem("");
+          actionSubjListBox.addItem("another screen");
+        }
+        else{
+          while (actionSubjListBox.getItemCount() > 0) {
+            actionSubjListBox.removeItem(0);
+          }
+          actionSubjListBox.addItem("");
+          actionVerbListBox.addItem("");
+          for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
+            actionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+          }
+        }
+
+        if(actionSubjSelected){
+          int index = actionTypeListBox.getSelectedIndex() - 1;
+          if (index >= 0) {
+            ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType, index);
+          } else {
+            if (actionVerbListBox.getItemCount() > 0) {
+              while (actionVerbListBox.getItemCount() > 0) {
+                actionVerbListBox.removeItem(0);
+              }
+            }
+            thenTextBox.setText("");
+            thenTextBox.setVisible(false);
+          }
+        }
+      }
+    });
+    //same of when subj
+    actionSubjListBox.addChangeHandler(new ChangeHandler() {
+      @Override
+      public void onChange(ChangeEvent changeEvent) {
+        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+        //selected is the action type select by the user
+        String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                .getThenType().getValue(actionTypeListBox.getSelectedIndex());
+
+        int index = actionSubjListBox.getSelectedIndex() - 1;
+        if(index >= 0){
+          String viewClickedType = ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType, index);
+          rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex).setViewClickedType(viewClickedType);
+        }
+        else{
+          if(actionVerbListBox.getItemCount() > 0){
+            while(actionVerbListBox.getItemCount() > 0){
+              actionVerbListBox.removeItem(0);
+            }
+          }
+          thenTextBox.setText("");
+          thenTextBox.setVisible(false);
+        }
+      }
+    });
+
+    //same of when subj
+    actionVerbListBox.addChangeHandler(new ChangeHandler() {
+      @Override
+      public void onChange(ChangeEvent changeEvent) {
+        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+        //selected is the action type select by the user
+        String actionVerb = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                .getThenVerb().getValue(actionVerbListBox.getSelectedIndex());
+        ListBoxThenVerbFieldClicked(actionVerb, thenTextBox);
+      }
+    });
+
+    innerVerticalPanel.add(horizontalPanelWhen);
+    innerVerticalPanel.add(horizontalPanelAction);
+    toBeAddRule.getRulesThenPanel().add(horizontalPanelAction);
+
+    //Window.alert("Pre Button Layout");
+
+    Button addCond = new Button();
+    addCond.setText("Add condition");
+
+    Button addAction = new Button();
+    addAction.setText("Add action");
+
+    Button copyRule = new Button();
+    copyRule.setText("Copy rule");
+
+    Button deleteRule = new Button();
+    deleteRule.setText("Delete rule");
+
+    HorizontalPanel horizontalPanelButton = new HorizontalPanel();
+    horizontalPanelButton.add(addCond);
+    horizontalPanelButton.add(addAction);
+    horizontalPanelButton.add(copyRule);
+    horizontalPanelButton.add(deleteRule);
+
+    innerVerticalPanel.add(horizontalPanelButton);
+
+    //Window.alert("Pre Listener Layout");
+
+    deleteMainAction.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
-        //Vertical layout of the rule
-        //Window.alert("Screenanme: " + screenName);
-        confirmButton.setEnabled(true);
-        final VerticalPanel innerVerticalPanel = new VerticalPanel();
-        if(rulesListBoxes.size() == 0){
-          rulesListBoxes.put(screenName, new ArrayList<Rule>());
-        }
+        deleteActionHandler(horizontalPanelAction, innerVerticalPanel);
+      }
+    });
 
-        Rule newRule = new Rule(rulesListBoxes.get(screenName).size());
-        rulesListBoxes.get(screenName).add(newRule);
-        int ruleIndex = rulesListBoxes.get(screenName).size() - 1;
-        innerVerticalPanel.setTitle("Rule " + String.valueOf(ruleIndex + 1)); //useful to recognize which rule i'm editing, etc
+    addAction.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent clickEvent) {
+        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        final int index = rulesListBoxes.get(screenName).get(ruleIndex).getActions().size();
+        //Window.alert("Rule: " + ruleIndex + ", Action: " + index);
 
-        rulesListBoxes.get(screenName).get(ruleIndex).setRulePanel(innerVerticalPanel);
+        final ListBox otherActionTypeListBox = new ListBox();
+        otherActionTypeListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+        otherActionTypeListBox.addItem("");
+        otherActionTypeListBox.addItem("Set");
+        otherActionTypeListBox.addItem("Call");
+        otherActionTypeListBox.addItem("Open");
 
-        Label whenLabel = new Label();
-        whenLabel.setText("When");
-        whenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-        HorizontalPanel whenLabelContainer = new HorizontalPanel();
-        whenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
-        whenLabelContainer.add(whenLabel);
-
-        final ListBox whenSubjListBox = new ListBox();
-        whenSubjListBox.addItem("");
-        whenSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-        final ListBox whenVerbListBox = new ListBox();
-        whenVerbListBox.addItem("");
-        whenVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-
-        /*if(rulesListBoxes.get(screenName) == null){
-          rulesListBoxes.put(screenName, new ArrayList<Rule>());
-        }*/
-        rulesListBoxes.get(screenName).get(newRule.getIndex()).setWhenSubj(whenSubjListBox);
-        rulesListBoxes.get(screenName).get(newRule.getIndex()).setWhenVerb(whenVerbListBox);
-
-        //These listboxes are populated in YaFormEditor and DesignToolbar
-        //When a "when subject" is selected, the list of "when verb" is changed
-        whenSubjListBox.addChangeHandler(new ChangeHandler() {
-          @Override
-          public void onChange(ChangeEvent changeEvent) {
-            int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-            String viewClickedType = ListBoxWhenSubjFieldClicked(whenSubjListBox, whenVerbListBox);
-            rulesListBoxes.get(screenName).get(ruleIndex).setViewClickedType(viewClickedType);
-          }
-        });
-
-        final HorizontalPanel horizontalPanelWhen = new HorizontalPanel();
-        horizontalPanelWhen.add(whenLabelContainer);
-        horizontalPanelWhen.add(new HTML("<hr  style=\"width:50px;\" />"));
-        horizontalPanelWhen.add(whenSubjListBox);
-        horizontalPanelWhen.add(new HTML("<hr  style=\"width:50px;\" />"));
-        horizontalPanelWhen.add(whenVerbListBox);
-
-        final ListBox actionTypeListBox = new ListBox();
-        actionTypeListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-        actionTypeListBox.addItem("");
-        actionTypeListBox.addItem("Set");
-        actionTypeListBox.addItem("Call");
-        actionTypeListBox.addItem("Open");
-
-        final ListBox actionSubjListBox = new ListBox();
-        //actionSubjListBox.addItem("");
-        actionSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-        final ListBox actionVerbListBox = new ListBox();
-        //actionVerbListBox.addItem("");
-        actionVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-
+        final ListBox otherActionSubjListBox = new ListBox();
+        //otherActionSubjListBox.addItem("");
+        otherActionSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+        final ListBox otherActionVerbListBox = new ListBox();
+        //otherActionVerbListBox.addItem("");
+        otherActionVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
         final TextBox thenTextBox = new TextBox();
-        thenTextBox.setVisible(false);
         thenTextBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-        String heightStr = actionVerbListBox.getElement().getStyle().getHeight();
         double height = 25.0;
-        if(heightStr != null && !heightStr.equals("")){
-          height = Double.parseDouble(heightStr);
-        }
         thenTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
+        thenTextBox.setVisible(false);
 
-        final Button deleteMainAction = new Button();
-        deleteMainAction.setText("DEL");
-        deleteMainAction.setEnabled(false);
+        Button deleteOtherAction = new Button();
+        deleteOtherAction.setText("DEL");
 
-        if(rulesListBoxes.get(screenName).get(newRule.getIndex()).getActions() == null){
-          rulesListBoxes.get(screenName).get(newRule.getIndex()).setActions(new ArrayList<Action>());
-        }
+        rulesListBoxes.get(screenName).get(ruleIndex).getActions().add(new Action(index, horizontalPanelAction, otherActionTypeListBox,
+                otherActionSubjListBox, otherActionVerbListBox, thenTextBox, deleteOtherAction));
 
-        //the first action of the rule has index 0 and is empty
-        rulesListBoxes.get(screenName).get(newRule.getIndex()).getActions().add(new Action(0, actionTypeListBox,
-                actionSubjListBox, actionVerbListBox, thenTextBox, deleteMainAction));
+        final Label hiddenIndexLabel = new Label();
+        hiddenIndexLabel.setVisible(false);
+        hiddenIndexLabel.setText(String.valueOf(index));
 
         final Label thenLabel = new Label();
         thenLabel.setText("Then");
@@ -337,91 +541,104 @@ public class SourceStructureExplorer extends Composite {
         thenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
         thenLabelContainer.add(thenLabel);
 
-        final HorizontalPanel horizontalPanelAction = new HorizontalPanel();
-        horizontalPanelAction.setTitle("Action 1");
-        horizontalPanelAction.add(thenLabelContainer);
-        horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
-        horizontalPanelAction.add(actionTypeListBox);
-        horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
-        horizontalPanelAction.add(actionSubjListBox);
-        horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
-        horizontalPanelAction.add(actionVerbListBox);
-        horizontalPanelAction.add(thenTextBox);
-        horizontalPanelAction.add(deleteMainAction);
+        final HorizontalPanel horizontalPanelAction_n = new HorizontalPanel();
+        horizontalPanelAction_n.setTitle("Action " +
+                String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() + 1));
+        horizontalPanelAction_n.add(hiddenIndexLabel);
+        horizontalPanelAction_n.add(thenLabelContainer);
+        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelAction_n.add(otherActionTypeListBox);
+        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelAction_n.add(otherActionSubjListBox);
+        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelAction_n.add(otherActionVerbListBox);
+
+        horizontalPanelAction_n.add(thenTextBox);
+        horizontalPanelAction_n.add(deleteOtherAction);
+
+        otherActionSubjListBox.addItem("");
+        for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
+          otherActionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+        }
+
         //same of when subj
-        actionTypeListBox.addChangeHandler(new ChangeHandler() {
+        otherActionTypeListBox.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent changeEvent) {
             int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-            int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+            int actionIndex = Integer.parseInt(horizontalPanelAction_n.getTitle().split("Action ")[1]) - 1;
             //selected is the action type select by the user
             String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                    .getThenType().getValue(actionTypeListBox.getSelectedIndex());
+                    .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
             String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
                     .getThenSubj() != null ?
-                      actionSubjListBox.getSelectedIndex() != -1 ?
-                      rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                              .getThenSubj().getValue(actionSubjListBox.getSelectedIndex()) : null
+                    otherActionSubjListBox.getSelectedIndex() != -1 ?
+                            rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                                    .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex()) : null
                     : null;
             boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
 
-            if(actionTypeListBox.getSelectedItemText().equals("Open")){
-              while (actionSubjListBox.getItemCount() > 0) {
-                actionSubjListBox.removeItem(0);
+            if(otherActionTypeListBox.getSelectedItemText().equals("Open")){
+              while (otherActionSubjListBox.getItemCount() > 0) {
+                otherActionSubjListBox.removeItem(0);
               }
-              while (actionVerbListBox.getItemCount() > 0) {
-                actionVerbListBox.removeItem(0);
+              while (otherActionVerbListBox.getItemCount() > 0) {
+                otherActionVerbListBox.removeItem(0);
               }
-              actionSubjListBox.addItem("");
-              actionVerbListBox.addItem("");
-              actionSubjListBox.addItem("another screen");
+              otherActionSubjListBox.addItem("");
+              otherActionVerbListBox.addItem("");
+              otherActionSubjListBox.addItem("another screen");
             }
             else{
-              while (actionSubjListBox.getItemCount() > 0) {
-                actionSubjListBox.removeItem(0);
+              while (otherActionSubjListBox.getItemCount() > 0) {
+                otherActionSubjListBox.removeItem(0);
               }
-              actionSubjListBox.addItem("");
-              actionVerbListBox.addItem("");
+              otherActionSubjListBox.addItem("");
+              otherActionVerbListBox.addItem("");
               for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
-                actionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+                otherActionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
               }
             }
 
             if(actionSubjSelected){
-                int index = actionTypeListBox.getSelectedIndex() - 1;
-                if (index >= 0) {
-                  ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType, index);
-                } else {
-                  if (actionVerbListBox.getItemCount() > 0) {
-                    while (actionVerbListBox.getItemCount() > 0) {
-                      actionVerbListBox.removeItem(0);
-                    }
+              int index = otherActionTypeListBox.getSelectedIndex() - 1;
+              if(index >= 0){
+                ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType, index);
+              }
+              else{
+                if(otherActionVerbListBox.getItemCount() > 0){
+                  while(otherActionVerbListBox.getItemCount() > 0){
+                    otherActionVerbListBox.removeItem(0);
                   }
-                  thenTextBox.setText("");
-                  thenTextBox.setVisible(false);
                 }
+                thenTextBox.setText("");
+                thenTextBox.setVisible(false);
+              }
             }
           }
         });
+
         //same of when subj
-        actionSubjListBox.addChangeHandler(new ChangeHandler() {
+        otherActionSubjListBox.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent changeEvent) {
             int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-            int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
+            int actionIndex = Integer.parseInt(horizontalPanelAction_n.getTitle().split("Action ")[1]) - 1;
             //selected is the action type select by the user
             String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                    .getThenType().getValue(actionTypeListBox.getSelectedIndex());
+                    .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
+            String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                    .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex());
 
-            int index = actionSubjListBox.getSelectedIndex() - 1;
+            int index = otherActionSubjListBox.getSelectedIndex() - 1;
             if(index >= 0){
-              String viewClickedType = ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType, index);
+              String viewClickedType = ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType, index);
               rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex).setViewClickedType(viewClickedType);
             }
             else{
-              if(actionVerbListBox.getItemCount() > 0){
-                while(actionVerbListBox.getItemCount() > 0){
-                  actionVerbListBox.removeItem(0);
+              if(otherActionVerbListBox.getItemCount() > 0){
+                while(otherActionVerbListBox.getItemCount() > 0){
+                  otherActionVerbListBox.removeItem(0);
                 }
               }
               thenTextBox.setText("");
@@ -430,8 +647,7 @@ public class SourceStructureExplorer extends Composite {
           }
         });
 
-        //same of when subj
-        actionVerbListBox.addChangeHandler(new ChangeHandler() {
+        otherActionVerbListBox.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent changeEvent) {
             int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
@@ -443,383 +659,163 @@ public class SourceStructureExplorer extends Composite {
           }
         });
 
-        innerVerticalPanel.add(horizontalPanelWhen);
-        innerVerticalPanel.add(horizontalPanelAction);
-        rulesListBoxes.get(screenName).get(newRule.getIndex()).getRulesThenPanel().add(horizontalPanelAction);
+        int lastThenIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() - 1;
+        int temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().get(lastThenIndex)) + 1;
+        //Window.alert("Action will be insert in position: " + String.valueOf(temp));
+        rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().add(horizontalPanelAction_n);
+        innerVerticalPanel.insert(horizontalPanelAction_n, temp);
 
-        Button addCond = new Button();
-        addCond.setText("Add condition");
+        if(deleteMainAction != null){
+          deleteMainAction.setEnabled(true);
+        }
 
-        Button addAction = new Button();
-        addAction.setText("Add action");
-
-        Button copyRule = new Button();
-        copyRule.setText("Copy rule");
-
-        Button deleteRule = new Button();
-        deleteRule.setText("Delete rule");
-
-        HorizontalPanel horizontalPanelButton = new HorizontalPanel();
-        horizontalPanelButton.add(addCond);
-        horizontalPanelButton.add(addAction);
-        horizontalPanelButton.add(copyRule);
-        horizontalPanelButton.add(deleteRule);
-
-        innerVerticalPanel.add(horizontalPanelButton);
-
-        deleteMainAction.addClickHandler(new ClickHandler() {
+        deleteOtherAction.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent clickEvent) {
-            deleteActionHandler(horizontalPanelAction, innerVerticalPanel);
+            deleteActionHandler(horizontalPanelAction_n, innerVerticalPanel);
           }
         });
+      }
+    });
 
-        addAction.addClickHandler(new ClickHandler() {
+    addCond.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent clickEvent) {
+
+        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        int size = rulesListBoxes.get(screenName).get(ruleIndex).getConditions().size();
+
+        HorizontalPanel ifLabelContainer = new HorizontalPanel();
+        final ListBox andOrListBox = new ListBox();
+
+        Label ifLabel = new Label();
+        ifLabel.setText("If");
+        ifLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+        ifLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
+        ifLabelContainer.add(ifLabel);
+
+        if(size != 0){
+          ifLabel.setText("");
+          andOrListBox.addItem("");
+          andOrListBox.addItem("AND");
+          andOrListBox.addItem("OR");
+          andOrListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+        }
+
+        final ListBox ifSubjListBox = new ListBox();
+        ifSubjListBox.addItem("");
+        ifSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+        final ListBox ifVerbListBox = new ListBox();
+        ifVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+
+        //rulesListBoxes.get(rulesListBoxesCount - 1).setIfSubj(ifSubjListBox);
+        //rulesListBoxes.get(rulesListBoxesCount - 1).setIfVerb(ifVerbListBox);
+
+        final TextBox ifTextBox = new TextBox();
+        ifTextBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
+        double height = 25.0;
+        ifTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
+        ifTextBox.setVisible(false);
+
+        Button deleteCond = new Button();
+        deleteCond.setText("DEL");
+
+        final HorizontalPanel horizontalPanelIf = new HorizontalPanel();
+        rulesListBoxes.get(screenName).get(ruleIndex).addCondition(new Condition(horizontalPanelIf, ifSubjListBox, ifVerbListBox, ifTextBox));//, deleteCond));
+
+        //Window.alert("IfIndex: " +
+        //        String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
+        horizontalPanelIf.setTitle("Condition " +
+                String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
+        horizontalPanelIf.add(ifLabelContainer);
+        HTML line = new HTML("<hr  style=\"width:50px;\" />");
+        horizontalPanelIf.add(line);
+        if(size != 0){
+          rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(size).setANDOR(andOrListBox);
+          horizontalPanelIf.add(andOrListBox);
+          horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
+        }
+        horizontalPanelIf.add(ifSubjListBox);
+        horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelIf.add(ifVerbListBox);
+        horizontalPanelIf.add(ifTextBox);
+
+        //Same of whensubj
+        ifSubjListBox.addChangeHandler(new ChangeHandler() {
           @Override
-          public void onClick(ClickEvent clickEvent) {
+          public void onChange(ChangeEvent changeEvent) {
             int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-            final int index = rulesListBoxes.get(screenName).get(ruleIndex).getActions().size();
-            //Window.alert("Rule: " + ruleIndex + ", Action: " + index);
-
-            final ListBox otherActionTypeListBox = new ListBox();
-            otherActionTypeListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-            otherActionTypeListBox.addItem("");
-            otherActionTypeListBox.addItem("Set");
-            otherActionTypeListBox.addItem("Call");
-            otherActionTypeListBox.addItem("Open");
-
-            final ListBox otherActionSubjListBox = new ListBox();
-            //otherActionSubjListBox.addItem("");
-            otherActionSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-            final ListBox otherActionVerbListBox = new ListBox();
-            //otherActionVerbListBox.addItem("");
-            otherActionVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-            final TextBox thenTextBox = new TextBox();
-            thenTextBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-            String heightStr = otherActionVerbListBox.getElement().getStyle().getHeight();
-            double height = 25.0;
-            if(heightStr != null && !heightStr.equals("")){
-              height = Double.parseDouble(heightStr);
-            }
-            thenTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
-            thenTextBox.setVisible(false);
-
-            Button deleteOtherAction = new Button();
-            deleteOtherAction.setText("DEL");
-
-            rulesListBoxes.get(screenName).get(ruleIndex).getActions().add(new Action(index, otherActionTypeListBox,
-                    otherActionSubjListBox, otherActionVerbListBox, thenTextBox, deleteOtherAction));
-
-            final Label hiddenIndexLabel = new Label();
-            hiddenIndexLabel.setVisible(false);
-            hiddenIndexLabel.setText(String.valueOf(index));
-
-            final Label thenLabel = new Label();
-            thenLabel.setText("Then");
-            thenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-            HorizontalPanel thenLabelContainer = new HorizontalPanel();
-            thenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
-            thenLabelContainer.add(thenLabel);
-
-            final HorizontalPanel horizontalPanelAction_n = new HorizontalPanel();
-            horizontalPanelAction_n.setTitle("Action " +
-                    String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() + 1));
-            horizontalPanelAction_n.add(hiddenIndexLabel);
-            horizontalPanelAction_n.add(thenLabelContainer);
-            horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
-            horizontalPanelAction_n.add(otherActionTypeListBox);
-            horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
-            horizontalPanelAction_n.add(otherActionSubjListBox);
-            horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
-            horizontalPanelAction_n.add(otherActionVerbListBox);
-
-            horizontalPanelAction_n.add(thenTextBox);
-            horizontalPanelAction_n.add(deleteOtherAction);
-
-            otherActionSubjListBox.addItem("");
-            for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
-              otherActionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
-            }
-
-            //same of when subj
-            otherActionTypeListBox.addChangeHandler(new ChangeHandler() {
-              @Override
-              public void onChange(ChangeEvent changeEvent) {
-                int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-                int actionIndex = Integer.parseInt(horizontalPanelAction_n.getTitle().split("Action ")[1]) - 1;
-                //selected is the action type select by the user
-                String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                        .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
-                String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                        .getThenSubj() != null ?
-                        otherActionSubjListBox.getSelectedIndex() != -1 ?
-                        rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                                .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex()) : null
-                        : null;
-                boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
-
-                if(otherActionTypeListBox.getSelectedItemText().equals("Open")){
-                  while (otherActionSubjListBox.getItemCount() > 0) {
-                    otherActionSubjListBox.removeItem(0);
-                  }
-                  while (otherActionVerbListBox.getItemCount() > 0) {
-                    otherActionVerbListBox.removeItem(0);
-                  }
-                  otherActionSubjListBox.addItem("");
-                  otherActionVerbListBox.addItem("");
-                  otherActionSubjListBox.addItem("another screen");
-                }
-                else{
-                  while (otherActionSubjListBox.getItemCount() > 0) {
-                    otherActionSubjListBox.removeItem(0);
-                  }
-                  otherActionSubjListBox.addItem("");
-                  otherActionVerbListBox.addItem("");
-                  for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
-                    otherActionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
-                  }
-                }
-
-                if(actionSubjSelected){
-                  int index = otherActionTypeListBox.getSelectedIndex() - 1;
-                  if(index >= 0){
-                    ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType, index);
-                  }
-                  else{
-                    if(otherActionVerbListBox.getItemCount() > 0){
-                      while(otherActionVerbListBox.getItemCount() > 0){
-                        otherActionVerbListBox.removeItem(0);
-                      }
-                    }
-                    thenTextBox.setText("");
-                    thenTextBox.setVisible(false);
-                  }
-                }
-              }
-            });
-
-            //same of when subj
-            otherActionSubjListBox.addChangeHandler(new ChangeHandler() {
-              @Override
-              public void onChange(ChangeEvent changeEvent) {
-                int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-                int actionIndex = Integer.parseInt(horizontalPanelAction_n.getTitle().split("Action ")[1]) - 1;
-                //selected is the action type select by the user
-                String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                        .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
-                String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                        .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex());
-
-                int index = otherActionSubjListBox.getSelectedIndex() - 1;
-                if(index >= 0){
-                  String viewClickedType = ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType, index);
-                  rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex).setViewClickedType(viewClickedType);
-                }
-                else{
-                  if(otherActionVerbListBox.getItemCount() > 0){
-                    while(otherActionVerbListBox.getItemCount() > 0){
-                      otherActionVerbListBox.removeItem(0);
-                    }
-                  }
-                  thenTextBox.setText("");
-                  thenTextBox.setVisible(false);
-                }
-              }
-            });
-
-            otherActionVerbListBox.addChangeHandler(new ChangeHandler() {
-              @Override
-              public void onChange(ChangeEvent changeEvent) {
-                int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-                int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
-                //selected is the action type select by the user
-                String actionVerb = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
-                        .getThenVerb().getValue(actionVerbListBox.getSelectedIndex());
-                ListBoxThenVerbFieldClicked(actionVerb, thenTextBox);
-              }
-            });
-
-            int lastThenIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() - 1;
-            int temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().get(lastThenIndex)) + 1;
-            //Window.alert("Action will be insert in position: " + String.valueOf(temp));
-            rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().add(horizontalPanelAction_n);
-            innerVerticalPanel.insert(horizontalPanelAction_n, temp);
-
-            if(deleteMainAction != null){
-              deleteMainAction.setEnabled(true);
-            }
-
-            deleteOtherAction.addClickHandler(new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent clickEvent) {
-                deleteActionHandler(horizontalPanelAction_n, innerVerticalPanel);
-              }
-            });
+            int conditionIndex = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
+            String viewClickedType = ListBoxIfSubjFieldClicked(ifSubjListBox, ifVerbListBox);
+            rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(conditionIndex).setViewClickedType(viewClickedType);
           }
         });
 
-        addCond.addClickHandler(new ClickHandler() {
+        //Some "if verb" require an extra input text field
+        ifVerbListBox.addChangeHandler(new ChangeHandler() {
+          @Override
+          public void onChange(ChangeEvent changeEvent) {
+            ListBoxIfVerbFieldClicked(ifVerbListBox, ifTextBox);
+          }
+        });
+
+        for(int i = 0; i < ifSubjListBoxGeneric.getItemCount(); i++){
+          ifSubjListBox.addItem(ifSubjListBoxGeneric.getValue(i));
+        }
+        for(int i = 0; i < ifVerbListBoxGeneric.getItemCount(); i++){
+          ifVerbListBox.addItem(ifVerbListBoxGeneric.getValue(i));
+        }
+
+        int lastIfIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() - 1;
+        int temp = -1;
+        if(lastIfIndex == -1){
+          temp = innerVerticalPanel.getWidgetIndex(horizontalPanelWhen) + 1;
+        }
+        else{
+          temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().get(lastIfIndex)) + 1;
+        }
+        //Window.alert("Condition will be insert in position: " + String.valueOf(temp));
+        rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().add(horizontalPanelIf);
+        innerVerticalPanel.insert(horizontalPanelIf, temp);
+
+        deleteCond.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent clickEvent) {
-
+            int indexToRemove = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
+            int ifPos = innerVerticalPanel.getWidgetIndex(horizontalPanelIf);
+            //Window.alert("Condition index: " + (indexToRemove) + ", Condition pos: " + ifPos);
             int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-            int size = rulesListBoxes.get(screenName).get(ruleIndex).getConditions().size();
+            //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(indexToRemove).setIfSubj(null);
+            //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(indexToRemove).setIfVerb(null);
+            rulesListBoxes.get(screenName).get(ruleIndex).getConditions().remove(indexToRemove);
+            rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().remove(indexToRemove);
+            boolean res = innerVerticalPanel.remove(ifPos);
 
-            HorizontalPanel ifLabelContainer = new HorizontalPanel();
-            final ListBox andOrListBox = new ListBox();
-
-            Label ifLabel = new Label();
-            ifLabel.setText("If");
-            ifLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-            ifLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
-            ifLabelContainer.add(ifLabel);
-
-            if(size != 0){
-              ifLabel.setText("");
-              andOrListBox.addItem("");
-              andOrListBox.addItem("AND");
-              andOrListBox.addItem("OR");
-              andOrListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-            }
-
-            final ListBox ifSubjListBox = new ListBox();
-            ifSubjListBox.addItem("");
-            ifSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-            final ListBox ifVerbListBox = new ListBox();
-            ifVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-
-            //rulesListBoxes.get(rulesListBoxesCount - 1).setIfSubj(ifSubjListBox);
-            //rulesListBoxes.get(rulesListBoxesCount - 1).setIfVerb(ifVerbListBox);
-
-            final TextBox ifTextBox = new TextBox();
-            ifTextBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
-            String heightStr = ifVerbListBox.getElement().getStyle().getHeight();
-            double height = 25.0;
-            if(heightStr != null && !heightStr.equals("")){
-              height = Double.parseDouble(heightStr);
-            }
-            ifTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
-            ifTextBox.setVisible(false);
-
-            Button deleteCond = new Button();
-            deleteCond.setText("DEL");
-
-            rulesListBoxes.get(screenName).get(ruleIndex).addCondition(new Condition(ifSubjListBox, ifVerbListBox, ifTextBox));//, deleteCond));
-
-            final HorizontalPanel horizontalPanelIf = new HorizontalPanel();
-            //Window.alert("IfIndex: " +
-            //        String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
-            horizontalPanelIf.setTitle("Condition " +
-                    String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
-            horizontalPanelIf.add(ifLabelContainer);
-            HTML line = new HTML("<hr  style=\"width:50px;\" />");
-            horizontalPanelIf.add(line);
-            if(size != 0){
-              rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(size).setANDOR(andOrListBox);
-              horizontalPanelIf.add(andOrListBox);
-              horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
-            }
-            horizontalPanelIf.add(ifSubjListBox);
-            horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
-            horizontalPanelIf.add(ifVerbListBox);
-            horizontalPanelIf.add(ifTextBox);
-
-            //Same of whensubj
-            ifSubjListBox.addChangeHandler(new ChangeHandler() {
-              @Override
-              public void onChange(ChangeEvent changeEvent) {
-                int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-                int conditionIndex = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
-                String viewClickedType = ListBoxIfSubjFieldClicked(ifSubjListBox, ifVerbListBox);
-                rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(conditionIndex).setViewClickedType(viewClickedType);
-              }
-            });
-
-            //Some "if verb" require an extra input text field
-            ifVerbListBox.addChangeHandler(new ChangeHandler() {
-              @Override
-              public void onChange(ChangeEvent changeEvent) {
-                ListBoxIfVerbFieldClicked(ifVerbListBox, ifTextBox);
-              }
-            });
-
-            for(int i = 0; i < ifSubjListBoxGeneric.getItemCount(); i++){
-              ifSubjListBox.addItem(ifSubjListBoxGeneric.getValue(i));
-            }
-            for(int i = 0; i < ifVerbListBoxGeneric.getItemCount(); i++){
-              ifVerbListBox.addItem(ifVerbListBoxGeneric.getValue(i));
-            }
-
-            int lastIfIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() - 1;
-            int temp = -1;
-            if(lastIfIndex == -1){
-              temp = innerVerticalPanel.getWidgetIndex(horizontalPanelWhen) + 1;
-            }
-            else{
-              temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().get(lastIfIndex)) + 1;
-            }
-            //Window.alert("Condition will be insert in position: " + String.valueOf(temp));
-            rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().add(horizontalPanelIf);
-            innerVerticalPanel.insert(horizontalPanelIf, temp);
-
-            deleteCond.addClickHandler(new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent clickEvent) {
-                int indexToRemove = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
-                int ifPos = innerVerticalPanel.getWidgetIndex(horizontalPanelIf);
-                //Window.alert("Condition index: " + (indexToRemove) + ", Condition pos: " + ifPos);
-                int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-                //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(indexToRemove).setIfSubj(null);
-                //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(indexToRemove).setIfVerb(null);
-                rulesListBoxes.get(screenName).get(ruleIndex).getConditions().remove(indexToRemove);
-                rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().remove(indexToRemove);
-                boolean res = innerVerticalPanel.remove(ifPos);
-
-                for(HorizontalPanel ifPanel : rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel()){
-                  int i = Integer.parseInt(ifPanel.getTitle().split("Condition ")[1]) - 1;
-                  if(i > indexToRemove){
-                    ifPanel.setTitle("Condition " + String.valueOf(i - 1));
-                  }
-                }
-              }
-            });
-
-            horizontalPanelIf.add(deleteCond);
-          }
-        });
-
-        copyRule.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent clickEvent) {
-            Window.alert("WIP");
-          }
-        });
-
-        deleteRule.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent clickEvent) {
-            YaBlocksEditor editor =
-                    (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
-            if(ruleStatus.getText().equals("In progress")){
-              removeRuleLayout(innerVerticalPanel, verticalPanel, confirmButton);
-            }
-            else{
-              //TODO cambiare l'id con quello del file di salvataggio
-              int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-              boolean res = editor.deleteBlock(rulesListBoxes.get(screenName).get(ruleIndex).getBlock_id());
-              if(res){
-                removeRuleLayout(innerVerticalPanel, verticalPanel, confirmButton);
-              }
-              else{
-                Window.alert("An error occurs during rule deleting.");
+            for(HorizontalPanel ifPanel : rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel()){
+              int i = Integer.parseInt(ifPanel.getTitle().split("Condition ")[1]) - 1;
+              if(i > indexToRemove){
+                ifPanel.setTitle("Condition " + String.valueOf(i - 1));
               }
             }
           }
         });
 
-        for(int i = 0; i < whenSubjListBoxGeneric.getItemCount(); i++){
-          whenSubjListBox.addItem(whenSubjListBoxGeneric.getValue(i));
-        }/*
+        horizontalPanelIf.add(deleteCond);
+      }
+    });
+
+    copyRule.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent clickEvent) {
+        //Window.alert("WIP");
+      }
+    });
+
+    //Window.alert("whenSubjListBoxGeneric.getItemCount(): " + whenSubjListBoxGeneric.getItemCount());
+    for(int i = 0; i < whenSubjListBoxGeneric.getItemCount(); i++){
+      //Window.alert(whenSubjListBoxGeneric.getItemText(i));
+      whenSubjListBox.addItem(whenSubjListBoxGeneric.getValue(i));
+    }/*
         for(int i = 0; i < whenVerbListBoxGeneric.getItemCount(); i++){
           whenVerbListBox.addItem(whenVerbListBoxGeneric.getValue(i));
         }
@@ -830,11 +826,12 @@ public class SourceStructureExplorer extends Composite {
           actionVerbListBox.addItem(thenVerbListBoxGeneric.getValue(i));
         }*/
 
-        ruleStatus = new Label("In progress");
-        ruleStatus.setVisible(false);
-        verticalPanel.add(innerVerticalPanel);
-      }
-    });
+    ruleStatus = new Label("In progress");
+    ruleStatus.setVisible(false);
+    rulesListBoxes.get(screenName).get(ruleIndex).setRuleStatus(ruleStatus);
+    verticalPanel.add(innerVerticalPanel);
+
+    //Window.alert("Post addemptyrule");
 
     resultLabel = new Label();
     //resultLabel.setWidth("100%"); //fill width
@@ -842,135 +839,169 @@ public class SourceStructureExplorer extends Composite {
     confirmButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
-              int ruleCount = 0;
-              //Rule to formatted string
-              int ruleIndex = 0;
-              for(Rule rule : rulesListBoxes.get(screenName)) {
-                String value = "";
-                //EVENT
-                value += "when " + rule.getWhenSubj().getSelectedItemText() + " " +
-                        rule.getViewClickedType() + " " +
-                        rule.getWhenVerb().getSelectedItemText() + " ";
+        //Rule to formatted string
+        int ruleIndex = 0;
 
-                //CONDITION
-                if(rule.getConditions() != null && rule.getConditions().size() > 0){
-                  value += "if ";
-                  int i = 0;
-                  for(Condition condition : rule.getConditions()){
-                    if(i > 0){
-                      value += condition.getANDOR().getSelectedItemText().toUpperCase() + " ";
-                    }
-                    String conditionVerb = condition.getIfVerb().getSelectedItemText().contains("not") ?
-                            "not " + condition.getIfVerb().getSelectedItemText().replace("not ", "") :
-                            condition.getIfVerb().getSelectedItemText();
-                    value += condition.getIfSubj().getSelectedItemText().toLowerCase() + " " +
-                            condition.getViewClickedType().toLowerCase() + " " +
-                            conditionVerb.toLowerCase() + " " +
-                            condition.getIfTextBox().getText().toLowerCase() + " ";
-                    i++;
-                  }
-                }
+        YaBlocksEditor editor = (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
+        /*if(toBeAddRule.getRuleStatus().getText().equals("Created")){
+          boolean res = editor.deleteBlock(toBeAddRule.getBlock_id());
+          if(res){
+            removeRuleLayout(toBeAddRule.getInnerVerticalPanel(), verticalPanel, confirmButton);
+          }
+        }*/
 
-                //ACTION
-                value += "then ";
-                int i = 0;
-                for(Action action : rule.getActions()){
-                  //Window.alert("Parsing action " + i + " with type " + action.getThenType().getSelectedItemText());
-                  if(i > 0){
-                    value += " AND ";
-                  }
-                  if(action.getThenType().getSelectedItemText().contains("Open")) {
-                    Window.alert("open: \naction.getThenType().getSelectedItemText(): " + action.getThenType().getSelectedItemText() + "\n" +
-                            "action.getThenSubj().getSelectedItemText(): " + action.getThenSubj().getSelectedItemText());
-                  }
-                  value += action.getThenType().getSelectedItemText().contains("Open") ?
-                          action.getThenType().getSelectedItemText().toLowerCase() + " " +
-                                  action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
-                                  action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
-                                  action.getThenTextBox().getText() :
-                          action.getThenType().getSelectedItemText().toLowerCase() + " " +
-                                  action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
-                                  action.getViewClickedType().toLowerCase() + " " +
-                                  action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
-                                  action.getThenTextBox().getText().toLowerCase();
-                  i++;
-                }
 
-                Window.alert("Rule " + ruleCount + ": \n" + value);
-                ruleCount++;
+        String value = "";
+        //EVENT
+        value += "when " + toBeAddRule.getWhenSubj().getSelectedItemText() + " " +
+                toBeAddRule.getViewClickedType() + " " +
+                toBeAddRule.getWhenVerb().getSelectedItemText() + " ";
 
-                //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
-                ///Custom Lexer ->  A lexer takes the individual characters and transforms them
-                // in tokens, the atoms that the parser uses to create the logical structure
-                TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(value));
-                tesiLexer.removeErrorListeners();
-                //Create syntax error listener
-                SyntaxErrorListener errorListener = new SyntaxErrorListener();
-                //Add it to lexer
-                tesiLexer.addErrorListener(errorListener);
-                ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
-                CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
+        //CONDITION
+        if(toBeAddRule.getConditions() != null && toBeAddRule.getConditions().size() > 0){
+          value += "if ";
+          int i = 0;
+          for(Condition condition : toBeAddRule.getConditions()){
+            if(i > 0){
+              value += condition.getANDOR().getSelectedItemText().toUpperCase() + " ";
+            }
+            String textValue = condition.getIfTextBox().isVisible() ? " " + condition.getIfTextBox().getText().toLowerCase() + " " : " ";
+            String conditionVerb = condition.getIfVerb().getSelectedItemText().contains("not") ?
+                    "not " + condition.getIfVerb().getSelectedItemText().replace("not ", "") :
+                    condition.getIfVerb().getSelectedItemText();
+            value += condition.getIfSubj().getSelectedItemText().toLowerCase() + " " +
+                    condition.getViewClickedType().toLowerCase() + " " +
+                    conditionVerb.toLowerCase() + textValue;
+            i++;
+          }
+        }
 
-                ///Custom Parser
-                TesiParser tesiParser = new TesiParser(commonTokenStream);
-                tesiParser.removeErrorListeners();
-                //Add prev syntax error listener to parser
-                tesiParser.addErrorListener(errorListener);
+        //ACTION
+        value += "then ";
+        int i = 0;
+        for(Action action : toBeAddRule.getActions()){
+          //Window.alert("Parsing action " + i + " with type " + action.getThenType().getSelectedItemText());
+          if(i > 0){
+            value += " AND ";
+          }
+          if(action.getThenType().getSelectedItemText().contains("Open")) {
+            //Window.alert("open: \naction.getThenType().getSelectedItemText(): " + action.getThenType().getSelectedItemText() + "\n" +
+            //        "action.getThenSubj().getSelectedItemText(): " + action.getThenSubj().getSelectedItemText());
+          }
+          value += action.getThenType().getSelectedItemText().contains("Open") ?
+                  action.getThenType().getSelectedItemText().toLowerCase() + " " +
+                          action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
+                          action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
+                          action.getThenTextBox().getText() :
+                  action.getThenType().getSelectedItemText().toLowerCase() + " " +
+                          action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
+                          action.getViewClickedType().toLowerCase() + " " +
+                          action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
+                          action.getThenTextBox().getText().toLowerCase();
+          i++;
+        }
 
-                tesiParser.setBuildParseTree(true);
-                //Set the root of parse tree as upper parser rules i've defined, aka blocks
-                TesiParser.BlockContext treeRoot = tesiParser.block();
+        //Window.alert("Rule " + ruleCount + ": \n" + value);
+        //ruleCount++;
 
-                TesiParserBaseVisitor visitor = new TesiParserBaseVisitor();
-                visitor.visit(treeRoot);
+        //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
+        ///Custom Lexer ->  A lexer takes the individual characters and transforms them
+        // in tokens, the atoms that the parser uses to create the logical structure
+        TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(value));
+        tesiLexer.removeErrorListeners();
+        //Create syntax error listener
+        SyntaxErrorListener errorListener = new SyntaxErrorListener();
+        //Add it to lexer
+        tesiLexer.addErrorListener(errorListener);
+        ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
+        CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
 
-                //Window.alert("Parsed");
-                if(tesiParser.getNumberOfSyntaxErrors() == 0){
-                  //Se ha riconosciuto regole
-                  if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
-                    resultLabel.setText("Rule detected successfully");
+        ///Custom Parser
+        TesiParser tesiParser = new TesiParser(commonTokenStream);
+        tesiParser.removeErrorListeners();
+        //Add prev syntax error listener to parser
+        tesiParser.addErrorListener(errorListener);
 
-                    //Window.alert("before getJson");
-                    String updateRule = "";
-                    if(ruleStatus.getText().equals("In progress")){
-                      updateRule = "false";
-                    }
-                    else if(ruleStatus.getText().equals("Created")){
-                      updateRule = "true";
-                    }
-                    JSONObject ruleJSON = getJSONBlock(treeRoot, screenName, updateRule);
-                    //Window.alert("after getJson");
+        tesiParser.setBuildParseTree(true);
+        //Set the root of parse tree as upper parser rules i've defined, aka blocks
+        TesiParser.BlockContext treeRoot = tesiParser.block();
 
-                    //Window.alert("Json: \n" + rule.toString());
+        TesiParserBaseVisitor visitor = new TesiParserBaseVisitor();
+        visitor.visit(treeRoot);
 
-                    //Window.alert( "rule: \n\n" + rule.toString());
-                    YaBlocksEditor editor =
-                            (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
-                    String whenBlockID = null;
-                    whenBlockID = editor.insertBlock(ruleJSON.toString());
-                    if(whenBlockID != null){
-                      ruleStatus.setText("Created");
-                      rulesListBoxes.get(screenName).get(ruleIndex).setBlock_id(whenBlockID);
-                      Window.alert("DEBUG id: " + whenBlockID + "(ruleIndex " + ruleIndex + ")");
-                      //TODO Salvataggio su file
-                      String path = "appinventor/appengine/src/com/google/appinventor/client/thesis";
+        //Window.alert("Parsed");
+        if(tesiParser.getNumberOfSyntaxErrors() == 0){
+          //Se ha riconosciuto regole
+          if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
+            resultLabel.setText("Rule detected successfully");
 
-                    }
-                  }
-                  else{
-                    resultLabel.setText("No rules detected.");
-                  }
+            String updateRule = "";
+            if(toBeAddRule.getRuleStatus().getText().equals("In progress")){
+              updateRule = "false";
+            }
+            else if((toBeAddRule.getRuleStatus().getText().equals("Created"))){
+              updateRule = "true";
+            }
+            Integer prevYTemp_ = rulesListBoxes.get(screenName).indexOf(toBeAddRule) * 50;//rulesListBoxes.get(screenName).get(ruleCount - 1).getPrevY_();
+            //Window.alert("before getJson...prevY_: " + prevYTemp_);
+            JSONObject ruleJSON = getJSONBlock(treeRoot, screenName, updateRule, prevYTemp_.toString());
+            //Window.alert("after getJson");
+
+            //Window.alert("Json: \n" + ruleJSON.toString());
+
+            //Window.alert( "rule: \n\n" + rule.toString());
+            String whenBlockID = null;
+            String[] values = editor.insertBlock(ruleJSON.toString());
+            //Window.alert("Results: " + values[0] + " - " + values[1]);
+            whenBlockID = values[0];
+            String prevY_ = values[1]; //y coordinate of the root block of prev rule
+            if(whenBlockID != null){
+              toBeAddRule.getRuleStatus().setText("Created");
+              rulesListBoxes.get(screenName).get(ruleIndex).setBlock_id(whenBlockID);
+              //rulesListBoxes.get(screenName).get(ruleIndex).setPrevY_(prevY_);
+              //TODO Salvataggio su file
+              String path = "appinventor/appengine/src/com/google/appinventor/client/thesis";
+
+              AntRulesSelectorBox.getAntRulesSelectorBox().getAntRulesExplorer().insertRule(toBeAddRule);
+              //verticalPanel.remove(innerVerticalPanel);
+              //SetupPage();
+              //Reset layout
+              toBeAddRule.getWhenSubj().setSelectedIndex(0);
+              toBeAddRule.getWhenVerb().setSelectedIndex(0);
+
+              for(Condition condition : toBeAddRule.getConditions()){
+                innerVerticalPanel.remove(condition.getHorizontalPanelIf());
+              }
+              int c = 0;
+              for(Action action : toBeAddRule.getActions()){
+                if(c == 0){
+                  action.getThenType().setSelectedIndex(0);
+                  action.getThenSubj().setSelectedIndex(0);
+                  action.getThenVerb().setSelectedIndex(0);
+                  action.getThenTextBox().setText("");
+                  action.getThenTextBox().setVisible(false);
+                  action.getDeleteButton().setEnabled(false);
                 }
                 else{
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append("Check the following " + tesiParser.getNumberOfSyntaxErrors()  + " error/s and try again:");
-                  for(String error : errorListener.getSyntaxErrorList()){
-                    stringBuilder.append("\n- " + error);
-                  }
-                  resultLabel.setText(stringBuilder.toString());
+                  innerVerticalPanel.remove(action.getHorizontalPanelAction());
                 }
-                ruleIndex++;
               }
+              resultLabel.setText(MESSAGES.resultLabelAntLR());
+
+            }
+          }
+          else{
+            resultLabel.setText("No rules detected.");
+          }
+        }
+        else{
+          StringBuilder stringBuilder = new StringBuilder();
+          stringBuilder.append("Check the following " + tesiParser.getNumberOfSyntaxErrors()  + " error/s and try again:");
+          for(String error : errorListener.getSyntaxErrorList()){
+            stringBuilder.append("\n- " + error);
+          }
+          resultLabel.setText(stringBuilder.toString());
+        }
 
 
 
@@ -988,31 +1019,14 @@ public class SourceStructureExplorer extends Composite {
     panel.setCellHorizontalAlignment(confirmButton, HorizontalPanel.ALIGN_CENTER);
     panel.setWidth("100%");
     panel.setHeight("100%");
-  }
-
-  private void removeRuleLayout(VerticalPanel innerVerticalPanel, VerticalPanel verticalPanel, Button confirmButton) {
-    int indexToRemove = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-    for(Rule rule : rulesListBoxes.get(screenName)){
-      VerticalPanel rulePanel = rule.getRulePanel();
-      int index = Integer.parseInt(rulePanel.getTitle().split("Rule ")[1]) - 1;
-      if(index > indexToRemove){
-        rulePanel.setTitle("Rule " + (index - 1));
-      }
-    }
-
-    verticalPanel.remove(rulesListBoxes.get(screenName).get(indexToRemove).getRulePanel());
-    rulesListBoxes.get(screenName).remove(indexToRemove);
-
-    if(rulesListBoxes.get(screenName).size() == 0){
-      confirmButton.setEnabled(false);
-    }
+    //Window.alert("fine Setup");
   }
 
   //feduss
   private void deleteActionHandler(HorizontalPanel horizontalPanelThen, VerticalPanel innerVerticalPanel) {
     int indexToRemove = Integer.parseInt(horizontalPanelThen.getTitle().split("Action ")[1]) - 1;
     int thenPos = innerVerticalPanel.getWidgetIndex(horizontalPanelThen);
-    Window.alert("Action index: " + (indexToRemove) + ", Action pos: " + thenPos);
+    //Window.alert("Action index: " + (indexToRemove) + ", Action pos: " + thenPos);
     int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
     //rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(indexToRemove).setThenSubj(null);
     //rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(indexToRemove).setThenVerb(null);
@@ -1101,7 +1115,7 @@ public class SourceStructureExplorer extends Composite {
           break;
         //TODO add notifier?
         default:
-          Window.alert("NotHandledCase: " + compType);
+          //Window.alert("NotHandledCase: " + compType);
           /*verbList.addItem("is hidden");
           verbList.addItem("is make visible");
           verbList.addItem("is disabled");
@@ -1429,7 +1443,7 @@ public class SourceStructureExplorer extends Composite {
           break;
         //TODO add notifier?
         default:
-          Window.alert("NotHandledCase: " + compType);
+          //Window.alert("NotHandledCase: " + compType);
       }
 
       return compType;
@@ -1766,7 +1780,7 @@ public class SourceStructureExplorer extends Composite {
           break;
         //TODO add notifier?
         default:
-          Window.alert("NotHandledCase: " + compType);
+          //Window.alert("NotHandledCase: " + compType);
       }
       return compType;
     }
@@ -1784,8 +1798,9 @@ public class SourceStructureExplorer extends Composite {
   }
 
   //feduss
-  private static JSONObject getJSONBlock(TesiParser.BlockContext treeRoot, String screenName, String updateRule) {
+  private static JSONObject getJSONBlock(TesiParser.BlockContext treeRoot, String screenName, String updateRule, String prevY_) {
     JSONObject json = new JSONObject();
+    json.put("prevY_", new JSONString(prevY_));
     if(treeRoot != null){
       //treeRoot is the block rules detected
       //the i get the event, and then the string, to get the drawerName
@@ -1830,7 +1845,7 @@ public class SourceStructureExplorer extends Composite {
           CondValue = treeRoot.condition().condition_statement().value().getText();
         }
 
-        Window.alert("MainCond: " + ConditionSubj + ConditionSubjType + ConditionVerbAction);
+        //Window.alert("MainCond: " + ConditionSubj + ConditionSubjType + ConditionVerbAction);
         temp = new JSONObject();
         JSONObject temp2 = new JSONObject();
         temp2.put("condSubj", new JSONString(ConditionSubj));

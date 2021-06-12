@@ -762,7 +762,7 @@ public class BlocklyPanel extends HTMLPanel {
   }-*/;
 
   //feduss
-  public native String insertBlock(String rule)/*-{
+  public native String[] insertBlock(String rule)/*-{
     return this.@com.google.appinventor.client.editor.youngandroid.BlocklyPanel::workspace
       .insertBlock(rule);
   }-*/;

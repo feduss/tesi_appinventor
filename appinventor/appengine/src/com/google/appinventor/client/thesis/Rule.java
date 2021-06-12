@@ -1,6 +1,7 @@
 package com.google.appinventor.client.thesis;
 
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -17,6 +18,9 @@ public class Rule {
     private ArrayList<HorizontalPanel> rulesIfPanel; //contains the HorizontalPanel of if(condition)
     private ArrayList<HorizontalPanel> rulesThenPanel; //contains the HorizontalPanel of then(action)
     private String block_id; //id of the main block of the rule, useful to delete the block when the rule is deleted
+    private VerticalPanel innerVerticalPanel;
+    private String prevY_ = ""; //y coordinate of the root block of the rule
+    private Label ruleStatus;
 
 
     public Rule(int index){
@@ -108,5 +112,29 @@ public class Rule {
 
     public void setBlock_id(String block_id) {
         this.block_id = block_id;
+    }
+
+    public VerticalPanel getInnerVerticalPanel() {
+        return innerVerticalPanel;
+    }
+
+    public void setInnerVerticalPanel(VerticalPanel innerVerticalPanel) {
+        this.innerVerticalPanel = innerVerticalPanel;
+    }
+
+    public String getPrevY_() {
+        return prevY_;
+    }
+
+    public void setPrevY_(String prevY_) {
+        this.prevY_ = prevY_;
+    }
+
+    public Label getRuleStatus() {
+        return ruleStatus;
+    }
+
+    public void setRuleStatus(Label ruleStatus) {
+        this.ruleStatus = ruleStatus;
     }
 }

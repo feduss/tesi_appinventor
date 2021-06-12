@@ -1,11 +1,13 @@
 package com.google.appinventor.client.thesis;
 
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class Condition {
 
+    private HorizontalPanel horizontalPanelIf;
     private ListBox andOR;
     private ListBox ifSubj;
     private ListBox ifVerb;
@@ -13,12 +15,22 @@ public class Condition {
     private String viewClickedType = "";
     //private Button deleteButton;
 
-    public Condition(ListBox ifSubj, ListBox ifVerb, TextBox ifTextBox/*, Button deleteCond*/){
+    public Condition(HorizontalPanel horizontalPanelIf, ListBox ifSubj, ListBox ifVerb, TextBox ifTextBox/*, Button deleteCond*/){
+        this.setHorizontalPanelIf(horizontalPanelIf);
         this.setIfSubj(ifSubj);
         this.setIfVerb(ifVerb);
         this.setIfTextBox(ifTextBox);
         //this.setDeleteButton(deleteCond);
     }
+
+    public HorizontalPanel getHorizontalPanelIf() {
+        return horizontalPanelIf;
+    }
+
+    public void setHorizontalPanelIf(HorizontalPanel horizontalPanelIf) {
+        this.horizontalPanelIf = horizontalPanelIf;
+    }
+
     public ListBox getIfSubj() {
         return ifSubj;
     }

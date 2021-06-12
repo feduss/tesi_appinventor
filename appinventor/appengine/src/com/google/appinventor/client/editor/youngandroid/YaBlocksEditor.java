@@ -517,7 +517,7 @@ public final class YaBlocksEditor extends FileEditor
   }
 
   //feduss
-  public String insertBlock(String rule){
+  public String[] insertBlock(String rule){
     return blocksArea.insertBlock(rule);
   }
 

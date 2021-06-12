@@ -19,6 +19,7 @@ import com.google.appinventor.client.explorer.commands.DeleteFileCommand;
 
 import com.google.appinventor.client.output.OdeLog;
 
+import com.google.appinventor.client.thesis.Rule;
 import com.google.appinventor.client.thesis.ThesisVariables;
 import com.google.appinventor.client.tracking.Tracking;
 
@@ -134,26 +135,36 @@ public class DesignToolbar extends Toolbar {
       sourceStructureExplorer.screenName = currentScreen;
       //Window.alert("SetCurrentScreen: " + sourceStructureExplorer.screenName);
       int size = sourceStructureExplorer.rulesListBoxes.get(currentScreen) == null ? 0 : sourceStructureExplorer.rulesListBoxes.get(currentScreen).size();
-
+      //Window.alert("Size: " + size);
       for(int i = 0; i < size; i++){
-        ListBox whenSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getWhenSubj();
-        ListBox ifSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getConditions().get(0).getIfSubj();
-        ListBox thenSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getActions().get(0).getThenSubj();
-        //feduss, update lists with the item of new page
-        //Window.alert("Removing " + sourceStructureExplorer.whenSubjListBox.getItemCount() + " item from whenSubjListBox");
-        while(whenSubjListBox.getItemCount() > 0){
-          whenSubjListBox.removeItem(0);
-        }
+        Rule rule = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i);
+        if(rule != null){
+          //Window.alert("rule is not null");
+          ListBox whenSubjListBox = rule.getWhenSubj();
+          //Window.alert("0a");
+          ListBox ifSubjListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfSubj() : null;
+          //Window.alert("0b");
+          ListBox thenSubjListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenSubj() : null;
+          //feduss, update lists with the item of new page
+          //Window.alert("1");
+          //Window.alert("Removing " + sourceStructureExplorer.whenSubjListBox.getItemCount() + " item from whenSubjListBox");
+          while(whenSubjListBox != null && whenSubjListBox.getItemCount() > 0){
+            //Window.alert("1a");
+            whenSubjListBox.removeItem(0);
+          }
 
-        while(ifSubjListBox.getItemCount() > 0){
-          ifSubjListBox.removeItem(0);
-        }
+          while(ifSubjListBox != null && ifSubjListBox.getItemCount() > 0){
+            //Window.alert("1b");
+            ifSubjListBox.removeItem(0);
+          }
 
-        while(thenSubjListBox.getItemCount() > 0){
-          thenSubjListBox.removeItem(0);
+          while(thenSubjListBox != null && thenSubjListBox.getItemCount() > 0){
+            //Window.alert("1c");
+            thenSubjListBox.removeItem(0);
+          }
         }
       }
-
+      //Window.alert("Post for");
 
 
       //Window.alert("whenSubjListBox size after remove: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
@@ -193,7 +204,14 @@ public class DesignToolbar extends Toolbar {
           }
       }
 
-      sourceStructureExplorer.SetupPage();
+      //Window.alert("Post if else");
+
+      //Window.alert("Premi ok per SetupPage()...screenName: " + currentScreen);
+
+      if(sourceStructureExplorer.screenSetupCount.get(currentScreen) == null){
+        sourceStructureExplorer.screenSetupCount.put(currentScreen, true);
+        sourceStructureExplorer.SetupPage();
+      }
 
       //Window.alert("whenSubjListBox size after add: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
 
@@ -495,7 +513,7 @@ public class DesignToolbar extends Toolbar {
             public void onSuccess(RpcResult result) {
               lockPublishButton = false;
               if (result.getResult() == RpcResult.SUCCESS) {
-                Window.open(result.getOutput(), "_blank", "");
+                //Window.open(result.getOutput(), "_blank", "");
               } else {
                 ErrorReporter.reportError(result.getError());
               }

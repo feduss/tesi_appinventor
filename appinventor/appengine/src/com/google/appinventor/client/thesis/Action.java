@@ -1,11 +1,13 @@
 package com.google.appinventor.client.thesis;
 
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class Action {
     private int index;
+    private HorizontalPanel horizontalPanelAction;
     private ListBox thenType;
     private ListBox thenSubj;
     private ListBox thenVerb;
@@ -13,13 +15,22 @@ public class Action {
     private Button deleteButton;
     private String viewClickedType = "";
 
-    public Action(int index, ListBox thenType, ListBox thenSubj, ListBox thenVerb, TextBox thenTextBox, Button deleteButton){
+    public Action(int index, HorizontalPanel horizontalPanelAction, ListBox thenType, ListBox thenSubj, ListBox thenVerb, TextBox thenTextBox, Button deleteButton){
         this.setIndex(index);
+        this.setHorizontalPanelAction(horizontalPanelAction);
         this.setThenType(thenType);
         this.setThenSubj(thenSubj);
         this.setThenVerb(thenVerb);
         this.setThenTextBox(thenTextBox);
         this.setDeleteButton(deleteButton);
+    }
+
+    public HorizontalPanel getHorizontalPanelAction() {
+        return horizontalPanelAction;
+    }
+
+    public void setHorizontalPanelAction(HorizontalPanel horizontalPanelAction) {
+        this.horizontalPanelAction = horizontalPanelAction;
     }
 
     public int getIndex() {
@@ -77,4 +88,5 @@ public class Action {
     public void setViewClickedType(String viewClickedType) {
         this.viewClickedType = viewClickedType;
     }
+
 }

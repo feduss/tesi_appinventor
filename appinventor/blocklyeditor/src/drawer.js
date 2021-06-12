@@ -165,7 +165,7 @@ function createBlock(drawerName, index) {
 
     if (!blockSet) {
       //throw "no such drawer: " + drawerName;
-      alert(blockSet.replace("cat_", "") + " doesn't exist: check the views in Designer tab and try again");
+      //alert(blockSet.replace("cat_", "") + " doesn't exist: check the views in Designer tab and try again");
     } else {
       Blockly.hideChaff();
       //comment by feduss, but code is of mit: getting blockset as xmlList
@@ -185,7 +185,7 @@ function createBlock(drawerName, index) {
       return this.flyout_.insertBlock(this.instanceRecordToXMLArray(component), index);
       //this.lastComponent = instanceName;
     } else {
-      alert(instanceName + " doesn't exist: check the views in Designer tab and try again");
+      //alert(instanceName + " doesn't exist: check the views in Designer tab and try again");
 
       console.log("Got call to Blockly.Drawer.showComponent(" + instanceName +
           ") - unknown component name");
@@ -201,7 +201,7 @@ function checkSubjSyntax(list) {
       var component = this.workspace_.getComponentDatabase().getInstance(subj);
       if (component == null) {
         errors++;
-        alert(subj + " doesn't exist: check the views in Designer tab and try again");
+        //alert(subj + " doesn't exist: check the views in Designer tab and try again");
       }
     }
   }
@@ -356,7 +356,7 @@ function onMouseMove(block, supportBlock, secondCoords, type){
   }
 
   if(!closestConnection){
-    alert("closestConnection is null")
+    //alert("Error: closestConnection is null.")
   }
   else{
     //alert("closestconnection is not null")
@@ -584,7 +584,7 @@ function getActionBlock(actionType, actionSubj, actionVerb, actionObj){
   var index = -1;
   //TODO edit with new set/call
   if(true){
-    alert("Test: " + actionType + " " + actionVerb);
+    //alert("Test: " + actionType + " " + actionVerb);
     var temp = actionType + " " + actionVerb;
     switch (temp){
       case "set visible to true":
@@ -623,7 +623,7 @@ function getActionBlock(actionType, actionSubj, actionVerb, actionObj){
         actionBlock = isHiddenBlock;
         break;
       case "open":
-        alert("ACTION case open")
+        //("ACTION case open")
         var openScreenBlock = createBlock.call(this, "Control", 9); //open another screen screename block
         var screenNameBlock = createBlock.call(this, "Text", 0); //it's an empty text block
         //screenNameBlock.comment = actionObj;
@@ -749,6 +749,7 @@ function insertBlockRecursive(rule1) {
       //Il primo elemento della lista del whenSubject
       // (Esempio: quando, nella palette, clicchi su button1 (whenSubject), si apre una lista (il flyout)...il primo elemento è isClicked (whenAction)
       var whenBlock = createBlock.call(this, whenSubject, index);
+      whenBlock.y_ = rule1.prevY_ + 50;
       id = whenBlock.id;
       /******/
       //alert("CONDITION")
@@ -1454,7 +1455,7 @@ function insertBlockRecursive(rule1) {
 
           var condBlock = createBlock.call(this, condSubj, index);
 
-          alert("cond block creato, index: " + index)
+          //alert("cond block creato, index: " + index)
 
 
           if (f == 0) {
@@ -1517,7 +1518,8 @@ function insertBlockRecursive(rule1) {
               //alert("primo if")
               firstIfBlock = notBlock;
             //If it's not the first condblock:
-            } else {
+            }
+            else {
               var ANDORBlock  = null;
               //Creation of ANDOR block
               if(condANDOR == "AND"){
@@ -2451,7 +2453,7 @@ function insertBlockRecursive(rule1) {
         //alert("ok action block\nm: " + m)
         var actionValueBlock = null;
         //alert("actionValue: " + actionValue);
-        if(formattedVerb.includes("color")){
+        if(formattedVerb != null && formattedVerb.includes("color")){
           switch (actionValue.toLowerCase()){
             case "black": actionValueBlock = createBlock.call(this, "Colors", 0); break;
             case "white": actionValueBlock = createBlock.call(this, "Colors", 1); break;
@@ -2462,7 +2464,7 @@ function insertBlockRecursive(rule1) {
             case "blue": actionValueBlock = createBlock.call(this, "Colors", 8); break;
             case "grey": actionValueBlock = createBlock.call(this, "Colors", 10); break;
             default:
-              alert("Selected color not available. Will be use \"black\" as default");
+              //alert("Selected color not available. Will be use \"black\" as default");
               actionValueBlock = createBlock.call(this, "Colors", 0);
           }
         }
@@ -2507,7 +2509,8 @@ function insertBlockRecursive(rule1) {
         //alert("no if: \n firstActionBlock: " + firstActionBlock + "\nwhenBlock: " + whenBlock);
         //alert("Click ok to connect isHiddenBlock with whenBlock");
         connectBlocks.call(this, firstActionBlock, whenBlock, "when");
-      } else {
+      }
+      else {
         //alert("Click ok to connect isHiddenBlock to mainCondBlock");
         connectBlocks.call(this, firstIfBlock, mainCondBlock, "ifcond");
         connectBlocks.call(this, firstActionBlock, mainCondBlock, "ifblock");
@@ -2515,36 +2518,7 @@ function insertBlockRecursive(rule1) {
         connectBlocks.call(this, mainCondBlock, whenBlock, "if");
       }
 
-      return id;
-      /*var fs = require('fs');
-      fs.readFile('appinventor/appengine/src/com/google/appinventor/client/thesis/rules.json',
-          'utf8', function readFileCallback(err, data){
-        if (err){
-          alert("file json doesn't exist")
-          //json doesn't exist, so i create it
-          var obj = {
-            screenName: []
-          };
-          obj[screenName].push({ruleNumber: 1,rule0:rule1});
-          var json = JSON.stringify(obj);
-          alert("json: \n" + json)
-          fs.writeFile('appinventor/appengine/src/com/google/appinventor/client/thesis/rules.json', json, 'utf8', callback);
-          return true;
-        } else {
-          alert("file json exists")
-          obj = JSON.parse(data); //now it an object
-          var ruleNumberValue = obj.ruleNumber
-          if(obj.updateRule == "false"){
-            ruleNumberValue = obj.ruleNumber + 1;
-          }
-          var ruleName = "rule" + (ruleNumberValue - 1);
-          obj[screenName].ruleNumber = ruleNumberValue;
-          obj[screenName][ruleName] = rule1;
-          var json = JSON.stringify(obj); //convert it back to json
-          alert("json: \n" + json)
-          fs.writeFile('appinventor/appengine/src/com/google/appinventor/client/thesis/rules.json', json, 'utf8', callback); // write it back
-          return true;
-        }});*/
+      return [id, whenBlock.y_];
     }
   }
 
@@ -2555,7 +2529,7 @@ function insertBlockRecursive(rule1) {
 Blockly.Drawer.prototype.insertBlock = function (rule){
   //when button1 is clicked then label1 is hidden
 
-  alert("rule: \n" + rule)
+  //alert("rule: \n" + rule)
   var rule1 = JSON.parse(rule);
   var index = -1; //index is the number of block of flyout of that drawerName
 

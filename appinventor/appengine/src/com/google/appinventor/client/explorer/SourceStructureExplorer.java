@@ -47,14 +47,11 @@ public class SourceStructureExplorer extends Composite {
   TextArea inputTextBox; //initialization
   Label resultLabel;
 
-  public ListBox whenSubjListBoxGeneric = new ListBox();
-  public ListBox whenVerbListBoxGeneric = new ListBox();
+  public HashMap<String, ArrayList<String>> whenSubjListBoxGeneric = new HashMap<String, ArrayList<String>>();
 
-  public ListBox ifSubjListBoxGeneric = new ListBox();
-  public ListBox ifVerbListBoxGeneric = new ListBox();
+  public HashMap<String, ArrayList<String>> ifSubjListBoxGeneric = new HashMap<String, ArrayList<String>>();
 
-  public ListBox thenSubjListBoxGeneric = new ListBox();
-  public ListBox thenVerbListBoxGeneric = new ListBox();
+  public HashMap<String, ArrayList<String>> thenSubjListBoxGeneric = new HashMap<String, ArrayList<String>>();
   //Screen -> list of views
   public HashMap<String, ArrayList<MockComponent>> userViewsList = new HashMap<>();
 
@@ -208,7 +205,7 @@ public class SourceStructureExplorer extends Composite {
       panel2 = new VerticalPanel();
       // Put a ScrollPanel around the panel.
       scrollPanel = new ScrollPanel(panel2);
-      scrollPanel.setWidth("800px");  // wide enough to avoid a horizontal scrollbar most of the time --> 1000 is enough
+      scrollPanel.setWidth("750px");  // wide enough to avoid a horizontal scrollbar most of the time --> 1000 is enough
       scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
       rulesListBoxes = new HashMap<String, ArrayList<Rule>>();
@@ -238,13 +235,13 @@ public class SourceStructureExplorer extends Composite {
     verticalPanel = new VerticalPanel();
     verticalPanel.getElement().setAttribute("cellpadding", "5");
 
-    Button addRule = new Button();
-    addRule.setText("Add rule");
+    //Button addRule = new Button();
+    //addRule.setText("Add rule");
 
 
     final Button confirmButton = new Button();
     confirmButton.setText("PARSE");
-    confirmButton.setEnabled(false);
+    //confirmButton.setEnabled(false);
 
     //Window.alert("Pre addemptyrule");
 
@@ -284,9 +281,10 @@ public class SourceStructureExplorer extends Composite {
     HorizontalPanel whenLabelContainer = new HorizontalPanel();
     whenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
     whenLabelContainer.add(whenLabel);
+    whenLabelContainer.setTitle("Event 1");
 
     final ListBox whenSubjListBox = new ListBox();
-    whenSubjListBox.addItem("");
+    //whenSubjListBox.addItem("");
     whenSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
     final ListBox whenVerbListBox = new ListBox();
     whenVerbListBox.addItem("");
@@ -303,6 +301,7 @@ public class SourceStructureExplorer extends Composite {
     whenSubjListBox.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent changeEvent) {
+        //Window.alert("Selected: " + whenSubjListBox.getSelectedItemText());
         int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
         String viewClickedType = ListBoxWhenSubjFieldClicked(whenSubjListBox, whenVerbListBox);
         rulesListBoxes.get(screenName).get(ruleIndex).setViewClickedType(viewClickedType);
@@ -402,8 +401,8 @@ public class SourceStructureExplorer extends Composite {
           }
           actionSubjListBox.addItem("");
           actionVerbListBox.addItem("");
-          for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
-            actionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+          for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
+            actionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
           }
         }
 
@@ -475,17 +474,17 @@ public class SourceStructureExplorer extends Composite {
     Button addAction = new Button();
     addAction.setText("Add action");
 
-    Button copyRule = new Button();
-    copyRule.setText("Copy rule");
+    //Button copyRule = new Button();
+    //copyRule.setText("Copy rule");
 
-    Button deleteRule = new Button();
-    deleteRule.setText("Delete rule");
+    //Button deleteRule = new Button();
+    //deleteRule.setText("Delete rule");
 
     HorizontalPanel horizontalPanelButton = new HorizontalPanel();
     horizontalPanelButton.add(addCond);
     horizontalPanelButton.add(addAction);
-    horizontalPanelButton.add(copyRule);
-    horizontalPanelButton.add(deleteRule);
+    //horizontalPanelButton.add(copyRule);
+    //horizontalPanelButton.add(deleteRule);
 
     innerVerticalPanel.add(horizontalPanelButton);
 
@@ -557,8 +556,8 @@ public class SourceStructureExplorer extends Composite {
         horizontalPanelAction_n.add(deleteOtherAction);
 
         otherActionSubjListBox.addItem("");
-        for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
-          otherActionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+        for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
+          otherActionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
         }
 
         //same of when subj
@@ -595,8 +594,8 @@ public class SourceStructureExplorer extends Composite {
               }
               otherActionSubjListBox.addItem("");
               otherActionVerbListBox.addItem("");
-              for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
-                otherActionSubjListBox.addItem(thenSubjListBoxGeneric.getValue(i));
+              for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
+                otherActionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
               }
             }
 
@@ -725,8 +724,9 @@ public class SourceStructureExplorer extends Composite {
 
         //Window.alert("IfIndex: " +
         //        String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
+        Integer value = rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1;
         horizontalPanelIf.setTitle("Condition " +
-                String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
+                String.valueOf(value));
         horizontalPanelIf.add(ifLabelContainer);
         HTML line = new HTML("<hr  style=\"width:50px;\" />");
         horizontalPanelIf.add(line);
@@ -759,12 +759,12 @@ public class SourceStructureExplorer extends Composite {
           }
         });
 
-        for(int i = 0; i < ifSubjListBoxGeneric.getItemCount(); i++){
-          ifSubjListBox.addItem(ifSubjListBoxGeneric.getValue(i));
+        for(int i = 0; i < ifSubjListBoxGeneric.get(screenName).size(); i++){
+          ifSubjListBox.addItem(ifSubjListBoxGeneric.get(screenName).get(i));
         }
-        for(int i = 0; i < ifVerbListBoxGeneric.getItemCount(); i++){
+        /*for(int i = 0; i < ifVerbListBoxGeneric.getItemCount(); i++){
           ifVerbListBox.addItem(ifVerbListBoxGeneric.getValue(i));
-        }
+        }*/
 
         int lastIfIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() - 1;
         int temp = -1;
@@ -794,7 +794,8 @@ public class SourceStructureExplorer extends Composite {
             for(HorizontalPanel ifPanel : rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel()){
               int i = Integer.parseInt(ifPanel.getTitle().split("Condition ")[1]) - 1;
               if(i > indexToRemove){
-                ifPanel.setTitle("Condition " + String.valueOf(i - 1));
+                Integer value = i - 1;
+                ifPanel.setTitle("Condition " + String.valueOf(value));
               }
             }
           }
@@ -804,18 +805,18 @@ public class SourceStructureExplorer extends Composite {
       }
     });
 
-    copyRule.addClickHandler(new ClickHandler() {
+    /*copyRule.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
         //Window.alert("WIP");
       }
-    });
+    });*/
 
-    //Window.alert("whenSubjListBoxGeneric.getItemCount(): " + whenSubjListBoxGeneric.getItemCount());
+    /*Window.alert("whenSubjListBoxGeneric.getItemCount(): " + whenSubjListBoxGeneric.getItemCount());
     for(int i = 0; i < whenSubjListBoxGeneric.getItemCount(); i++){
-      //Window.alert(whenSubjListBoxGeneric.getItemText(i));
+      Window.alert(whenSubjListBoxGeneric.getItemText(i));
       whenSubjListBox.addItem(whenSubjListBoxGeneric.getValue(i));
-    }/*
+    }
         for(int i = 0; i < whenVerbListBoxGeneric.getItemCount(); i++){
           whenVerbListBox.addItem(whenVerbListBoxGeneric.getValue(i));
         }
@@ -842,7 +843,22 @@ public class SourceStructureExplorer extends Composite {
         //Rule to formatted string
         int ruleIndex = 0;
 
-        YaBlocksEditor editor = (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
+        boolean noDuplicateEvent = true;
+        //TODO this check doesn't work
+        String whenSubjVerb = toBeAddRule.getWhenSubj().getSelectedItemText() + " " + toBeAddRule.getWhenVerb().getSelectedItemText();
+        for(Rule rule : rulesListBoxes.get(screenName)){
+
+          if(rule.getIndex() != toBeAddRule.getIndex()){
+            String otherWhenSubjVerb = rule.getWhenSubj().getSelectedItemText() + " " + rule.getWhenVerb().getSelectedItemText();
+            if(!whenSubjVerb.equals(otherWhenSubjVerb)){
+              noDuplicateEvent = false;
+              break;
+            }
+          }
+        }
+
+        if(noDuplicateEvent){
+          YaBlocksEditor editor = (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
         /*if(toBeAddRule.getRuleStatus().getText().equals("Created")){
           boolean res = editor.deleteBlock(toBeAddRule.getBlock_id());
           if(res){
@@ -851,159 +867,170 @@ public class SourceStructureExplorer extends Composite {
         }*/
 
 
-        String value = "";
-        //EVENT
-        value += "when " + toBeAddRule.getWhenSubj().getSelectedItemText() + " " +
-                toBeAddRule.getViewClickedType() + " " +
-                toBeAddRule.getWhenVerb().getSelectedItemText() + " ";
+          String value = "";
+          //EVENT
+          value += "when " + toBeAddRule.getWhenSubj().getSelectedItemText() + " " +
+                  toBeAddRule.getViewClickedType() + " " +
+                  toBeAddRule.getWhenVerb().getSelectedItemText() + " ";
 
-        //CONDITION
-        if(toBeAddRule.getConditions() != null && toBeAddRule.getConditions().size() > 0){
-          value += "if ";
-          int i = 0;
-          for(Condition condition : toBeAddRule.getConditions()){
-            if(i > 0){
-              value += condition.getANDOR().getSelectedItemText().toUpperCase() + " ";
+          //CONDITION
+          if(toBeAddRule.getConditions() != null && toBeAddRule.getConditions().size() > 0){
+            value += "if ";
+            int i = 0;
+            for(Condition condition : toBeAddRule.getConditions()){
+              if(i > 0){
+                value += condition.getANDOR().getSelectedItemText().toUpperCase() + " ";
+              }
+              String textValue = condition.getIfTextBox().isVisible() ? " " + condition.getIfTextBox().getText().toLowerCase() + " " : " ";
+              String conditionVerb = condition.getIfVerb().getSelectedItemText().contains("not") ?
+                      "not " + condition.getIfVerb().getSelectedItemText().replace("not ", "") :
+                      condition.getIfVerb().getSelectedItemText();
+              value += condition.getIfSubj().getSelectedItemText().toLowerCase() + " " +
+                      condition.getViewClickedType().toLowerCase() + " " +
+                      conditionVerb.toLowerCase() + textValue;
+              i++;
             }
-            String textValue = condition.getIfTextBox().isVisible() ? " " + condition.getIfTextBox().getText().toLowerCase() + " " : " ";
-            String conditionVerb = condition.getIfVerb().getSelectedItemText().contains("not") ?
-                    "not " + condition.getIfVerb().getSelectedItemText().replace("not ", "") :
-                    condition.getIfVerb().getSelectedItemText();
-            value += condition.getIfSubj().getSelectedItemText().toLowerCase() + " " +
-                    condition.getViewClickedType().toLowerCase() + " " +
-                    conditionVerb.toLowerCase() + textValue;
+          }
+
+          //ACTION
+          value += "then ";
+          int i = 0;
+          for(Action action : toBeAddRule.getActions()){
+            //Window.alert("Parsing action " + i + " with type " + action.getThenType().getSelectedItemText());
+            if(i > 0){
+              value += " AND ";
+            }
+            if(action.getThenType().getSelectedItemText().contains("Open")) {
+              //Window.alert("open: \naction.getThenType().getSelectedItemText(): " + action.getThenType().getSelectedItemText() + "\n" +
+              //        "action.getThenSubj().getSelectedItemText(): " + action.getThenSubj().getSelectedItemText());
+            }
+            value += action.getThenType().getSelectedItemText().contains("Open") ?
+                    action.getThenType().getSelectedItemText().toLowerCase() + " " +
+                            action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
+                            action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
+                            action.getThenTextBox().getText() :
+                    action.getThenType().getSelectedItemText().toLowerCase() + " " +
+                            action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
+                            action.getViewClickedType().toLowerCase() + " " +
+                            action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
+                            action.getThenTextBox().getText().toLowerCase();
             i++;
           }
-        }
 
-        //ACTION
-        value += "then ";
-        int i = 0;
-        for(Action action : toBeAddRule.getActions()){
-          //Window.alert("Parsing action " + i + " with type " + action.getThenType().getSelectedItemText());
-          if(i > 0){
-            value += " AND ";
-          }
-          if(action.getThenType().getSelectedItemText().contains("Open")) {
-            //Window.alert("open: \naction.getThenType().getSelectedItemText(): " + action.getThenType().getSelectedItemText() + "\n" +
-            //        "action.getThenSubj().getSelectedItemText(): " + action.getThenSubj().getSelectedItemText());
-          }
-          value += action.getThenType().getSelectedItemText().contains("Open") ?
-                  action.getThenType().getSelectedItemText().toLowerCase() + " " +
-                          action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
-                          action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
-                          action.getThenTextBox().getText() :
-                  action.getThenType().getSelectedItemText().toLowerCase() + " " +
-                          action.getThenSubj().getSelectedItemText().toLowerCase() + " " +
-                          action.getViewClickedType().toLowerCase() + " " +
-                          action.getThenVerb().getSelectedItemText().toLowerCase() + " " +
-                          action.getThenTextBox().getText().toLowerCase();
-          i++;
-        }
+          //Window.alert("Rule " + ruleCount + ": \n" + value);
+          //ruleCount++;
 
-        //Window.alert("Rule " + ruleCount + ": \n" + value);
-        //ruleCount++;
+          //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
+          ///Custom Lexer ->  A lexer takes the individual characters and transforms them
+          // in tokens, the atoms that the parser uses to create the logical structure
+          TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(value));
+          tesiLexer.removeErrorListeners();
+          //Create syntax error listener
+          SyntaxErrorListener errorListener = new SyntaxErrorListener();
+          //Add it to lexer
+          tesiLexer.addErrorListener(errorListener);
+          ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
+          CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
 
-        //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
-        ///Custom Lexer ->  A lexer takes the individual characters and transforms them
-        // in tokens, the atoms that the parser uses to create the logical structure
-        TesiLexer tesiLexer = new TesiLexer(CharStreams.fromString(value));
-        tesiLexer.removeErrorListeners();
-        //Create syntax error listener
-        SyntaxErrorListener errorListener = new SyntaxErrorListener();
-        //Add it to lexer
-        tesiLexer.addErrorListener(errorListener);
-        ///https://www.antlr.org/api/Java/org/antlr/v4/runtime/CommonTokenStream.html
-        CommonTokenStream commonTokenStream = new CommonTokenStream(tesiLexer);
+          ///Custom Parser
+          TesiParser tesiParser = new TesiParser(commonTokenStream);
+          tesiParser.removeErrorListeners();
+          //Add prev syntax error listener to parser
+          tesiParser.addErrorListener(errorListener);
 
-        ///Custom Parser
-        TesiParser tesiParser = new TesiParser(commonTokenStream);
-        tesiParser.removeErrorListeners();
-        //Add prev syntax error listener to parser
-        tesiParser.addErrorListener(errorListener);
+          tesiParser.setBuildParseTree(true);
+          //Set the root of parse tree as upper parser rules i've defined, aka blocks
+          TesiParser.BlockContext treeRoot = tesiParser.block();
 
-        tesiParser.setBuildParseTree(true);
-        //Set the root of parse tree as upper parser rules i've defined, aka blocks
-        TesiParser.BlockContext treeRoot = tesiParser.block();
+          TesiParserBaseVisitor visitor = new TesiParserBaseVisitor();
+          visitor.visit(treeRoot);
 
-        TesiParserBaseVisitor visitor = new TesiParserBaseVisitor();
-        visitor.visit(treeRoot);
+          //Window.alert("Parsed");
+          if(tesiParser.getNumberOfSyntaxErrors() == 0){
+            //Se ha riconosciuto regole
+            if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
+              resultLabel.setText("Rule detected successfully");
 
-        //Window.alert("Parsed");
-        if(tesiParser.getNumberOfSyntaxErrors() == 0){
-          //Se ha riconosciuto regole
-          if(tesiParser.getRuleNames() != null || tesiParser.getRuleNames().length == 0) {
-            resultLabel.setText("Rule detected successfully");
-
-            String updateRule = "";
-            if(toBeAddRule.getRuleStatus().getText().equals("In progress")){
-              updateRule = "false";
-            }
-            else if((toBeAddRule.getRuleStatus().getText().equals("Created"))){
-              updateRule = "true";
-            }
-            Integer prevYTemp_ = rulesListBoxes.get(screenName).indexOf(toBeAddRule) * 50;//rulesListBoxes.get(screenName).get(ruleCount - 1).getPrevY_();
-            //Window.alert("before getJson...prevY_: " + prevYTemp_);
-            JSONObject ruleJSON = getJSONBlock(treeRoot, screenName, updateRule, prevYTemp_.toString());
-            //Window.alert("after getJson");
-
-            //Window.alert("Json: \n" + ruleJSON.toString());
-
-            //Window.alert( "rule: \n\n" + rule.toString());
-            String whenBlockID = null;
-            String[] values = editor.insertBlock(ruleJSON.toString());
-            //Window.alert("Results: " + values[0] + " - " + values[1]);
-            whenBlockID = values[0];
-            String prevY_ = values[1]; //y coordinate of the root block of prev rule
-            if(whenBlockID != null){
-              toBeAddRule.getRuleStatus().setText("Created");
-              rulesListBoxes.get(screenName).get(ruleIndex).setBlock_id(whenBlockID);
-              //rulesListBoxes.get(screenName).get(ruleIndex).setPrevY_(prevY_);
-              //TODO Salvataggio su file
-              String path = "appinventor/appengine/src/com/google/appinventor/client/thesis";
-
-              AntRulesSelectorBox.getAntRulesSelectorBox().getAntRulesExplorer().insertRule(toBeAddRule);
-              //verticalPanel.remove(innerVerticalPanel);
-              //SetupPage();
-              //Reset layout
-              toBeAddRule.getWhenSubj().setSelectedIndex(0);
-              toBeAddRule.getWhenVerb().setSelectedIndex(0);
-
-              for(Condition condition : toBeAddRule.getConditions()){
-                innerVerticalPanel.remove(condition.getHorizontalPanelIf());
+              String updateRule = "";
+              if(toBeAddRule.getRuleStatus().getText().equals("In progress")){
+                updateRule = "false";
               }
-              int c = 0;
-              for(Action action : toBeAddRule.getActions()){
-                if(c == 0){
-                  action.getThenType().setSelectedIndex(0);
-                  action.getThenSubj().setSelectedIndex(0);
-                  action.getThenVerb().setSelectedIndex(0);
-                  action.getThenTextBox().setText("");
-                  action.getThenTextBox().setVisible(false);
-                  action.getDeleteButton().setEnabled(false);
-                }
-                else{
-                  innerVerticalPanel.remove(action.getHorizontalPanelAction());
-                }
+              else if((toBeAddRule.getRuleStatus().getText().equals("Created"))){
+                updateRule = "true";
               }
-              resultLabel.setText(MESSAGES.resultLabelAntLR());
+              Integer prevYTemp_ = rulesListBoxes.get(screenName).indexOf(toBeAddRule) * 50;//rulesListBoxes.get(screenName).get(ruleCount - 1).getPrevY_();
+              //Window.alert("before getJson...prevY_: " + prevYTemp_);
+              JSONObject ruleJSON = getJSONBlock(treeRoot, screenName, updateRule, prevYTemp_.toString());
+              //Window.alert("after getJson");
 
+              //Window.alert("Json: \n" + ruleJSON.toString());
+
+              //Window.alert( "rule: \n\n" + rule.toString());
+              String whenBlockID = null;
+              String[] values = editor.insertBlock(ruleJSON.toString());
+              //Window.alert("Results: " + values[0] + " - " + values[1]);
+              whenBlockID = values[0];
+              String prevY_ = values[1]; //y coordinate of the root block of prev rule
+              if(whenBlockID != null){
+                toBeAddRule.getRuleStatus().setText("Created");
+                rulesListBoxes.get(screenName).get(ruleIndex).setBlock_id(whenBlockID);
+                //rulesListBoxes.get(screenName).get(ruleIndex).setPrevY_(prevY_);
+                //TODO Salvataggio su file
+                String path = "appinventor/appengine/src/com/google/appinventor/client/thesis";
+
+                AntRulesSelectorBox.getAntRulesSelectorBox().getAntRulesExplorer().insertRule(toBeAddRule);
+                //verticalPanel.remove(innerVerticalPanel);
+                //SetupPage();
+                //Reset layout
+
+                //Reset when
+                toBeAddRule.getWhenSubj().setSelectedIndex(0);
+                while(toBeAddRule.getWhenVerb().getItemCount() > 0){
+                  toBeAddRule.getWhenVerb().removeItem(0);
+                }
+
+                for(Condition condition : toBeAddRule.getConditions()){
+                  innerVerticalPanel.remove(condition.getHorizontalPanelIf());
+                }
+                int c = 0;
+                for(Action action : toBeAddRule.getActions()){
+                  if(c == 0){
+                    action.getThenType().setSelectedIndex(0);
+                    while(action.getThenSubj().getItemCount() > 0){
+                      action.getThenSubj().removeItem(0);
+                    }
+                    while(action.getThenVerb().getItemCount() > 0){
+                      action.getThenVerb().removeItem(0);
+                    }
+                    action.getThenTextBox().setText("");
+                    action.getThenTextBox().setVisible(false);
+                    action.getDeleteButton().setEnabled(false);
+                    action.getHorizontalPanelAction().setTitle("Action 1");
+                  }
+                  else{
+                    innerVerticalPanel.remove(action.getHorizontalPanelAction());
+                  }
+                }
+                resultLabel.setText(MESSAGES.resultLabelAntLR());
+
+              }
+            }
+            else{
+              resultLabel.setText("No rules detected.");
             }
           }
           else{
-            resultLabel.setText("No rules detected.");
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Check the following " + tesiParser.getNumberOfSyntaxErrors()  + " error/s and try again:");
+            for(String error : errorListener.getSyntaxErrorList()){
+              stringBuilder.append("\n- " + error);
+            }
+            resultLabel.setText(stringBuilder.toString());
           }
         }
         else{
-          StringBuilder stringBuilder = new StringBuilder();
-          stringBuilder.append("Check the following " + tesiParser.getNumberOfSyntaxErrors()  + " error/s and try again:");
-          for(String error : errorListener.getSyntaxErrorList()){
-            stringBuilder.append("\n- " + error);
-          }
-          resultLabel.setText(stringBuilder.toString());
+          Window.alert("You can't declare a rule with the same event.");
         }
-
-
 
       }
     });
@@ -1011,8 +1038,9 @@ public class SourceStructureExplorer extends Composite {
     //add all to the vertical panel
     //panel2.add(inputTextBox);
     panel2.add(verticalPanel);
-    panel2.add(addRule);
-    panel2.add(confirmButton);
+    //panel2.add(addRule);
+    //panel2.add(confirmButton);
+    horizontalPanelButton.add(confirmButton);
     panel2.add(resultLabel);
     panel.add(scrollPanel);
 
@@ -1047,7 +1075,7 @@ public class SourceStructureExplorer extends Composite {
 
   //feduss
   private String ListBoxWhenSubjFieldClicked(ListBox subjList, ListBox verbList) {
-    int index = subjList.getSelectedIndex() - 1;
+    int index = subjList.getSelectedIndex();
     if(index >= 0){
       //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
 

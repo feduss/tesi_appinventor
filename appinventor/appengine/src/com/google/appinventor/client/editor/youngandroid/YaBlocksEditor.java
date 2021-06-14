@@ -6,10 +6,7 @@
 package com.google.appinventor.client.editor.youngandroid;
 
 import com.google.appinventor.client.*;
-import com.google.appinventor.client.boxes.AntRulesSelectorBox;
-import com.google.appinventor.client.boxes.AssetListBox;
-import com.google.appinventor.client.boxes.BlockSelectorBox;
-import com.google.appinventor.client.boxes.PaletteBox;
+import com.google.appinventor.client.boxes.*;
 import com.google.appinventor.client.editor.FileEditor;
 import com.google.appinventor.client.editor.simple.SimpleComponentDatabase;
 import com.google.appinventor.client.editor.simple.components.FormChangeListener;
@@ -250,6 +247,9 @@ public final class YaBlocksEditor extends FileEditor
       if(ThesisVariables.enableRules){
         AssetListBox.getAssetListBox().setVisible(false);
         AntRulesSelectorBox.getAntRulesSelectorBox().setVisible(true);
+
+        //set viewer visibility to false on "Rules" section
+        //ViewerBox.getViewerBox().setVisible(false);
       }
       else{
         AssetListBox.getAssetListBox().setVisible(true);
@@ -306,7 +306,10 @@ public final class YaBlocksEditor extends FileEditor
     BlockSelectorBox.getBlockSelectorBox().setVisible(false);
 
     //feduss
-    AntRulesSelectorBox.getAntRulesSelectorBox().setVisible(false);
+    if(ThesisVariables.enableRules){
+      AntRulesSelectorBox.getAntRulesSelectorBox().setVisible(false);
+      //ViewerBox.getViewerBox().setVisible(true);
+    }
 
 
     AssetListBox.getAssetListBox().setVisible(true);

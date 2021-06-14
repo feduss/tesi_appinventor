@@ -29,6 +29,7 @@ import com.google.appinventor.client.output.OdeLog;
 import com.google.appinventor.client.settings.Settings;
 import com.google.appinventor.client.settings.user.UserSettings;
 
+import com.google.appinventor.client.thesis.ThesisVariables;
 import com.google.appinventor.client.tracking.Tracking;
 import com.google.appinventor.client.utils.HTML5DragDrop;
 import com.google.appinventor.client.utils.PZAwarePositionCallback;
@@ -978,6 +979,13 @@ public class Ode implements EntryPoint {
     palletebox.setWidth("240px");
     workColumns.add(palletebox);
 
+    //feduss
+    if(ThesisVariables.enableRules){
+      //structureAndAssets.add(AntRulesSelectorBox.getAntRulesSelectorBox());  // initially not visible
+      workColumns.add(AntRulesSelectorBox.getAntRulesSelectorBox());  // initially not visible);
+    }
+    /////
+
     Box viewerbox = ViewerBox.getViewerBox();
     workColumns.add(viewerbox);
     workColumns.setCellWidth(viewerbox, "97%");
@@ -991,11 +999,6 @@ public class Ode implements EntryPoint {
     structureAndAssets.add(SourceStructureBox.getSourceStructureBox());
     structureAndAssets.add(BlockSelectorBox.getBlockSelectorBox());  // initially not visible
     structureAndAssets.add(AssetListBox.getAssetListBox());
-
-    //feduss
-    structureAndAssets.add(AntRulesSelectorBox.getAntRulesSelectorBox());  // initially not visible
-
-    /////
 
     workColumns.add(structureAndAssets);
 

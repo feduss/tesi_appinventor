@@ -22,14 +22,14 @@ public class AntRulesExplorer extends Composite {
   private int ruleCount = 0;
   public AntRulesExplorer(){
     ScrollPanel scrollPanel = new ScrollPanel();
-    scrollPanel.setWidth("800px");  // wide enough to avoid a horizontal scrollbar most of the time
+    scrollPanel.setWidth("750px");  // wide enough to avoid a horizontal scrollbar most of the time
     scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
 
     verticalPanel = new VerticalPanel();
     verticalPanel.add(scrollPanel);
-    Label label = new Label("Questo sarà il panel con le regole");
-    verticalPanel.add(label);
+    //Label label = new Label("Questo sarà il panel con le regole");
+    //verticalPanel.add(label);
     initWidget(verticalPanel);
   }
 
@@ -40,6 +40,8 @@ public class AntRulesExplorer extends Composite {
     Label title = new Label("Rule" + ruleCount + ":");
     title.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
     innerVerticalPanel.add(title);
+    innerVerticalPanel.setTitle("Rule " + ruleCount);
+    //Window.alert("Title: " + innerVerticalPanel.getTitle());
     /***Restore when***/
     final ListBox whenSubjListBox = new ListBox();
     for(int i = 0; i < rule.getWhenSubj().getItemCount(); i++){
@@ -56,6 +58,7 @@ public class AntRulesExplorer extends Composite {
     whenVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
 
     final HorizontalPanel horizontalPanelWhen = new HorizontalPanel();
+    horizontalPanelWhen.setTitle("Event 1");
     Label whenLabel = new Label("When");
     whenLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     HorizontalPanel whenLabelContainer = new HorizontalPanel();
@@ -207,9 +210,6 @@ public class AntRulesExplorer extends Composite {
       horizontalPanelAction.add(deleteMainAction);
       innerVerticalPanel.add(horizontalPanelAction);
 
-      //End of the rule
-      horizontalPanelWhen.add(new HTML("<hr  style=\"width:800px;\" />"));
-
       Button deleteRule = new Button();
       deleteRule.setText("Delete rule");
 
@@ -221,22 +221,19 @@ public class AntRulesExplorer extends Composite {
         public void onClick(ClickEvent clickEvent) {
           YaBlocksEditor editor =
                   (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
-          if(rule.getRuleStatus().getText().equals("In progress")){
+          //TODO cambiare l'id con quello del file di salvataggio
+          boolean res = editor.deleteBlock(rule.getBlock_id());
+          if(res){
             removeRuleLayout(innerVerticalPanel, verticalPanel);
           }
           else{
-            //TODO cambiare l'id con quello del file di salvataggio
-            boolean res = editor.deleteBlock(rule.getBlock_id());
-            if(res){
-              removeRuleLayout(innerVerticalPanel, verticalPanel);
-            }
-            else{
-              Window.alert("An error occurs during rule deleting.");
-            }
+            Window.alert("An error occurs during rule deleting.");
           }
         }
       });
       innerVerticalPanel.add(horizontalPanelButton);
+      //End of the rule
+      innerVerticalPanel.add(new HTML("<hr  style=\"width:750px;\" />"));
       verticalPanel.add(innerVerticalPanel);
       i++;
     }
@@ -246,7 +243,9 @@ public class AntRulesExplorer extends Composite {
 
   //feduss
   private void removeRuleLayout(VerticalPanel innerVerticalPanel, VerticalPanel verticalPanel) {
+    //Window.alert("innerVerticalPanel: " + innerVerticalPanel + ", verticalPanel: " + verticalPanel);
     int indexToRemove = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+    //Window.alert("indexToRemove: " + indexToRemove);
     SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
     for(Rule rule : sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName)){
       VerticalPanel rulePanel = rule.getRulePanel();
@@ -256,7 +255,7 @@ public class AntRulesExplorer extends Composite {
       }
     }
 
-    verticalPanel.remove(sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).get(indexToRemove).getRulePanel());
+    verticalPanel.remove(innerVerticalPanel);
     sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).remove(indexToRemove);
 
     /*if(rulesListBoxes.get(screenName).size() == 0){

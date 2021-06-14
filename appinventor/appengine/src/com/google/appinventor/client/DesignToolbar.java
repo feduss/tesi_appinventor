@@ -104,7 +104,7 @@ public class DesignToolbar extends Toolbar {
       sourceStructureExplorer.screenName = currentScreen;
       //feduss, update lists adding new empty array for the item screen will have
       sourceStructureExplorer.userViewsList.put(name, new ArrayList<MockComponent>());
-      //Window.alert("screename DesignToolbar sourceStructureExplorer screen: " + sourceStructureExplorer.screenName);
+      //Window.alert("Starting screen name: " + sourceStructureExplorer.screenName);
 
       // Let BlocklyPanel know which screen to send Yail for
       BlocklyPanel.setCurrentForm(projectId + "_" + currentScreen);
@@ -129,6 +129,7 @@ public class DesignToolbar extends Toolbar {
     }
 
     public void setCurrentScreen(String name) {
+      //Window.alert("Screen name changed to " + name);
       currentScreen = name;
 
       //feduss
@@ -136,38 +137,6 @@ public class DesignToolbar extends Toolbar {
       //Window.alert("SetCurrentScreen: " + sourceStructureExplorer.screenName);
       int size = sourceStructureExplorer.rulesListBoxes.get(currentScreen) == null ? 0 : sourceStructureExplorer.rulesListBoxes.get(currentScreen).size();
       //Window.alert("Size: " + size);
-      for(int i = 0; i < size; i++){
-        Rule rule = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i);
-        if(rule != null){
-          //Window.alert("rule is not null");
-          ListBox whenSubjListBox = rule.getWhenSubj();
-          //Window.alert("0a");
-          ListBox ifSubjListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfSubj() : null;
-          //Window.alert("0b");
-          ListBox thenSubjListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenSubj() : null;
-          //feduss, update lists with the item of new page
-          //Window.alert("1");
-          //Window.alert("Removing " + sourceStructureExplorer.whenSubjListBox.getItemCount() + " item from whenSubjListBox");
-          while(whenSubjListBox != null && whenSubjListBox.getItemCount() > 0){
-            //Window.alert("1a");
-            whenSubjListBox.removeItem(0);
-          }
-
-          while(ifSubjListBox != null && ifSubjListBox.getItemCount() > 0){
-            //Window.alert("1b");
-            ifSubjListBox.removeItem(0);
-          }
-
-          while(thenSubjListBox != null && thenSubjListBox.getItemCount() > 0){
-            //Window.alert("1c");
-            thenSubjListBox.removeItem(0);
-          }
-        }
-      }
-      //Window.alert("Post for");
-
-
-      //Window.alert("whenSubjListBox size after remove: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
 
       if(sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName) == null){
         sourceStructureExplorer.userViewsList.put(sourceStructureExplorer.screenName, new ArrayList<MockComponent>());
@@ -177,29 +146,45 @@ public class DesignToolbar extends Toolbar {
       }
       else{
         for(int i = 0; i < size; i++){
-          ListBox whenSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getWhenSubj();
-          ListBox whenVerbListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getWhenVerb();
-          ListBox ifSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getConditions().get(0).getIfSubj();
-          ListBox ifVerbListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getConditions().get(0).getIfVerb();
-          ListBox thenSubjListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getActions().get(0).getThenSubj();
-          ListBox thenVerbListBox = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i).getActions().get(0).getThenVerb();
+          Rule rule = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i);
+          ListBox whenSubjListBox = rule.getWhenSubj();
+          //ListBox whenVerbListBox = rule.getWhenVerb();
+          ListBox ifSubjListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfSubj() : null;
+          //ListBox ifVerbListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfVerb() : null;
+          ListBox thenSubjListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenSubj() : null;
+          //ListBox thenVerbListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenVerb() : null;
           //feduss, update lists with the item of new page
-          //Window.alert("Removing " + sourceStructureExplorer.whenSubjListBox.getItemCount() + " item from whenSubjListBox");
-          //Window.alert("Size " + sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName).size());
-          //whenSubjListBox.addItem("");
-          //ifSubjListBox.addItem("");
-          //thenSubjListBox.addItem("");
+          while(whenSubjListBox != null && whenSubjListBox.getItemCount() > 0){
+            //Window.alert("1a");
+            whenSubjListBox.removeItem(0);
+          }
+          if(whenSubjListBox != null){
+            whenSubjListBox.addItem("");
+          }
 
-          //whenVerbListBox.addItem("");
-          //ifVerbListBox.addItem("");
-          //thenVerbListBox.addItem("");
+          while(ifSubjListBox != null && ifSubjListBox.getItemCount() > 0){
+            //Window.alert("1b");
+            ifSubjListBox.removeItem(0);
+          }
+          if(ifSubjListBox != null){
+            ifSubjListBox.addItem("");
+          }
+
+          while(thenSubjListBox != null && thenSubjListBox.getItemCount() > 0){
+            //Window.alert("1c");
+            thenSubjListBox.removeItem(0);
+          }
 
           for(MockComponent item : sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName)){
-            if(SourceStructureExplorer.HasWhenBlock(item.getType())){
+            if(whenSubjListBox != null && SourceStructureExplorer.HasWhenBlock(item.getType())){
               whenSubjListBox.addItem(item.getPropertyValue("Name"));
             }
-            ifSubjListBox.addItem(item.getPropertyValue("Name"));
-            thenSubjListBox.addItem(item.getPropertyValue("Name"));
+            /*if(ifSubjListBox != null){
+              ifSubjListBox.addItem(item.getPropertyValue("Name"));
+            }*/
+            /*if(thenSubjListBox != null){
+              thenSubjListBox.addItem(item.getPropertyValue("Name"));
+            }*/
           }
           }
       }

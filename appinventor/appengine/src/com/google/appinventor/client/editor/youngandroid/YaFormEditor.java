@@ -68,7 +68,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.impl.WindowImpl;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.ListBox;
-
 import java.util.*;
 
 //feduss
@@ -84,6 +83,8 @@ import com.google.appinventor.client.boxes.BlockSelectorBox;
  * @author lizlooney@google.com (Liz Looney)
  */
 public final class YaFormEditor extends SimpleEditor implements FormChangeListener, ComponentDatabaseChangeListener, PropertyChangeListener {
+
+  private HashMap<String, ArrayList<String>> screenToView = new HashMap<String, ArrayList<String>>(); //feduss
 
   private static class FileContentHolder {
     private String content;
@@ -382,9 +383,9 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
         boolean exit = false;
         int i = 0;
         //Remove item from whenSubj
-        while(!exit || i < sourceStructureExplorerAnt.whenSubjListBoxGeneric.getItemCount()){
-          if(sourceStructureExplorerAnt.whenSubjListBoxGeneric.getValue(i).equals(view)){
-            sourceStructureExplorerAnt.whenSubjListBoxGeneric.removeItem(i);
+        while(!exit || i < sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).size()){
+          if(sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).get(i).equals(view)){
+            sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).remove(i);
             exit = true;
           }
           else{
@@ -395,9 +396,9 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
         exit = false;
         i = 0;
         //Remove item from ifSubj
-        while(!exit || i < sourceStructureExplorerAnt.ifSubjListBoxGeneric.getItemCount()){
-          if(sourceStructureExplorerAnt.ifSubjListBoxGeneric.getValue(i).equals(view)){
-            sourceStructureExplorerAnt.ifSubjListBoxGeneric.removeItem(i);
+        while(!exit || i < sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorer.screenName).size()){
+          if(sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorer.screenName).get(i).equals(view)){
+            sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorer.screenName).remove(i);
             exit = true;
           }
           else{
@@ -408,9 +409,9 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
         exit = false;
         i = 0;
         //Remove item from thenSubj
-        while(!exit || i < sourceStructureExplorerAnt.thenSubjListBoxGeneric.getItemCount()){
-          if(sourceStructureExplorerAnt.thenSubjListBoxGeneric.getValue(i).equals(view)){
-            sourceStructureExplorerAnt.thenSubjListBoxGeneric.removeItem(i);
+        while(!exit || i < sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).size()){
+          if(sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).get(i).equals(view)){
+            sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).remove(i);
             exit = true;
           }
           else{
@@ -437,10 +438,10 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
         //Window.alert("added!");
         //"When" listbox can contain only view with "when" action...label hasn't, for ex.
         if(SourceStructureExplorer.HasWhenBlock(component.getType())) {
-          sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem(view);
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).add(view);
         }
-        sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem(view);
-        sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem(view);
+        sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorer.screenName).add(view);
+        sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).add(view);
         sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName).add(component);
       }
     } else {
@@ -467,10 +468,10 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
       boolean exit = false;
       int i = 0;
       //Remove item from whenSubj
-      while(!exit || i < sourceStructureExplorerAnt.whenSubjListBoxGeneric.getItemCount()){
-        if(sourceStructureExplorerAnt.whenSubjListBoxGeneric.getValue(i).equals(view)){
-          sourceStructureExplorerAnt.whenSubjListBoxGeneric.removeItem(i);
-          sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem(view);
+      while(!exit || i < sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).size()){
+        if(sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).get(i).equals(view)){
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).remove(i);
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).add(view);
           exit = true;
         }
         else{
@@ -481,10 +482,10 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
       exit = false;
       i = 0;
       //Remove item from whenSubj
-      while(!exit || i < sourceStructureExplorerAnt.ifSubjListBoxGeneric.getItemCount()){
-        if(sourceStructureExplorerAnt.ifSubjListBoxGeneric.getValue(i).equals(view)){
-          sourceStructureExplorerAnt.ifSubjListBoxGeneric.removeItem(i);
-          sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem(view);
+      while(!exit || i < sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorer.screenName).size()){
+        if(sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorer.screenName).get(i).equals(view)){
+          sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorer.screenName).remove(i);
+          sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorer.screenName).add(view);
           exit = true;
         }
         else{
@@ -495,10 +496,10 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
       exit = false;
       i = 0;
       //Remove item from whenSubj
-      while(!exit || i < sourceStructureExplorerAnt.thenSubjListBoxGeneric.getItemCount()){
-        if(sourceStructureExplorerAnt.thenSubjListBoxGeneric.getValue(i).equals(view)){
-          sourceStructureExplorerAnt.thenSubjListBoxGeneric.removeItem(i);
-          sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem(view);
+      while(!exit || i < sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).size()){
+        if(sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).get(i).equals(view)){
+          sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).remove(i);
+          sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorer.screenName).add(view);
           exit = true;
         }
         else{
@@ -743,6 +744,23 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
   private MockComponent createMockComponent(JSONObject propertiesObject, MockContainer parent, Map<String, String> substitution) {
     Map<String, JSONValue> properties = propertiesObject.getProperties();
 
+    //feduss
+    if(properties.get("$Components") != null){
+      ArrayList<String> views = new ArrayList<String>();
+      for(JSONValue subProperty : properties.get("$Components").asArray().getElements()){
+        views.add(subProperty.asObject().get("$Name").toJson().replace("\"",""));
+      }
+      screenToView.put(properties.get("$Name").toJson().replace("\"",""), views);
+    }
+    /*String value = "";
+    for(String prop : properties.keySet()){
+      //Window.alert(prop + ": " + properties.get(prop).toJson());
+      value += prop + ": " + properties.get(prop).toJson() + "\n";
+    }
+    Window.alert("Value: " + value);*/
+    //////////////////////////////////////////////////////////////////7
+
+
     // Component name and type
     String componentType = properties.get("$Type").asString().getString();
 
@@ -830,27 +848,50 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
       }
     }
 
-    //feduss, add views added by users to antlr list
-    String view = componentName;//mockComponent.getPropertyValue(PROPERTY_NAME_NAME);
-    String screenName = sourceStructureExplorerAnt.screenName;
+
     //Window.alert("screenName YaFormEditor screen: " + screenName + ", view: " + view);
     //Form is the type of the screens
     if(!componentType.equals("Form")){
+      //feduss, add views added by users to antlr list
+      String view = componentName;//mockComponent.getPropertyValue(PROPERTY_NAME_NAME);
+      String screenName = "";
+      for(String screen : screenToView.keySet()){
+        //Window.alert("Screen: " + screen + ", Values: " + screenToView.get(screen).toString() + ", view: " + componentName);
+        if(screenToView.get(screen).contains(componentName)){
+          screenName = screen;
+          //Window.alert("View " + componentName + " is in screen " + screenName);
+          break;
+        }
+      }
       //Window.alert("screen: " + screenName + ", " +  view + " restored1! Type: " + componentType);
       if(sourceStructureExplorerAnt.userViewsList.get(screenName) == null){
+
+        if(sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(screenName) == null){
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.put(screenName, new ArrayList<String>());
+        }
+
+        if(sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(screenName) == null){
+          sourceStructureExplorerAnt.ifSubjListBoxGeneric.put(screenName, new ArrayList<String>());
+        }
+
+        if(sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(screenName) == null){
+          sourceStructureExplorerAnt.thenSubjListBoxGeneric.put(screenName, new ArrayList<String>());
+        }
+
         //Window.alert("list is null...creating...");
         sourceStructureExplorerAnt.userViewsList.put(screenName, new ArrayList<MockComponent>());
         sourceStructureExplorerAnt.userViewsList.get(screenName).add(mockComponent);
         if(SourceStructureExplorer.HasWhenBlock(componentType)){
           //sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem("");
-          sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem(view);
+
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(screenName).add(view);
         }
 
         //sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem("");
-        sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem(view);
+        sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(screenName).add(view);
 
         //sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem("");
-        sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem(view);
+        sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(screenName).add(view);
 
         //sourceStructureExplorer.whenVerbListBoxGeneric.addItem("");
         //sourceStructureExplorer.ifVerbListBoxGeneric.addItem("");
@@ -860,11 +901,11 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
       else if(!sourceStructureExplorerAnt.userViewsList.get(screenName).contains(mockComponent)){
         //Window.alert("In if...size: " + sourceStructureExplorer.userViewsList.get(screenName));
         if(SourceStructureExplorer.HasWhenBlock(componentType)) {
-          sourceStructureExplorerAnt.whenSubjListBoxGeneric.addItem(view);
+          sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(screenName).add(view);
         }
-        sourceStructureExplorerAnt.ifSubjListBoxGeneric.addItem(view);
+        sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(screenName).add(view);
 
-        sourceStructureExplorerAnt.thenSubjListBoxGeneric.addItem(view);
+        sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(screenName).add(view);
         //Window.alert("restore if");
         sourceStructureExplorerAnt.userViewsList.get(screenName).add(mockComponent);
         //Window.alert(view + " restored2! Type: " + componentType);

@@ -15,48 +15,76 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 
 public class AntRulesExplorer extends Composite {
 
-  private VerticalPanel verticalPanel;
-  private int ruleCount = 0;
+  private final VerticalPanel verticalPanel;
+  private final HashMap<String, Integer> ruleCount = new HashMap<String, Integer>();
   public AntRulesExplorer(){
     ScrollPanel scrollPanel = new ScrollPanel();
-    scrollPanel.setWidth("750px");  // wide enough to avoid a horizontal scrollbar most of the time
+    scrollPanel.setWidth("720px");  // wide enough to avoid a horizontal scrollbar most of the time
     scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
 
     verticalPanel = new VerticalPanel();
+    verticalPanel.setWidth("720px");
+    verticalPanel.setHeight("100%");
     verticalPanel.add(scrollPanel);
     //Label label = new Label("Questo sarà il panel con le regole");
     //verticalPanel.add(label);
     initWidget(verticalPanel);
   }
 
-  public void insertRule(final Rule rule) {
+  public void changeScreen(ArrayList<Rule> rules){
+    for(String screen : ruleCount.keySet()){
+      ruleCount.replace(screen, 0);
+    }
+    if(verticalPanel != null){
+      while(verticalPanel.getWidgetCount() > 0){
+        verticalPanel.remove(0);
+      }
+    }
+    if(rules != null && rules.size() > 0){
+      for(Rule rule : rules){
+        insertRule(rule);
+      }
+    }
+  }
 
-    ruleCount++;
+  public void insertRule(final Rule sourceRule) {
+
+    SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
+    if(ruleCount.get(sourceStructureExplorer.screenName) == null){
+      ruleCount.put(sourceStructureExplorer.screenName, 0);
+    }
+    Integer value = ruleCount.get(sourceStructureExplorer.screenName) + 1;
+    ruleCount.replace(sourceStructureExplorer.screenName, value);
+    Rule newRule = new Rule(ruleCount.get(sourceStructureExplorer.screenName));
     final VerticalPanel innerVerticalPanel = new VerticalPanel();
-    final Label title = new Label("Rule" + ruleCount + ":");
+    final Label title = new Label("Rule" + ruleCount.get(sourceStructureExplorer.screenName) + ":");
     title.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-    rule.setTitle(title);
+    newRule.setTitle(title);
     innerVerticalPanel.add(title);
-    innerVerticalPanel.setTitle("Rule " + ruleCount);
-    rule.setInnerVerticalPanel(innerVerticalPanel);
+    innerVerticalPanel.setTitle("Rule " + ruleCount.get(sourceStructureExplorer.screenName));
+    newRule.setInnerVerticalPanel(innerVerticalPanel);
     //Window.alert("Title: " + innerVerticalPanel.getTitle());
     /***Restore when***/
     final ListBox whenSubjListBox = new ListBox();
-    for(int i = 0; i < rule.getWhenSubj().getItemCount(); i++){
-      whenSubjListBox.addItem(rule.getWhenSubj().getItemText(i));
+    for(int i = 0; i < sourceRule.getWhenSubj().getItemCount(); i++){
+      whenSubjListBox.addItem(sourceRule.getWhenSubj().getItemText(i));
     }
-    whenSubjListBox.setSelectedIndex(rule.getWhenSubj().getSelectedIndex());
+    whenSubjListBox.setSelectedIndex(sourceRule.getWhenSubj().getSelectedIndex());
+    Window.alert("sourceRule.getWhenSubj().selected: " + sourceRule.getWhenSubj().getSelectedItemText());
 
     whenSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
     final ListBox whenVerbListBox = new ListBox();
-    for(int i = 0; i < rule.getWhenVerb().getItemCount(); i++){
-      whenVerbListBox.addItem(rule.getWhenVerb().getItemText(i));
+    for(int i = 0; i < sourceRule.getWhenVerb().getItemCount(); i++){
+      whenVerbListBox.addItem(sourceRule.getWhenVerb().getItemText(i));
     }
-    whenVerbListBox.setSelectedIndex(rule.getWhenVerb().getSelectedIndex());
+    whenVerbListBox.setSelectedIndex(sourceRule.getWhenVerb().getSelectedIndex());
     whenVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
 
     final HorizontalPanel horizontalPanelWhen = new HorizontalPanel();
@@ -67,16 +95,16 @@ public class AntRulesExplorer extends Composite {
     whenLabelContainer.getElement().getStyle().setWidth(50, Style.Unit.PX);
     whenLabelContainer.add(whenLabel);
     horizontalPanelWhen.add(whenLabelContainer);
-    horizontalPanelWhen.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelWhen.add(new HTML("<hr  style=\"width:40px;\" />"));
     horizontalPanelWhen.add(whenSubjListBox);
-    horizontalPanelWhen.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelWhen.add(new HTML("<hr  style=\"width:40px;\" />"));
     horizontalPanelWhen.add(whenVerbListBox);
     innerVerticalPanel.add(horizontalPanelWhen);
 
     /******/
     /***Restore ifs***/
     int i = 0;
-    for(Condition condition : rule.getConditions()){
+    for(Condition condition : sourceRule.getConditions()){
       HorizontalPanel ifLabelContainer = new HorizontalPanel();
       final ListBox andOrListBox = new ListBox();
 
@@ -95,14 +123,14 @@ public class AntRulesExplorer extends Composite {
       }
 
       final ListBox ifSubjListBox = new ListBox();
-      for(int j = 0; j < rule.getConditions().get(i).getIfSubj().getItemCount(); j++){
-        ifSubjListBox.addItem(rule.getConditions().get(i).getIfSubj().getItemText(j));
+      for(int j = 0; j < sourceRule.getConditions().get(i).getIfSubj().getItemCount(); j++){
+        ifSubjListBox.addItem(sourceRule.getConditions().get(i).getIfSubj().getItemText(j));
       }
       ifSubjListBox.setSelectedIndex(condition.getIfSubj().getSelectedIndex());
       ifSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
       final ListBox ifVerbListBox = new ListBox();
-      for(int j = 0; j < rule.getConditions().get(i).getIfVerb().getItemCount(); j++){
-        ifVerbListBox.addItem(rule.getConditions().get(i).getIfVerb().getItemText(j));
+      for(int j = 0; j < sourceRule.getConditions().get(i).getIfVerb().getItemCount(); j++){
+        ifVerbListBox.addItem(sourceRule.getConditions().get(i).getIfVerb().getItemText(j));
       }
       ifVerbListBox.setSelectedIndex(condition.getIfVerb().getSelectedIndex());
       ifVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
@@ -130,17 +158,17 @@ public class AntRulesExplorer extends Composite {
       final HorizontalPanel horizontalPanelIf = new HorizontalPanel();
       //Window.alert("IfIndex: " +
       //        String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
-      horizontalPanelIf.setTitle("Condition " + rule.getRulesIfPanel().size() + 1);
+      horizontalPanelIf.setTitle("Condition " + sourceRule.getRulesIfPanel().size() + 1);
       horizontalPanelIf.add(ifLabelContainer);
-      HTML line = new HTML("<hr  style=\"width:50px;\" />");
+      HTML line = new HTML("<hr  style=\"width:40px;\" />");
       horizontalPanelIf.add(line);
       if(i != 0){
         //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(size).setANDOR(andOrListBox);
         horizontalPanelIf.add(andOrListBox);
-        horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelIf.add(new HTML("<hr  style=\"width:40px;\" />"));
       }
       horizontalPanelIf.add(ifSubjListBox);
-      horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
+      horizontalPanelIf.add(new HTML("<hr  style=\"width:40px;\" />"));
       horizontalPanelIf.add(ifVerbListBox);
       horizontalPanelIf.add(ifTextBox);
 
@@ -152,23 +180,23 @@ public class AntRulesExplorer extends Composite {
     i = 0;
     /***Restore thens***/
     //Window.alert("rule.getActions().size(): " + rule.getActions().size());
-    for(Action action : rule.getActions()){
+    for(Action action : sourceRule.getActions()){
       final ListBox actionTypeListBox = new ListBox();
-      for(int j = 0; j < rule.getActions().get(i).getThenType().getItemCount(); j++){
-        actionTypeListBox.addItem(rule.getActions().get(i).getThenType().getItemText(j));
+      for(int j = 0; j < sourceRule.getActions().get(i).getThenType().getItemCount(); j++){
+        actionTypeListBox.addItem(sourceRule.getActions().get(i).getThenType().getItemText(j));
       }
       actionTypeListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
       actionTypeListBox.setSelectedIndex(action.getThenType().getSelectedIndex());
 
       final ListBox actionSubjListBox = new ListBox();
-      for(int j = 0; j < rule.getActions().get(i).getThenSubj().getItemCount(); j++){
-        actionSubjListBox.addItem(rule.getActions().get(i).getThenSubj().getItemText(j));
+      for(int j = 0; j < sourceRule.getActions().get(i).getThenSubj().getItemCount(); j++){
+        actionSubjListBox.addItem(sourceRule.getActions().get(i).getThenSubj().getItemText(j));
       }
       actionSubjListBox.setSelectedIndex(action.getThenSubj().getSelectedIndex());
       actionSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
       final ListBox actionVerbListBox = new ListBox();
-      for(int j = 0; j < rule.getActions().get(i).getThenVerb().getItemCount(); j++){
-        actionVerbListBox.addItem(rule.getActions().get(i).getThenVerb().getItemText(j));
+      for(int j = 0; j < sourceRule.getActions().get(i).getThenVerb().getItemCount(); j++){
+        actionVerbListBox.addItem(sourceRule.getActions().get(i).getThenVerb().getItemText(j));
       }
       actionVerbListBox.setSelectedIndex(action.getThenVerb().getSelectedIndex());
       actionVerbListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
@@ -202,11 +230,11 @@ public class AntRulesExplorer extends Composite {
       final HorizontalPanel horizontalPanelAction = new HorizontalPanel();
       horizontalPanelAction.setTitle("Action " + (i + 1));
       horizontalPanelAction.add(thenLabelContainer);
-      horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+      horizontalPanelAction.add(new HTML("<hr  style=\"width:40px;\" />"));
       horizontalPanelAction.add(actionTypeListBox);
-      horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+      horizontalPanelAction.add(new HTML("<hr  style=\"width:40px;\" />"));
       horizontalPanelAction.add(actionSubjListBox);
-      horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+      horizontalPanelAction.add(new HTML("<hr  style=\"width:40px;\" />"));
       horizontalPanelAction.add(actionVerbListBox);
       horizontalPanelAction.add(thenTextBox);
       horizontalPanelAction.add(deleteMainAction);
@@ -224,7 +252,7 @@ public class AntRulesExplorer extends Composite {
           YaBlocksEditor editor =
                   (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
           //TODO cambiare l'id con quello del file di salvataggio
-          boolean res = editor.deleteBlock(rule.getBlock_id());
+          boolean res = editor.deleteBlock(sourceRule.getBlock_id());
           if(res){
             removeRuleLayout(innerVerticalPanel, verticalPanel);
           }
@@ -235,7 +263,7 @@ public class AntRulesExplorer extends Composite {
       });
       innerVerticalPanel.add(horizontalPanelButton);
       //End of the rule
-      innerVerticalPanel.add(new HTML("<hr  style=\"width:750px;\" />"));
+      innerVerticalPanel.add(new HTML("<hr  style=\"width:720px;\" />"));
       verticalPanel.add(innerVerticalPanel);
       i++;
     }
@@ -249,12 +277,12 @@ public class AntRulesExplorer extends Composite {
     int indexToRemove = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]);
     //Window.alert("indexToRemove: " + indexToRemove);
     SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
-    Window.alert("sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size: "
-            + sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size());
+    //Window.alert("sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size: "
+    //        + sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size());
     for(Rule rule : sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName)){
       VerticalPanel rulePanel = rule.getInnerVerticalPanel();
       int index = Integer.parseInt(rulePanel.getTitle().split("Rule ")[1]);
-      Window.alert("Current index: " + index + "\nIndexToRemove: " + indexToRemove);
+      //Window.alert("Current index: " + index + "\nIndexToRemove: " + indexToRemove);
       if(index > indexToRemove){
         rulePanel.setTitle("Rule " + (index - 1));
         rule.getTitle().setText("Rule " + (index - 1));
@@ -263,6 +291,8 @@ public class AntRulesExplorer extends Composite {
 
     verticalPanel.remove(innerVerticalPanel);
     sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).remove(indexToRemove - 1);
+    Integer value = ruleCount.get(sourceStructureExplorer.screenName) - 1;
+    ruleCount.replace(sourceStructureExplorer.screenName, value);
 
     /*if(rulesListBoxes.get(screenName).size() == 0){
       confirmButton.setEnabled(false);

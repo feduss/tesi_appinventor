@@ -6,6 +6,7 @@
 
 package com.google.appinventor.client;
 
+import com.google.appinventor.client.boxes.AntRulesSelectorBox;
 import com.google.appinventor.client.editor.FileEditor;
 import com.google.appinventor.client.editor.ProjectEditor;
 import com.google.appinventor.client.editor.simple.components.MockComponent;
@@ -146,17 +147,7 @@ public class DesignToolbar extends Toolbar {
 
       }
       else{
-
-        Rule rule = null;
-        /*Window.alert("Size: " + size);
-        if(size == 0){
-          rule = sourceStructureExplorer.toBeAddRule;
-          updateListBox(rule);
-        }*/
-        for(int i = 0; i < size; i++){
-          rule = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i);
-          updateListBox(rule);
-        }
+        //updateListBox();
       }
 
       //Window.alert("Post if else");
@@ -165,53 +156,29 @@ public class DesignToolbar extends Toolbar {
 
       if(sourceStructureExplorer.screenSetupCount.get(currentScreen) == null){
         sourceStructureExplorer.screenSetupCount.put(currentScreen, true);
-        sourceStructureExplorer.SetupPage();
       }
+
+      //Remove old layout
+      if(sourceStructureExplorer.panel2 != null){
+        if(sourceStructureExplorer.verticalPanel != null){
+          sourceStructureExplorer.panel2.remove(sourceStructureExplorer.verticalPanel);
+        }
+        //sourceStructureExplorer.verticalPanel.remove(sourceStructureExplorer.innerVerticalPanel);
+      }
+
+      //Reset parsing layout to default value
+      sourceStructureExplorer.SetupPage();
+
+      //Update already parsed rules
+      ArrayList<Rule> rules = null;
+      if(sourceStructureExplorer.rulesListBoxes != null && sourceStructureExplorer.rulesListBoxes.get(currentScreen) != null){
+        rules = sourceStructureExplorer.rulesListBoxes.get(currentScreen);
+      }
+      AntRulesSelectorBox.getAntRulesSelectorBox().getAntRulesExplorer().
+              changeScreen(rules);
 
       //Window.alert("whenSubjListBox size after add: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
 
-    }
-
-    private void updateListBox(Rule rule) {
-      ListBox whenSubjListBox = rule.getWhenSubj();
-      //ListBox whenVerbListBox = rule.getWhenVerb();
-      ListBox ifSubjListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfSubj() : null;
-      //ListBox ifVerbListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfVerb() : null;
-      ListBox thenSubjListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenSubj() : null;
-      //ListBox thenVerbListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenVerb() : null;
-      //feduss, update lists with the item of new page
-      while(whenSubjListBox != null && whenSubjListBox.getItemCount() > 0){
-        //Window.alert("1a");
-        whenSubjListBox.removeItem(0);
-      }
-      if(whenSubjListBox != null){
-        whenSubjListBox.addItem("");
-      }
-
-      while(ifSubjListBox != null && ifSubjListBox.getItemCount() > 0){
-        //Window.alert("1b");
-        ifSubjListBox.removeItem(0);
-      }
-      if(ifSubjListBox != null){
-        ifSubjListBox.addItem("");
-      }
-
-      while(thenSubjListBox != null && thenSubjListBox.getItemCount() > 0){
-        //Window.alert("1c");
-        thenSubjListBox.removeItem(0);
-      }
-
-      for(MockComponent item : sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName)){
-        if(whenSubjListBox != null && SourceStructureExplorer.HasWhenBlock(item.getType())){
-          whenSubjListBox.addItem(item.getPropertyValue("Name"));
-        }
-      /*if(ifSubjListBox != null){
-        ifSubjListBox.addItem(item.getPropertyValue("Name"));
-      }*/
-      /*if(thenSubjListBox != null){
-        thenSubjListBox.addItem(item.getPropertyValue("Name"));
-      }*/
-      }
     }
 
     public long getProjectId() {

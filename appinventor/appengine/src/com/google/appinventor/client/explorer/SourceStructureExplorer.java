@@ -44,7 +44,7 @@ public class SourceStructureExplorer extends Composite {
   private final TextButton deleteButton;
 
   //feduss
-  VerticalPanel panel2;
+  public VerticalPanel panel2;
   TextArea inputTextBox; //initialization
   Label resultLabel;
 
@@ -67,8 +67,8 @@ public class SourceStructureExplorer extends Composite {
 
   Label ruleStatus; //"In Progress" or "Created"
   public Rule toBeAddRule = null;
-  private VerticalPanel verticalPanel = null; //vertical panel of antlr page
-  private VerticalPanel innerVerticalPanel = null; //vertical panel of the rule to be added
+  public VerticalPanel verticalPanel = null; //vertical panel of antlr page
+  public VerticalPanel innerVerticalPanel = null; //vertical panel of the rule to be added
   public HashMap<String, Boolean> screenSetupCount = new HashMap<String, Boolean>(); //ScreenName -> Boolean (if the setup for that screen has been already done or not.
   //////
 
@@ -206,7 +206,7 @@ public class SourceStructureExplorer extends Composite {
       panel2 = new VerticalPanel();
       // Put a ScrollPanel around the panel.
       scrollPanel = new ScrollPanel(panel2);
-      scrollPanel.setWidth("750px");  // wide enough to avoid a horizontal scrollbar most of the time --> 1000 is enough
+      scrollPanel.setWidth("720px");  // wide enough to avoid a horizontal scrollbar most of the time --> 1000 is enough
       scrollPanel.setHeight("100%"); // approximately the same height as the viewer
 
       rulesListBoxes = new HashMap<String, ArrayList<Rule>>();
@@ -311,9 +311,9 @@ public class SourceStructureExplorer extends Composite {
 
     final HorizontalPanel horizontalPanelWhen = new HorizontalPanel();
     horizontalPanelWhen.add(whenLabelContainer);
-    horizontalPanelWhen.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelWhen.add(new HTML("<hr  style=\"width:40px;\" />"));
     horizontalPanelWhen.add(whenSubjListBox);
-    horizontalPanelWhen.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelWhen.add(new HTML("<hr  style=\"width:40px;\" />"));
     horizontalPanelWhen.add(whenVerbListBox);
 
     //Window.alert("Pre Action Layout");
@@ -360,11 +360,11 @@ public class SourceStructureExplorer extends Composite {
     thenLabelContainer.add(thenLabel);
     horizontalPanelAction.setTitle("Action 1");
     horizontalPanelAction.add(thenLabelContainer);
-    horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelAction.add(new HTML("<hr  style=\"width:40px;\" />"));
     horizontalPanelAction.add(actionTypeListBox);
-    horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelAction.add(new HTML("<hr  style=\"width:40px;\" />"));
     horizontalPanelAction.add(actionSubjListBox);
-    horizontalPanelAction.add(new HTML("<hr  style=\"width:50px;\" />"));
+    horizontalPanelAction.add(new HTML("<hr  style=\"width:40px;\" />"));
     horizontalPanelAction.add(actionVerbListBox);
     horizontalPanelAction.add(thenTextBox);
     horizontalPanelAction.add(deleteMainAction);
@@ -385,7 +385,15 @@ public class SourceStructureExplorer extends Composite {
                 : null;
         boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
 
-        if(actionTypeListBox.getSelectedItemText().equals("Open")){
+        if(actionTypeListBox.getSelectedItemText().equals("")){
+          while (actionSubjListBox.getItemCount() > 0) {
+            actionSubjListBox.removeItem(0);
+          }
+          while (actionVerbListBox.getItemCount() > 0) {
+            actionVerbListBox.removeItem(0);
+          }
+        }
+        else if(actionTypeListBox.getSelectedItemText().equals("Open")){
           while (actionSubjListBox.getItemCount() > 0) {
             actionSubjListBox.removeItem(0);
           }
@@ -546,11 +554,11 @@ public class SourceStructureExplorer extends Composite {
                 String.valueOf(toBeAddRule.getRulesThenPanel().size() + 1));
         horizontalPanelAction_n.add(hiddenIndexLabel);
         horizontalPanelAction_n.add(thenLabelContainer);
-        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:40px;\" />"));
         horizontalPanelAction_n.add(otherActionTypeListBox);
-        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:40px;\" />"));
         horizontalPanelAction_n.add(otherActionSubjListBox);
-        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelAction_n.add(new HTML("<hr  style=\"width:40px;\" />"));
         horizontalPanelAction_n.add(otherActionVerbListBox);
 
         horizontalPanelAction_n.add(thenTextBox);
@@ -578,7 +586,15 @@ public class SourceStructureExplorer extends Composite {
                     : null;
             boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
 
-            if(otherActionTypeListBox.getSelectedItemText().equals("Open")){
+            if(otherActionTypeListBox.getSelectedItemText().equals("")){
+              while (otherActionSubjListBox.getItemCount() > 0) {
+                otherActionSubjListBox.removeItem(0);
+              }
+              while (otherActionVerbListBox.getItemCount() > 0) {
+                otherActionVerbListBox.removeItem(0);
+              }
+            }
+            else if(otherActionTypeListBox.getSelectedItemText().equals("Open")){
               while (otherActionSubjListBox.getItemCount() > 0) {
                 otherActionSubjListBox.removeItem(0);
               }
@@ -729,15 +745,15 @@ public class SourceStructureExplorer extends Composite {
         horizontalPanelIf.setTitle("Condition " +
                 String.valueOf(value));
         horizontalPanelIf.add(ifLabelContainer);
-        HTML line = new HTML("<hr  style=\"width:50px;\" />");
+        HTML line = new HTML("<hr  style=\"width:40px;\" />");
         horizontalPanelIf.add(line);
         if(size != 0){
           toBeAddRule.getConditions().get(size).setANDOR(andOrListBox);
           horizontalPanelIf.add(andOrListBox);
-          horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
+          horizontalPanelIf.add(new HTML("<hr  style=\"width:40px;\" />"));
         }
         horizontalPanelIf.add(ifSubjListBox);
-        horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
+        horizontalPanelIf.add(new HTML("<hr  style=\"width:40px;\" />"));
         horizontalPanelIf.add(ifVerbListBox);
         horizontalPanelIf.add(ifTextBox);
 
@@ -849,10 +865,10 @@ public class SourceStructureExplorer extends Composite {
         //TODO this check doesn't work
         String whenSubjVerb = toBeAddRule.getWhenSubj().getSelectedItemText() + " " + toBeAddRule.getWhenVerb().getSelectedItemText();
         for(Rule rule : rulesListBoxes.get(screenName)){
-          Window.alert("toBeAddRule.index: " + toBeAddRule.getIndex() + "\nrule.index: " + rule.getIndex());
+          //Window.alert("toBeAddRule.index: " + toBeAddRule.getIndex() + "\nrule.index: " + rule.getIndex());
           if(rule.getIndex() != toBeAddRule.getIndex()){
             String otherWhenSubjVerb = rule.getWhenSubj().getSelectedItemText() + " " + rule.getWhenVerb().getSelectedItemText();
-            Window.alert("whenSubjVerb: " + whenSubjVerb + "\notherWhenSubjVerb: " + otherWhenSubjVerb);
+            //Window.alert("whenSubjVerb: " + whenSubjVerb + "\notherWhenSubjVerb: " + otherWhenSubjVerb);
             if(whenSubjVerb.equals(otherWhenSubjVerb)){
               noDuplicateEvent = false;
               break;
@@ -1098,16 +1114,23 @@ public class SourceStructureExplorer extends Composite {
 
   //feduss
   private String ListBoxWhenSubjFieldClicked(ListBox subjList, ListBox verbList) {
-    int index = subjList.getSelectedIndex();
-    if(index >= 0){
-      //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
+    String selected = subjList.getSelectedItemText();
+    while(verbList.getItemCount() > 0){
+      verbList.removeItem(0);
+    }
+    verbList.addItem("");
+    if(!selected.equals("")){
 
-      while(verbList.getItemCount() > 0){
-        verbList.removeItem(0);
+
+      MockComponent component = null;
+
+      for(MockComponent component1 : userViewsList.get(screenName)){
+        if(component1.getPropertyValue("Name").equals(selected)){
+          component = component1;
+          break;
+        }
       }
-      verbList.addItem("");
 
-      MockComponent component = userViewsList.get(screenName).get(index);
       String compType = component.getType();
 
       switch(compType){
@@ -1181,16 +1204,21 @@ public class SourceStructureExplorer extends Composite {
 
   //feduss
   private String ListBoxIfSubjFieldClicked(ListBox subjList, ListBox verbList) {
-    int index = subjList.getSelectedIndex() - 1;
-    if(index >= 0) {
-      //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
+    String selected = subjList.getSelectedItemText();
+    while (verbList.getItemCount() > 0) {
+      verbList.removeItem(0);
+    }
+    verbList.addItem("");
+    if(!selected.equals("")){
 
-      while (verbList.getItemCount() > 0) {
-        verbList.removeItem(0);
+      MockComponent component = null;
+
+      for(MockComponent component1 : userViewsList.get(screenName)){
+        if(component1.getPropertyValue("Name").equals(selected)){
+          component = component1;
+          break;
+        }
       }
-      verbList.addItem("");
-
-      MockComponent component = userViewsList.get(screenName).get(index);
       String compType = component.getType();
 
       switch (compType) {
@@ -1593,248 +1621,262 @@ public class SourceStructureExplorer extends Composite {
   }
 
   //feduss
-  private String ListBoxThenSubjFieldClicked(ListBox subjList, ListBox verbList, String selected, int index) {
+  private String ListBoxThenSubjFieldClicked(ListBox subjList, ListBox verbList, String actionType, int index) {
     //Window.alert("Selected: " + userViewsList.get(screenName).get(index).getPropertyValue("Name") + "(" + String.valueOf(index) + ")");
 
-    if(selected.toLowerCase().equals("open")){
+    String selected = subjList.getSelectedItemText();
+
+    /*while (verbList.getItemCount() > 0) {
+      verbList.removeItem(0);
+    }
+    verbList.addItem("");*/
+    if(actionType.toLowerCase().equals("open")){
       //subjList.addItem("another screen");
       verbList.addItem("with name");
     }
-    else {
-      MockComponent component = userViewsList.get(screenName).get(index);
-      String compType = component.getType();
-      String view = component.getPropertyValue("Name");
+    else if(!selected.equals("")) {
+        MockComponent component = null;
 
-      switch (compType) {
-        case "Button":
-          if (selected.toLowerCase().equals("set")) {
-            verbList.addItem("background color to");
-            verbList.addItem("enabled to");
-            verbList.addItem("font bold to");
-            verbList.addItem("font italic to");
-            verbList.addItem("font size to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("image to");
-            verbList.addItem("show feedback to");
-            verbList.addItem("text to");
-            verbList.addItem("text color to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
+        for(MockComponent component1 : userViewsList.get(screenName)){
+          if(component1.getPropertyValue("Name").equals(selected)){
+            component = component1;
+            break;
           }
-          break;
-        case "Label":
-          if (selected.toLowerCase().equals("set")) {
-            verbList.addItem("background color to");
-            verbList.addItem("font size to");
-            verbList.addItem("has margins to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("text to");
-            verbList.addItem("text color to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "DatePicker":
-          if (selected.toLowerCase().equals("call")) {
-            verbList.addItem("call " + view + " launch picker");
-            verbList.addItem("call " + view + " set date to display (year/month/day) to");
-            verbList.addItem("call " + view + " set date to display from instant");
-          } else {
-            verbList.addItem("background color to");
-            verbList.addItem("enabled to");
-            verbList.addItem("font bold to");
-            verbList.addItem("font italic to");
-            verbList.addItem("font size to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("image to");
-            verbList.addItem("show feedback to");
-            verbList.addItem("text to");
-            verbList.addItem("text color to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "Image":
-          if (selected.toLowerCase().equals("set")) {
-            verbList.addItem("animation to");
-            verbList.addItem("clickable to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("picture to");
-            verbList.addItem("rotation angle to");
-            verbList.addItem("scale picture to fit to");
-            verbList.addItem("scaling to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "ListPicker":
-          if (selected.toLowerCase().equals("call")) {
-            verbList.addItem("open list");
-          } else {
-            verbList.addItem("background color to");
-            verbList.addItem("elements to");
-            verbList.addItem("elements from string to");
-            verbList.addItem("enabled to");
-            verbList.addItem("font bold to");
-            verbList.addItem("font italic to");
-            verbList.addItem("font size to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("image to");
-            verbList.addItem("item background color to");
-            verbList.addItem("item text color to");
-            verbList.addItem("selection to");
-            verbList.addItem("selection index to");
-            verbList.addItem("show feedback to");
-            verbList.addItem("show filter bar to");
-            verbList.addItem("text to");
-            verbList.addItem("text color to");
-            verbList.addItem("title to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "ListView":
-          if (selected.toLowerCase().equals("set")) {
-            verbList.addItem("background color to");
-            verbList.addItem("elements to");
-            verbList.addItem("elements from string to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("selection to");
-            verbList.addItem("selection color to");
-            verbList.addItem("selection index to");
-            verbList.addItem("show filter bar to");
-            verbList.addItem("text color to");
-            verbList.addItem("text size to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "PasswordTextBox":
-          if (selected.toLowerCase().equals("set")) {
-            verbList.addItem("background color to");
-            verbList.addItem("enabled to");
-            verbList.addItem("font size to");
-            verbList.addItem("heigth to");
-            verbList.addItem("heigth percent to");
-            verbList.addItem("hint to");
-            verbList.addItem("password visible to");
-            verbList.addItem("text to");
-            verbList.addItem("text color to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "Slider":
-          if (selected.toLowerCase().equals("set")) {
-            verbList.addItem("color left to");
-            verbList.addItem("color right to");
-            verbList.addItem("height percent to");
-            verbList.addItem("max value to");
-            verbList.addItem("min value to");
-            verbList.addItem("thumb enabled to");
-            verbList.addItem("thumb position to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "Spinner":
-          if (selected.toLowerCase().equals("call")) {
-            verbList.addItem("display dropdown");
-          } else {
-            verbList.addItem("elements to");
-            verbList.addItem("elements from string to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("prompt to");
-            verbList.addItem("selection to");
-            verbList.addItem("selection index to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "Switch":
-          if (selected.toLowerCase().equals("set")) {
-            verbList.addItem("background color to");
-            verbList.addItem("enabled to");
-            verbList.addItem("font size to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("on to");
-            verbList.addItem("text to");
-            verbList.addItem("text color to");
-            verbList.addItem("thumb color active to");
-            verbList.addItem("thumb color inactive to");
-            verbList.addItem("track color active to");
-            verbList.addItem("track color inactive to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "TextBox":
-          if (selected.toLowerCase().equals("call")) {
-            verbList.addItem("hide keyboard");
-            verbList.addItem("request focus");
-          } else {
-            verbList.addItem("background color to");
-            verbList.addItem("enabled to");
-            verbList.addItem("font size to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("hint to");
-            verbList.addItem("multiline to");
-            verbList.addItem("numbers only to");
-            verbList.addItem("read only to");
-            verbList.addItem("text to");
-            verbList.addItem("text color to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        case "TimePicker":
-          if (selected.toLowerCase().equals("call")) {
-            verbList.addItem("launch picker");
-            verbList.addItem("set time to display (hour/minute)");
-            verbList.addItem("set time to display from instant");
-          } else {
-            verbList.addItem("background color to");
-            verbList.addItem("enabled to");
-            verbList.addItem("font bold to");
-            verbList.addItem("font italic to");
-            verbList.addItem("font size to");
-            verbList.addItem("height to");
-            verbList.addItem("height percent to");
-            verbList.addItem("image to");
-            verbList.addItem("show feedback to");
-            verbList.addItem("text to");
-            verbList.addItem("text color to");
-            verbList.addItem("visible to");
-            verbList.addItem("width to");
-            verbList.addItem("width percent to");
-          }
-          break;
-        //TODO add notifier?
-        default:
-          //Window.alert("NotHandledCase: " + compType);
+        }
+        String compType = component.getType();
+        String view = component.getPropertyValue("Name");
+
+        switch (compType) {
+          case "Button":
+            if (actionType.toLowerCase().equals("set")) {
+              verbList.addItem("background color to");
+              verbList.addItem("enabled to");
+              verbList.addItem("font bold to");
+              verbList.addItem("font italic to");
+              verbList.addItem("font size to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("image to");
+              verbList.addItem("show feedback to");
+              verbList.addItem("text to");
+              verbList.addItem("text color to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "Label":
+            if (actionType.toLowerCase().equals("set")) {
+              verbList.addItem("background color to");
+              verbList.addItem("font size to");
+              verbList.addItem("has margins to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("text to");
+              verbList.addItem("text color to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "DatePicker":
+            if (actionType.toLowerCase().equals("call")) {
+              verbList.addItem("call " + view + " launch picker");
+              verbList.addItem("call " + view + " set date to display (year/month/day) to");
+              verbList.addItem("call " + view + " set date to display from instant");
+            } else {
+              verbList.addItem("background color to");
+              verbList.addItem("enabled to");
+              verbList.addItem("font bold to");
+              verbList.addItem("font italic to");
+              verbList.addItem("font size to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("image to");
+              verbList.addItem("show feedback to");
+              verbList.addItem("text to");
+              verbList.addItem("text color to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "Image":
+            if (actionType.toLowerCase().equals("set")) {
+              verbList.addItem("animation to");
+              verbList.addItem("clickable to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("picture to");
+              verbList.addItem("rotation angle to");
+              verbList.addItem("scale picture to fit to");
+              verbList.addItem("scaling to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "ListPicker":
+            if (actionType.toLowerCase().equals("call")) {
+              verbList.addItem("open list");
+            } else {
+              verbList.addItem("background color to");
+              verbList.addItem("elements to");
+              verbList.addItem("elements from string to");
+              verbList.addItem("enabled to");
+              verbList.addItem("font bold to");
+              verbList.addItem("font italic to");
+              verbList.addItem("font size to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("image to");
+              verbList.addItem("item background color to");
+              verbList.addItem("item text color to");
+              verbList.addItem("selection to");
+              verbList.addItem("selection index to");
+              verbList.addItem("show feedback to");
+              verbList.addItem("show filter bar to");
+              verbList.addItem("text to");
+              verbList.addItem("text color to");
+              verbList.addItem("title to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "ListView":
+            if (actionType.toLowerCase().equals("set")) {
+              verbList.addItem("background color to");
+              verbList.addItem("elements to");
+              verbList.addItem("elements from string to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("selection to");
+              verbList.addItem("selection color to");
+              verbList.addItem("selection index to");
+              verbList.addItem("show filter bar to");
+              verbList.addItem("text color to");
+              verbList.addItem("text size to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "PasswordTextBox":
+            if (actionType.toLowerCase().equals("set")) {
+              verbList.addItem("background color to");
+              verbList.addItem("enabled to");
+              verbList.addItem("font size to");
+              verbList.addItem("heigth to");
+              verbList.addItem("heigth percent to");
+              verbList.addItem("hint to");
+              verbList.addItem("password visible to");
+              verbList.addItem("text to");
+              verbList.addItem("text color to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "Slider":
+            if (actionType.toLowerCase().equals("set")) {
+              verbList.addItem("color left to");
+              verbList.addItem("color right to");
+              verbList.addItem("height percent to");
+              verbList.addItem("max value to");
+              verbList.addItem("min value to");
+              verbList.addItem("thumb enabled to");
+              verbList.addItem("thumb position to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "Spinner":
+            if (actionType.toLowerCase().equals("call")) {
+              verbList.addItem("display dropdown");
+            } else {
+              verbList.addItem("elements to");
+              verbList.addItem("elements from string to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("prompt to");
+              verbList.addItem("selection to");
+              verbList.addItem("selection index to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "Switch":
+            if (actionType.toLowerCase().equals("set")) {
+              verbList.addItem("background color to");
+              verbList.addItem("enabled to");
+              verbList.addItem("font size to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("on to");
+              verbList.addItem("text to");
+              verbList.addItem("text color to");
+              verbList.addItem("thumb color active to");
+              verbList.addItem("thumb color inactive to");
+              verbList.addItem("track color active to");
+              verbList.addItem("track color inactive to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "TextBox":
+            if (actionType.toLowerCase().equals("call")) {
+              verbList.addItem("hide keyboard");
+              verbList.addItem("request focus");
+            } else {
+              verbList.addItem("background color to");
+              verbList.addItem("enabled to");
+              verbList.addItem("font size to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("hint to");
+              verbList.addItem("multiline to");
+              verbList.addItem("numbers only to");
+              verbList.addItem("read only to");
+              verbList.addItem("text to");
+              verbList.addItem("text color to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          case "TimePicker":
+            if (actionType.toLowerCase().equals("call")) {
+              verbList.addItem("launch picker");
+              verbList.addItem("set time to display (hour/minute)");
+              verbList.addItem("set time to display from instant");
+            } else {
+              verbList.addItem("background color to");
+              verbList.addItem("enabled to");
+              verbList.addItem("font bold to");
+              verbList.addItem("font italic to");
+              verbList.addItem("font size to");
+              verbList.addItem("height to");
+              verbList.addItem("height percent to");
+              verbList.addItem("image to");
+              verbList.addItem("show feedback to");
+              verbList.addItem("text to");
+              verbList.addItem("text color to");
+              verbList.addItem("visible to");
+              verbList.addItem("width to");
+              verbList.addItem("width percent to");
+            }
+            break;
+          //TODO add notifier?
+          default:
+            //Window.alert("NotHandledCase: " + compType);
+        }
+
+        return compType;
       }
-      return compType;
-    }
     return "";
   }
 

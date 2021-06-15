@@ -37,10 +37,12 @@ public class AntRulesExplorer extends Composite {
 
     ruleCount++;
     final VerticalPanel innerVerticalPanel = new VerticalPanel();
-    Label title = new Label("Rule" + ruleCount + ":");
+    final Label title = new Label("Rule" + ruleCount + ":");
     title.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+    rule.setTitle(title);
     innerVerticalPanel.add(title);
     innerVerticalPanel.setTitle("Rule " + ruleCount);
+    rule.setInnerVerticalPanel(innerVerticalPanel);
     //Window.alert("Title: " + innerVerticalPanel.getTitle());
     /***Restore when***/
     final ListBox whenSubjListBox = new ListBox();
@@ -244,19 +246,23 @@ public class AntRulesExplorer extends Composite {
   //feduss
   private void removeRuleLayout(VerticalPanel innerVerticalPanel, VerticalPanel verticalPanel) {
     //Window.alert("innerVerticalPanel: " + innerVerticalPanel + ", verticalPanel: " + verticalPanel);
-    int indexToRemove = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+    int indexToRemove = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]);
     //Window.alert("indexToRemove: " + indexToRemove);
     SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
+    Window.alert("sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size: "
+            + sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size());
     for(Rule rule : sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName)){
-      VerticalPanel rulePanel = rule.getRulePanel();
-      int index = Integer.parseInt(rulePanel.getTitle().split("Rule ")[1]) - 1;
+      VerticalPanel rulePanel = rule.getInnerVerticalPanel();
+      int index = Integer.parseInt(rulePanel.getTitle().split("Rule ")[1]);
+      Window.alert("Current index: " + index + "\nIndexToRemove: " + indexToRemove);
       if(index > indexToRemove){
         rulePanel.setTitle("Rule " + (index - 1));
+        rule.getTitle().setText("Rule " + (index - 1));
       }
     }
 
     verticalPanel.remove(innerVerticalPanel);
-    sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).remove(indexToRemove);
+    sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).remove(indexToRemove - 1);
 
     /*if(rulesListBoxes.get(screenName).size() == 0){
       confirmButton.setEnabled(false);

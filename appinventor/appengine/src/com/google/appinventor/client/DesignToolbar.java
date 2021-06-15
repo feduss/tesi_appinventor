@@ -143,50 +143,20 @@ public class DesignToolbar extends Toolbar {
       }
       if(sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName).size() == 0){
         //Window.alert("Size 0");
+
       }
       else{
+
+        Rule rule = null;
+        /*Window.alert("Size: " + size);
+        if(size == 0){
+          rule = sourceStructureExplorer.toBeAddRule;
+          updateListBox(rule);
+        }*/
         for(int i = 0; i < size; i++){
-          Rule rule = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i);
-          ListBox whenSubjListBox = rule.getWhenSubj();
-          //ListBox whenVerbListBox = rule.getWhenVerb();
-          ListBox ifSubjListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfSubj() : null;
-          //ListBox ifVerbListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfVerb() : null;
-          ListBox thenSubjListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenSubj() : null;
-          //ListBox thenVerbListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenVerb() : null;
-          //feduss, update lists with the item of new page
-          while(whenSubjListBox != null && whenSubjListBox.getItemCount() > 0){
-            //Window.alert("1a");
-            whenSubjListBox.removeItem(0);
-          }
-          if(whenSubjListBox != null){
-            whenSubjListBox.addItem("");
-          }
-
-          while(ifSubjListBox != null && ifSubjListBox.getItemCount() > 0){
-            //Window.alert("1b");
-            ifSubjListBox.removeItem(0);
-          }
-          if(ifSubjListBox != null){
-            ifSubjListBox.addItem("");
-          }
-
-          while(thenSubjListBox != null && thenSubjListBox.getItemCount() > 0){
-            //Window.alert("1c");
-            thenSubjListBox.removeItem(0);
-          }
-
-          for(MockComponent item : sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName)){
-            if(whenSubjListBox != null && SourceStructureExplorer.HasWhenBlock(item.getType())){
-              whenSubjListBox.addItem(item.getPropertyValue("Name"));
-            }
-            /*if(ifSubjListBox != null){
-              ifSubjListBox.addItem(item.getPropertyValue("Name"));
-            }*/
-            /*if(thenSubjListBox != null){
-              thenSubjListBox.addItem(item.getPropertyValue("Name"));
-            }*/
-          }
-          }
+          rule = sourceStructureExplorer.rulesListBoxes.get(currentScreen).get(i);
+          updateListBox(rule);
+        }
       }
 
       //Window.alert("Post if else");
@@ -200,6 +170,48 @@ public class DesignToolbar extends Toolbar {
 
       //Window.alert("whenSubjListBox size after add: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
 
+    }
+
+    private void updateListBox(Rule rule) {
+      ListBox whenSubjListBox = rule.getWhenSubj();
+      //ListBox whenVerbListBox = rule.getWhenVerb();
+      ListBox ifSubjListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfSubj() : null;
+      //ListBox ifVerbListBox = rule.getConditions().size() > 0 ? rule.getConditions().get(0).getIfVerb() : null;
+      ListBox thenSubjListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenSubj() : null;
+      //ListBox thenVerbListBox = rule.getActions().size() > 0 ? rule.getActions().get(0).getThenVerb() : null;
+      //feduss, update lists with the item of new page
+      while(whenSubjListBox != null && whenSubjListBox.getItemCount() > 0){
+        //Window.alert("1a");
+        whenSubjListBox.removeItem(0);
+      }
+      if(whenSubjListBox != null){
+        whenSubjListBox.addItem("");
+      }
+
+      while(ifSubjListBox != null && ifSubjListBox.getItemCount() > 0){
+        //Window.alert("1b");
+        ifSubjListBox.removeItem(0);
+      }
+      if(ifSubjListBox != null){
+        ifSubjListBox.addItem("");
+      }
+
+      while(thenSubjListBox != null && thenSubjListBox.getItemCount() > 0){
+        //Window.alert("1c");
+        thenSubjListBox.removeItem(0);
+      }
+
+      for(MockComponent item : sourceStructureExplorer.userViewsList.get(sourceStructureExplorer.screenName)){
+        if(whenSubjListBox != null && SourceStructureExplorer.HasWhenBlock(item.getType())){
+          whenSubjListBox.addItem(item.getPropertyValue("Name"));
+        }
+      /*if(ifSubjListBox != null){
+        ifSubjListBox.addItem(item.getPropertyValue("Name"));
+      }*/
+      /*if(thenSubjListBox != null){
+        thenSubjListBox.addItem(item.getPropertyValue("Name"));
+      }*/
+      }
     }
 
     public long getProjectId() {

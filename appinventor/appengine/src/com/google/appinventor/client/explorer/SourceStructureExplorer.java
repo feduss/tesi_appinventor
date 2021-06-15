@@ -26,6 +26,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
@@ -65,7 +66,7 @@ public class SourceStructureExplorer extends Composite {
   private String tempBlockID = null;
 
   Label ruleStatus; //"In Progress" or "Created"
-  private Rule toBeAddRule = null;
+  public Rule toBeAddRule = null;
   private VerticalPanel verticalPanel = null; //vertical panel of antlr page
   private VerticalPanel innerVerticalPanel = null; //vertical panel of the rule to be added
   public HashMap<String, Boolean> screenSetupCount = new HashMap<String, Boolean>(); //ScreenName -> Boolean (if the setup for that screen has been already done or not.
@@ -263,15 +264,15 @@ public class SourceStructureExplorer extends Composite {
     //Window.alert("2a");
     toBeAddRule.setInnerVerticalPanel(innerVerticalPanel);
     //Window.alert("2b");
-    rulesListBoxes.get(screenName).add(toBeAddRule);
+    //rulesListBoxes.get(screenName).add(toBeAddRule);
     //Window.alert("2c");
-    int ruleIndex = rulesListBoxes.get(screenName).size() - 1;
+    int ruleIndex = rulesListBoxes.get(screenName).size();// - 1;
     //Window.alert("2d");
     String StringIndex = String.valueOf(ruleIndex + 1);
     //Window.alert("2d");
     innerVerticalPanel.setTitle("Rule " + StringIndex); //useful to recognize which rule i'm editing, etc
     //Window.alert("2e");
-    rulesListBoxes.get(screenName).get(ruleIndex).setRulePanel(innerVerticalPanel);
+    toBeAddRule.setRulePanel(innerVerticalPanel);
 
     //Window.alert("Pre When Layout");
 
@@ -284,7 +285,7 @@ public class SourceStructureExplorer extends Composite {
     whenLabelContainer.setTitle("Event 1");
 
     final ListBox whenSubjListBox = new ListBox();
-    //whenSubjListBox.addItem("");
+    whenSubjListBox.addItem("");
     whenSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
     final ListBox whenVerbListBox = new ListBox();
     whenVerbListBox.addItem("");
@@ -302,9 +303,9 @@ public class SourceStructureExplorer extends Composite {
       @Override
       public void onChange(ChangeEvent changeEvent) {
         //Window.alert("Selected: " + whenSubjListBox.getSelectedItemText());
-        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
         String viewClickedType = ListBoxWhenSubjFieldClicked(whenSubjListBox, whenVerbListBox);
-        rulesListBoxes.get(screenName).get(ruleIndex).setViewClickedType(viewClickedType);
+        toBeAddRule.setViewClickedType(viewClickedType);
       }
     });
 
@@ -371,15 +372,15 @@ public class SourceStructureExplorer extends Composite {
     actionTypeListBox.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent changeEvent) {
-        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
         int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
         //selected is the action type select by the user
-        String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+        String actionType = toBeAddRule.getActions().get(actionIndex)
                 .getThenType().getValue(actionTypeListBox.getSelectedIndex());
-        String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+        String actionSubj = toBeAddRule.getActions().get(actionIndex)
                 .getThenSubj() != null ?
                 actionSubjListBox.getSelectedIndex() != -1 ?
-                        rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                        toBeAddRule.getActions().get(actionIndex)
                                 .getThenSubj().getValue(actionSubjListBox.getSelectedIndex()) : null
                 : null;
         boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
@@ -426,16 +427,16 @@ public class SourceStructureExplorer extends Composite {
     actionSubjListBox.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent changeEvent) {
-        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
         int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
         //selected is the action type select by the user
-        String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+        String actionType = toBeAddRule.getActions().get(actionIndex)
                 .getThenType().getValue(actionTypeListBox.getSelectedIndex());
 
         int index = actionSubjListBox.getSelectedIndex() - 1;
         if(index >= 0){
           String viewClickedType = ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType, index);
-          rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex).setViewClickedType(viewClickedType);
+          toBeAddRule.getActions().get(actionIndex).setViewClickedType(viewClickedType);
         }
         else{
           if(actionVerbListBox.getItemCount() > 0){
@@ -453,10 +454,10 @@ public class SourceStructureExplorer extends Composite {
     actionVerbListBox.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent changeEvent) {
-        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
         int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
         //selected is the action type select by the user
-        String actionVerb = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+        String actionVerb = toBeAddRule.getActions().get(actionIndex)
                 .getThenVerb().getValue(actionVerbListBox.getSelectedIndex());
         ListBoxThenVerbFieldClicked(actionVerb, thenTextBox);
       }
@@ -500,8 +501,8 @@ public class SourceStructureExplorer extends Composite {
     addAction.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
-        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-        final int index = rulesListBoxes.get(screenName).get(ruleIndex).getActions().size();
+        //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        final int index = toBeAddRule.getActions().size();
         //Window.alert("Rule: " + ruleIndex + ", Action: " + index);
 
         final ListBox otherActionTypeListBox = new ListBox();
@@ -526,7 +527,7 @@ public class SourceStructureExplorer extends Composite {
         Button deleteOtherAction = new Button();
         deleteOtherAction.setText("DEL");
 
-        rulesListBoxes.get(screenName).get(ruleIndex).getActions().add(new Action(index, horizontalPanelAction, otherActionTypeListBox,
+        toBeAddRule.getActions().add(new Action(index, horizontalPanelAction, otherActionTypeListBox,
                 otherActionSubjListBox, otherActionVerbListBox, thenTextBox, deleteOtherAction));
 
         final Label hiddenIndexLabel = new Label();
@@ -542,7 +543,7 @@ public class SourceStructureExplorer extends Composite {
 
         final HorizontalPanel horizontalPanelAction_n = new HorizontalPanel();
         horizontalPanelAction_n.setTitle("Action " +
-                String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() + 1));
+                String.valueOf(toBeAddRule.getRulesThenPanel().size() + 1));
         horizontalPanelAction_n.add(hiddenIndexLabel);
         horizontalPanelAction_n.add(thenLabelContainer);
         horizontalPanelAction_n.add(new HTML("<hr  style=\"width:50px;\" />"));
@@ -564,15 +565,15 @@ public class SourceStructureExplorer extends Composite {
         otherActionTypeListBox.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent changeEvent) {
-            int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+            //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
             int actionIndex = Integer.parseInt(horizontalPanelAction_n.getTitle().split("Action ")[1]) - 1;
             //selected is the action type select by the user
-            String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+            String actionType = toBeAddRule.getActions().get(actionIndex)
                     .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
-            String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+            String actionSubj = toBeAddRule.getActions().get(actionIndex)
                     .getThenSubj() != null ?
                     otherActionSubjListBox.getSelectedIndex() != -1 ?
-                            rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+                            toBeAddRule.getActions().get(actionIndex)
                                     .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex()) : null
                     : null;
             boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
@@ -621,18 +622,18 @@ public class SourceStructureExplorer extends Composite {
         otherActionSubjListBox.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent changeEvent) {
-            int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+            //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
             int actionIndex = Integer.parseInt(horizontalPanelAction_n.getTitle().split("Action ")[1]) - 1;
             //selected is the action type select by the user
-            String actionType = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+            String actionType = toBeAddRule.getActions().get(actionIndex)
                     .getThenType().getValue(otherActionTypeListBox.getSelectedIndex());
-            String actionSubj = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+            String actionSubj = toBeAddRule.getActions().get(actionIndex)
                     .getThenSubj().getValue(otherActionSubjListBox.getSelectedIndex());
 
             int index = otherActionSubjListBox.getSelectedIndex() - 1;
             if(index >= 0){
               String viewClickedType = ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType, index);
-              rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex).setViewClickedType(viewClickedType);
+              toBeAddRule.getActions().get(actionIndex).setViewClickedType(viewClickedType);
             }
             else{
               if(otherActionVerbListBox.getItemCount() > 0){
@@ -649,19 +650,19 @@ public class SourceStructureExplorer extends Composite {
         otherActionVerbListBox.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent changeEvent) {
-            int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+            //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
             int actionIndex = Integer.parseInt(horizontalPanelAction.getTitle().split("Action ")[1]) - 1;
             //selected is the action type select by the user
-            String actionVerb = rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(actionIndex)
+            String actionVerb = toBeAddRule.getActions().get(actionIndex)
                     .getThenVerb().getValue(actionVerbListBox.getSelectedIndex());
             ListBoxThenVerbFieldClicked(actionVerb, thenTextBox);
           }
         });
 
-        int lastThenIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().size() - 1;
-        int temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().get(lastThenIndex)) + 1;
+        int lastThenIndex = toBeAddRule.getRulesThenPanel().size() - 1;
+        int temp = innerVerticalPanel.getWidgetIndex(toBeAddRule.getRulesThenPanel().get(lastThenIndex)) + 1;
         //Window.alert("Action will be insert in position: " + String.valueOf(temp));
-        rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().add(horizontalPanelAction_n);
+        toBeAddRule.getRulesThenPanel().add(horizontalPanelAction_n);
         innerVerticalPanel.insert(horizontalPanelAction_n, temp);
 
         if(deleteMainAction != null){
@@ -681,8 +682,8 @@ public class SourceStructureExplorer extends Composite {
       @Override
       public void onClick(ClickEvent clickEvent) {
 
-        int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-        int size = rulesListBoxes.get(screenName).get(ruleIndex).getConditions().size();
+        //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+        int size = toBeAddRule.getConditions().size();
 
         HorizontalPanel ifLabelContainer = new HorizontalPanel();
         final ListBox andOrListBox = new ListBox();
@@ -720,18 +721,18 @@ public class SourceStructureExplorer extends Composite {
         deleteCond.setText("DEL");
 
         final HorizontalPanel horizontalPanelIf = new HorizontalPanel();
-        rulesListBoxes.get(screenName).get(ruleIndex).addCondition(new Condition(horizontalPanelIf, ifSubjListBox, ifVerbListBox, ifTextBox));//, deleteCond));
+        toBeAddRule.addCondition(new Condition(horizontalPanelIf, ifSubjListBox, ifVerbListBox, ifTextBox));//, deleteCond));
 
         //Window.alert("IfIndex: " +
-        //        String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
-        Integer value = rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1;
+        //        String.valueOf(toBeAddRule.getRulesIfPanel().size() + 1));
+        Integer value = toBeAddRule.getRulesIfPanel().size() + 1;
         horizontalPanelIf.setTitle("Condition " +
                 String.valueOf(value));
         horizontalPanelIf.add(ifLabelContainer);
         HTML line = new HTML("<hr  style=\"width:50px;\" />");
         horizontalPanelIf.add(line);
         if(size != 0){
-          rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(size).setANDOR(andOrListBox);
+          toBeAddRule.getConditions().get(size).setANDOR(andOrListBox);
           horizontalPanelIf.add(andOrListBox);
           horizontalPanelIf.add(new HTML("<hr  style=\"width:50px;\" />"));
         }
@@ -744,10 +745,10 @@ public class SourceStructureExplorer extends Composite {
         ifSubjListBox.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent changeEvent) {
-            int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+            //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
             int conditionIndex = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
             String viewClickedType = ListBoxIfSubjFieldClicked(ifSubjListBox, ifVerbListBox);
-            rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(conditionIndex).setViewClickedType(viewClickedType);
+            toBeAddRule.getConditions().get(conditionIndex).setViewClickedType(viewClickedType);
           }
         });
 
@@ -766,16 +767,16 @@ public class SourceStructureExplorer extends Composite {
           ifVerbListBox.addItem(ifVerbListBoxGeneric.getValue(i));
         }*/
 
-        int lastIfIndex = rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() - 1;
+        int lastIfIndex = toBeAddRule.getRulesIfPanel().size() - 1;
         int temp = -1;
         if(lastIfIndex == -1){
           temp = innerVerticalPanel.getWidgetIndex(horizontalPanelWhen) + 1;
         }
         else{
-          temp = innerVerticalPanel.getWidgetIndex(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().get(lastIfIndex)) + 1;
+          temp = innerVerticalPanel.getWidgetIndex(toBeAddRule.getRulesIfPanel().get(lastIfIndex)) + 1;
         }
         //Window.alert("Condition will be insert in position: " + String.valueOf(temp));
-        rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().add(horizontalPanelIf);
+        toBeAddRule.getRulesIfPanel().add(horizontalPanelIf);
         innerVerticalPanel.insert(horizontalPanelIf, temp);
 
         deleteCond.addClickHandler(new ClickHandler() {
@@ -784,14 +785,14 @@ public class SourceStructureExplorer extends Composite {
             int indexToRemove = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
             int ifPos = innerVerticalPanel.getWidgetIndex(horizontalPanelIf);
             //Window.alert("Condition index: " + (indexToRemove) + ", Condition pos: " + ifPos);
-            int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-            //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(indexToRemove).setIfSubj(null);
-            //rulesListBoxes.get(screenName).get(ruleIndex).getConditions().get(indexToRemove).setIfVerb(null);
-            rulesListBoxes.get(screenName).get(ruleIndex).getConditions().remove(indexToRemove);
-            rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().remove(indexToRemove);
+            //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+            //toBeAddRule.getConditions().get(indexToRemove).setIfSubj(null);
+            //toBeAddRule.getConditions().get(indexToRemove).setIfVerb(null);
+            toBeAddRule.getConditions().remove(indexToRemove);
+            toBeAddRule.getRulesIfPanel().remove(indexToRemove);
             boolean res = innerVerticalPanel.remove(ifPos);
 
-            for(HorizontalPanel ifPanel : rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel()){
+            for(HorizontalPanel ifPanel : toBeAddRule.getRulesIfPanel()){
               int i = Integer.parseInt(ifPanel.getTitle().split("Condition ")[1]) - 1;
               if(i > indexToRemove){
                 Integer value = i - 1;
@@ -812,12 +813,12 @@ public class SourceStructureExplorer extends Composite {
       }
     });*/
 
-    /*Window.alert("whenSubjListBoxGeneric.getItemCount(): " + whenSubjListBoxGeneric.getItemCount());
-    for(int i = 0; i < whenSubjListBoxGeneric.getItemCount(); i++){
-      Window.alert(whenSubjListBoxGeneric.getItemText(i));
-      whenSubjListBox.addItem(whenSubjListBoxGeneric.getValue(i));
+    //Window.alert("whenSubjListBoxGeneric.getItemCount(): " + whenSubjListBoxGeneric.get(screenName).size());
+    for(int i = 0; i < whenSubjListBoxGeneric.get(screenName).size(); i++){
+      //Window.alert(whenSubjListBoxGeneric.get(screenName).get(i));
+      whenSubjListBox.addItem(whenSubjListBoxGeneric.get(screenName).get(i));
     }
-        for(int i = 0; i < whenVerbListBoxGeneric.getItemCount(); i++){
+       /*for(int i = 0; i < whenVerbListBoxGeneric.getItemCount(); i++){
           whenVerbListBox.addItem(whenVerbListBoxGeneric.getValue(i));
         }
         for(int i = 0; i < thenSubjListBoxGeneric.getItemCount(); i++){
@@ -829,7 +830,7 @@ public class SourceStructureExplorer extends Composite {
 
     ruleStatus = new Label("In progress");
     ruleStatus.setVisible(false);
-    rulesListBoxes.get(screenName).get(ruleIndex).setRuleStatus(ruleStatus);
+    toBeAddRule.setRuleStatus(ruleStatus);
     verticalPanel.add(innerVerticalPanel);
 
     //Window.alert("Post addemptyrule");
@@ -837,6 +838,7 @@ public class SourceStructureExplorer extends Composite {
     resultLabel = new Label();
     //resultLabel.setWidth("100%"); //fill width
     resultLabel.setText(MESSAGES.resultLabelAntLR());
+    innerVerticalPanel.add(resultLabel);
     confirmButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
@@ -847,10 +849,11 @@ public class SourceStructureExplorer extends Composite {
         //TODO this check doesn't work
         String whenSubjVerb = toBeAddRule.getWhenSubj().getSelectedItemText() + " " + toBeAddRule.getWhenVerb().getSelectedItemText();
         for(Rule rule : rulesListBoxes.get(screenName)){
-
+          Window.alert("toBeAddRule.index: " + toBeAddRule.getIndex() + "\nrule.index: " + rule.getIndex());
           if(rule.getIndex() != toBeAddRule.getIndex()){
             String otherWhenSubjVerb = rule.getWhenSubj().getSelectedItemText() + " " + rule.getWhenVerb().getSelectedItemText();
-            if(!whenSubjVerb.equals(otherWhenSubjVerb)){
+            Window.alert("whenSubjVerb: " + whenSubjVerb + "\notherWhenSubjVerb: " + otherWhenSubjVerb);
+            if(whenSubjVerb.equals(otherWhenSubjVerb)){
               noDuplicateEvent = false;
               break;
             }
@@ -858,6 +861,7 @@ public class SourceStructureExplorer extends Composite {
         }
 
         if(noDuplicateEvent){
+          rulesListBoxes.get(screenName).add(toBeAddRule);
           YaBlocksEditor editor = (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
         /*if(toBeAddRule.getRuleStatus().getText().equals("Created")){
           boolean res = editor.deleteBlock(toBeAddRule.getBlock_id());
@@ -973,8 +977,8 @@ public class SourceStructureExplorer extends Composite {
               String prevY_ = values[1]; //y coordinate of the root block of prev rule
               if(whenBlockID != null){
                 toBeAddRule.getRuleStatus().setText("Created");
-                rulesListBoxes.get(screenName).get(ruleIndex).setBlock_id(whenBlockID);
-                //rulesListBoxes.get(screenName).get(ruleIndex).setPrevY_(prevY_);
+                toBeAddRule.setBlock_id(whenBlockID);
+                //toBeAddRule.setPrevY_(prevY_);
                 //TODO Salvataggio su file
                 String path = "appinventor/appengine/src/com/google/appinventor/client/thesis";
 
@@ -984,7 +988,10 @@ public class SourceStructureExplorer extends Composite {
                 //Reset layout
 
                 //Reset when
-                toBeAddRule.getWhenSubj().setSelectedIndex(0);
+                verticalPanel.remove(innerVerticalPanel);
+                panel2.remove(verticalPanel);
+                SetupPage();
+                /*toBeAddRule.getWhenSubj().setSelectedIndex(0);
                 while(toBeAddRule.getWhenVerb().getItemCount() > 0){
                   toBeAddRule.getWhenVerb().removeItem(0);
                 }
@@ -1012,6 +1019,23 @@ public class SourceStructureExplorer extends Composite {
                   }
                 }
                 resultLabel.setText(MESSAGES.resultLabelAntLR());
+
+                toBeAddRule = new Rule(rulesListBoxes.get(screenName).size());
+                toBeAddRule.setInnerVerticalPanel(innerVerticalPanel);
+                toBeAddRule.setRulePanel(innerVerticalPanel);
+                toBeAddRule.setWhenSubj(whenSubjListBox);
+                toBeAddRule.setWhenVerb(whenVerbListBox);
+                if(toBeAddRule.getActions() == null){
+                  toBeAddRule.setActions(new ArrayList<Action>());
+                }
+
+                final HorizontalPanel horizontalPanelAction = new HorizontalPanel();
+
+                //the first action of the rule has index 0 and is empty
+                toBeAddRule.getActions().add(new Action(0, horizontalPanelAction, actionTypeListBox,
+                        actionSubjListBox, actionVerbListBox, thenTextBox, deleteMainAction));
+                ruleStatus.setText("In progress");
+                toBeAddRule.setRuleStatus(ruleStatus);*/
 
               }
             }
@@ -1041,7 +1065,6 @@ public class SourceStructureExplorer extends Composite {
     //panel2.add(addRule);
     //panel2.add(confirmButton);
     horizontalPanelButton.add(confirmButton);
-    panel2.add(resultLabel);
     panel.add(scrollPanel);
 
     panel.setCellHorizontalAlignment(confirmButton, HorizontalPanel.ALIGN_CENTER);
@@ -1055,21 +1078,21 @@ public class SourceStructureExplorer extends Composite {
     int indexToRemove = Integer.parseInt(horizontalPanelThen.getTitle().split("Action ")[1]) - 1;
     int thenPos = innerVerticalPanel.getWidgetIndex(horizontalPanelThen);
     //Window.alert("Action index: " + (indexToRemove) + ", Action pos: " + thenPos);
-    int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
-    //rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(indexToRemove).setThenSubj(null);
-    //rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(indexToRemove).setThenVerb(null);
-    rulesListBoxes.get(screenName).get(ruleIndex).getActions().remove(indexToRemove).setThenVerb(null);
-    rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel().remove(indexToRemove);
+    //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
+    //toBeAddRule.getActions().get(indexToRemove).setThenSubj(null);
+    //toBeAddRule.getActions().get(indexToRemove).setThenVerb(null);
+    toBeAddRule.getActions().remove(indexToRemove).setThenVerb(null);
+    toBeAddRule.getRulesThenPanel().remove(indexToRemove);
     boolean res = innerVerticalPanel.remove(thenPos);
-    for(HorizontalPanel thenPanel : rulesListBoxes.get(screenName).get(ruleIndex).getRulesThenPanel()){
+    for(HorizontalPanel thenPanel : toBeAddRule.getRulesThenPanel()){
       int i = Integer.parseInt(thenPanel.getTitle().split("Action ")[1]) - 1;
       if(i > indexToRemove){
         thenPanel.setTitle("Action " + String.valueOf(i - 1));
       }
     }
 
-    if(rulesListBoxes.get(screenName).get(ruleIndex).getActions().size() == 1){
-      rulesListBoxes.get(screenName).get(ruleIndex).getActions().get(0).getDeleteButton().setEnabled(false);
+    if(toBeAddRule.getActions().size() == 1){
+      toBeAddRule.getActions().get(0).getDeleteButton().setEnabled(false);
     }
   }
 

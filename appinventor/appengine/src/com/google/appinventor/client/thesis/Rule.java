@@ -1,5 +1,6 @@
 package com.google.appinventor.client.thesis;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -21,7 +22,7 @@ public class Rule {
     private VerticalPanel innerVerticalPanel;
     private String prevY_ = ""; //y coordinate of the root block of the rule
     private Label ruleStatus;
-
+    private Label title;
 
     public Rule(int index){
         this.setIndex(index);
@@ -136,5 +137,13 @@ public class Rule {
 
     public void setRuleStatus(Label ruleStatus) {
         this.ruleStatus = ruleStatus;
+    }
+
+    public Label getTitle() {
+        return title;
+    }
+
+    public void setTitle(Label title) {
+        this.title = title;
     }
 }

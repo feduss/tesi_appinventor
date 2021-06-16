@@ -152,8 +152,6 @@ public class DesignToolbar extends Toolbar {
 
       //Window.alert("Post if else");
 
-      //Window.alert("Premi ok per SetupPage()...screenName: " + currentScreen);
-
       if(sourceStructureExplorer.screenSetupCount.get(currentScreen) == null){
         sourceStructureExplorer.screenSetupCount.put(currentScreen, true);
       }
@@ -166,6 +164,7 @@ public class DesignToolbar extends Toolbar {
         //sourceStructureExplorer.verticalPanel.remove(sourceStructureExplorer.innerVerticalPanel);
       }
 
+      //Window.alert("Premi ok per SetupPage()...screenName: " + currentScreen);
       //Reset parsing layout to default value
       sourceStructureExplorer.SetupPage();
 
@@ -177,6 +176,7 @@ public class DesignToolbar extends Toolbar {
       AntRulesSelectorBox.getAntRulesSelectorBox().getAntRulesExplorer().
               changeScreen(rules);
 
+      //Window.alert("ok");
       //Window.alert("whenSubjListBox size after add: " + sourceStructureExplorer.whenSubjListBox.getItemCount());
 
     }

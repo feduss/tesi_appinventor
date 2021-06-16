@@ -244,8 +244,6 @@ public class SourceStructureExplorer extends Composite {
     confirmButton.setText("PARSE");
     //confirmButton.setEnabled(false);
 
-    //Window.alert("Pre addemptyrule");
-
     //Window.alert("0");
     innerVerticalPanel = new VerticalPanel();
     //Window.alert("1");
@@ -385,7 +383,7 @@ public class SourceStructureExplorer extends Composite {
                 : null;
         boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
 
-        if(actionTypeListBox.getSelectedItemText().equals("")){
+        if(actionTypeListBox != null && actionTypeListBox.getSelectedItemText().equals("")){
           while (actionSubjListBox.getItemCount() > 0) {
             actionSubjListBox.removeItem(0);
           }
@@ -393,7 +391,7 @@ public class SourceStructureExplorer extends Composite {
             actionVerbListBox.removeItem(0);
           }
         }
-        else if(actionTypeListBox.getSelectedItemText().equals("Open")){
+        else if(actionTypeListBox != null && actionTypeListBox.getSelectedItemText().equals("Open")){
           while (actionSubjListBox.getItemCount() > 0) {
             actionSubjListBox.removeItem(0);
           }
@@ -410,8 +408,10 @@ public class SourceStructureExplorer extends Composite {
           }
           actionSubjListBox.addItem("");
           actionVerbListBox.addItem("");
-          for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
-            actionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
+          if(thenSubjListBoxGeneric != null){
+            for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
+              actionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
+            }
           }
         }
 
@@ -420,7 +420,7 @@ public class SourceStructureExplorer extends Composite {
           if (index >= 0) {
             ListBoxThenSubjFieldClicked(actionSubjListBox, actionVerbListBox, actionType, index);
           } else {
-            if (actionVerbListBox.getItemCount() > 0) {
+            if (actionVerbListBox != null && actionVerbListBox.getItemCount() > 0) {
               while (actionVerbListBox.getItemCount() > 0) {
                 actionVerbListBox.removeItem(0);
               }
@@ -447,7 +447,7 @@ public class SourceStructureExplorer extends Composite {
           toBeAddRule.getActions().get(actionIndex).setViewClickedType(viewClickedType);
         }
         else{
-          if(actionVerbListBox.getItemCount() > 0){
+          if(actionVerbListBox != null && actionVerbListBox.getItemCount() > 0){
             while(actionVerbListBox.getItemCount() > 0){
               actionVerbListBox.removeItem(0);
             }
@@ -497,7 +497,7 @@ public class SourceStructureExplorer extends Composite {
 
     innerVerticalPanel.add(horizontalPanelButton);
 
-    //Window.alert("Pre Listener Layout");
+    //Window.alert("Pre Listener Layout: \ndeleteMainAction: " + deleteMainAction + "\naddAction: " + addAction + "\naddCond: " + addCond);
 
     deleteMainAction.addClickHandler(new ClickHandler() {
       @Override
@@ -586,7 +586,7 @@ public class SourceStructureExplorer extends Composite {
                     : null;
             boolean actionSubjSelected = actionSubj != null && !actionSubj.equals("");
 
-            if(otherActionTypeListBox.getSelectedItemText().equals("")){
+            if(otherActionTypeListBox != null && otherActionTypeListBox.getSelectedItemText().equals("")){
               while (otherActionSubjListBox.getItemCount() > 0) {
                 otherActionSubjListBox.removeItem(0);
               }
@@ -594,7 +594,7 @@ public class SourceStructureExplorer extends Composite {
                 otherActionVerbListBox.removeItem(0);
               }
             }
-            else if(otherActionTypeListBox.getSelectedItemText().equals("Open")){
+            else if(otherActionTypeListBox != null && otherActionTypeListBox.getSelectedItemText().equals("Open")){
               while (otherActionSubjListBox.getItemCount() > 0) {
                 otherActionSubjListBox.removeItem(0);
               }
@@ -611,8 +611,10 @@ public class SourceStructureExplorer extends Composite {
               }
               otherActionSubjListBox.addItem("");
               otherActionVerbListBox.addItem("");
-              for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
-                otherActionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
+              if(thenSubjListBoxGeneric != null){
+                for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
+                  otherActionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
+                }
               }
             }
 
@@ -622,7 +624,7 @@ public class SourceStructureExplorer extends Composite {
                 ListBoxThenSubjFieldClicked(otherActionSubjListBox, otherActionVerbListBox, actionType, index);
               }
               else{
-                if(otherActionVerbListBox.getItemCount() > 0){
+                if(otherActionVerbListBox != null && otherActionVerbListBox.getItemCount() > 0){
                   while(otherActionVerbListBox.getItemCount() > 0){
                     otherActionVerbListBox.removeItem(0);
                   }
@@ -652,7 +654,7 @@ public class SourceStructureExplorer extends Composite {
               toBeAddRule.getActions().get(actionIndex).setViewClickedType(viewClickedType);
             }
             else{
-              if(otherActionVerbListBox.getItemCount() > 0){
+              if(otherActionVerbListBox != null && otherActionVerbListBox.getItemCount() > 0){
                 while(otherActionVerbListBox.getItemCount() > 0){
                   otherActionVerbListBox.removeItem(0);
                 }
@@ -776,8 +778,10 @@ public class SourceStructureExplorer extends Composite {
           }
         });
 
-        for(int i = 0; i < ifSubjListBoxGeneric.get(screenName).size(); i++){
-          ifSubjListBox.addItem(ifSubjListBoxGeneric.get(screenName).get(i));
+        if(ifSubjListBoxGeneric != null){
+          for(int i = 0; i < ifSubjListBoxGeneric.get(screenName).size(); i++){
+            ifSubjListBox.addItem(ifSubjListBoxGeneric.get(screenName).get(i));
+          }
         }
         /*for(int i = 0; i < ifVerbListBoxGeneric.getItemCount(); i++){
           ifVerbListBox.addItem(ifVerbListBoxGeneric.getValue(i));
@@ -829,10 +833,13 @@ public class SourceStructureExplorer extends Composite {
       }
     });*/
 
-    //Window.alert("whenSubjListBoxGeneric.getItemCount(): " + whenSubjListBoxGeneric.get(screenName).size());
-    for(int i = 0; i < whenSubjListBoxGeneric.get(screenName).size(); i++){
-      //Window.alert(whenSubjListBoxGeneric.get(screenName).get(i));
-      whenSubjListBox.addItem(whenSubjListBoxGeneric.get(screenName).get(i));
+    //Window.alert("Pre population screenName: " + screenName);
+    if(whenSubjListBoxGeneric.get(screenName) != null) {
+      //Window.alert("whenSubjListBoxGeneric.get(screenName).size: " + whenSubjListBoxGeneric.get(screenName).size());
+      for (int i = 0; i < whenSubjListBoxGeneric.get(screenName).size(); i++) {
+        //Window.alert(whenSubjListBoxGeneric.get(screenName).get(i));
+        whenSubjListBox.addItem(whenSubjListBoxGeneric.get(screenName).get(i));
+      }
     }
        /*for(int i = 0; i < whenVerbListBoxGeneric.getItemCount(); i++){
           whenVerbListBox.addItem(whenVerbListBoxGeneric.getValue(i));

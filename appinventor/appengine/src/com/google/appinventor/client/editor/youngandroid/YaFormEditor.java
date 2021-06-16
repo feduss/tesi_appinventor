@@ -432,37 +432,30 @@ public final class YaFormEditor extends SimpleEditor implements FormChangeListen
       //feduss
       String view = component.getPropertyValue(PROPERTY_NAME_NAME);
       //Window.alert("component: " + component.toString());
-      Window.alert("sourceStructureExplorerAnt.screenName: " + sourceStructureExplorerAnt.screenName);
+      //Window.alert("sourceStructureExplorerAnt.screenName: " + sourceStructureExplorerAnt.screenName);
 
       if(sourceStructureExplorerAnt.userViewsList.get(sourceStructureExplorerAnt.screenName) == null){
-        Window.alert("if1 null");
         sourceStructureExplorerAnt.userViewsList.put(sourceStructureExplorerAnt.screenName, new ArrayList<MockComponent>());
       }
 
       if(sourceStructureExplorerAnt.whenSubjListBoxGeneric == null){
-        Window.alert("if2a null");
         sourceStructureExplorerAnt.whenSubjListBoxGeneric = new HashMap<String, ArrayList<String>>();
       }
       if(sourceStructureExplorerAnt.whenSubjListBoxGeneric.get(sourceStructureExplorerAnt.screenName) == null){
-        Window.alert("if2b null");
         sourceStructureExplorerAnt.whenSubjListBoxGeneric.put(sourceStructureExplorerAnt.screenName, new ArrayList<String>());
       }
 
       if(sourceStructureExplorerAnt.ifSubjListBoxGeneric == null){
-        Window.alert("if3a null");
         sourceStructureExplorerAnt.ifSubjListBoxGeneric = new HashMap<String, ArrayList<String>>();
       }
       if(sourceStructureExplorerAnt.ifSubjListBoxGeneric.get(sourceStructureExplorerAnt.screenName) == null){
-        Window.alert("if3b null");
         sourceStructureExplorerAnt.ifSubjListBoxGeneric.put(sourceStructureExplorerAnt.screenName, new ArrayList<String>());
       }
 
       if(sourceStructureExplorerAnt.thenSubjListBoxGeneric == null){
-        Window.alert("if4a null");
         sourceStructureExplorerAnt.thenSubjListBoxGeneric = new HashMap<String, ArrayList<String>>();
       }
       if(sourceStructureExplorerAnt.thenSubjListBoxGeneric.get(sourceStructureExplorerAnt.screenName) == null){
-        Window.alert("if4b null");
         sourceStructureExplorerAnt.thenSubjListBoxGeneric.put(sourceStructureExplorerAnt.screenName, new ArrayList<String>());
       }
 

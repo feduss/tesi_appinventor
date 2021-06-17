@@ -266,7 +266,7 @@ public class SourceStructureExplorer extends Composite {
     //Window.alert("2c");
     int ruleIndex = rulesListBoxes.get(screenName).size();// - 1;
     //Window.alert("2d");
-    String StringIndex = String.valueOf(ruleIndex + 1);
+    Integer StringIndex = ruleIndex + 1;
     //Window.alert("2d");
     innerVerticalPanel.setTitle("Rule " + StringIndex); //useful to recognize which rule i'm editing, etc
     //Window.alert("2e");
@@ -550,8 +550,8 @@ public class SourceStructureExplorer extends Composite {
         thenLabelContainer.add(thenLabel);
 
         final HorizontalPanel horizontalPanelAction_n = new HorizontalPanel();
-        horizontalPanelAction_n.setTitle("Action " +
-                String.valueOf(toBeAddRule.getRulesThenPanel().size() + 1));
+        Integer vActionN = toBeAddRule.getRulesThenPanel().size() + 1;
+        horizontalPanelAction_n.setTitle("Action " + vActionN);
         horizontalPanelAction_n.add(hiddenIndexLabel);
         horizontalPanelAction_n.add(thenLabelContainer);
         horizontalPanelAction_n.add(new HTML("<hr  style=\"width:40px;\" />"));
@@ -744,8 +744,7 @@ public class SourceStructureExplorer extends Composite {
         //Window.alert("IfIndex: " +
         //        String.valueOf(toBeAddRule.getRulesIfPanel().size() + 1));
         Integer value = toBeAddRule.getRulesIfPanel().size() + 1;
-        horizontalPanelIf.setTitle("Condition " +
-                String.valueOf(value));
+        horizontalPanelIf.setTitle("Condition " + value);
         horizontalPanelIf.add(ifLabelContainer);
         HTML line = new HTML("<hr  style=\"width:40px;\" />");
         horizontalPanelIf.add(line);
@@ -816,7 +815,7 @@ public class SourceStructureExplorer extends Composite {
               int i = Integer.parseInt(ifPanel.getTitle().split("Condition ")[1]) - 1;
               if(i > indexToRemove){
                 Integer value = i - 1;
-                ifPanel.setTitle("Condition " + String.valueOf(value));
+                ifPanel.setTitle("Condition " + value);
               }
             }
           }
@@ -884,6 +883,10 @@ public class SourceStructureExplorer extends Composite {
         }
 
         if(noDuplicateEvent){
+
+          Integer vRule = rulesListBoxes.get(screenName).size() + 1;
+          toBeAddRule.getInnerVerticalPanel().setTitle("Rule " + vRule);
+
           rulesListBoxes.get(screenName).add(toBeAddRule);
           YaBlocksEditor editor = (YaBlocksEditor) Ode.getInstance().getCurrentFileEditor();
         /*if(toBeAddRule.getRuleStatus().getText().equals("Created")){
@@ -1110,7 +1113,8 @@ public class SourceStructureExplorer extends Composite {
     for(HorizontalPanel thenPanel : toBeAddRule.getRulesThenPanel()){
       int i = Integer.parseInt(thenPanel.getTitle().split("Action ")[1]) - 1;
       if(i > indexToRemove){
-        thenPanel.setTitle("Action " + String.valueOf(i - 1));
+        Integer value = i - 1;
+        thenPanel.setTitle("Action " + value);
       }
     }
 

@@ -66,9 +66,11 @@ public class AntRulesExplorer extends Composite {
     final VerticalPanel innerVerticalPanel = new VerticalPanel();
     final Label title = new Label("Rule" + ruleCount.get(sourceStructureExplorer.screenName) + ":");
     title.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+    sourceRule.setTitle(title);
     newRule.setTitle(title);
     innerVerticalPanel.add(title);
     innerVerticalPanel.setTitle("Rule " + ruleCount.get(sourceStructureExplorer.screenName));
+    sourceRule.setInnerVerticalPanel(innerVerticalPanel);
     newRule.setInnerVerticalPanel(innerVerticalPanel);
     //Window.alert("Title: " + innerVerticalPanel.getTitle());
     /***Restore when***/
@@ -158,7 +160,8 @@ public class AntRulesExplorer extends Composite {
       final HorizontalPanel horizontalPanelIf = new HorizontalPanel();
       //Window.alert("IfIndex: " +
       //        String.valueOf(rulesListBoxes.get(screenName).get(ruleIndex).getRulesIfPanel().size() + 1));
-      horizontalPanelIf.setTitle("Condition " + sourceRule.getRulesIfPanel().size() + 1);
+      Integer vCond = sourceRule.getRulesIfPanel().size() + 1;
+      horizontalPanelIf.setTitle("Condition " + vCond);
       horizontalPanelIf.add(ifLabelContainer);
       HTML line = new HTML("<hr  style=\"width:40px;\" />");
       horizontalPanelIf.add(line);
@@ -228,7 +231,8 @@ public class AntRulesExplorer extends Composite {
       thenLabelContainer.add(thenLabel);
 
       final HorizontalPanel horizontalPanelAction = new HorizontalPanel();
-      horizontalPanelAction.setTitle("Action " + (i + 1));
+      Integer vAction = (i + 1);
+      horizontalPanelAction.setTitle("Action " + vAction);
       horizontalPanelAction.add(thenLabelContainer);
       horizontalPanelAction.add(new HTML("<hr  style=\"width:40px;\" />"));
       horizontalPanelAction.add(actionTypeListBox);
@@ -277,22 +281,31 @@ public class AntRulesExplorer extends Composite {
     int indexToRemove = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]);
     //Window.alert("indexToRemove: " + indexToRemove);
     SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
-    //Window.alert("sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size: "
-    //        + sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size());
+    Window.alert("sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size: "
+            + sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size());
+    //TODO problemi nella cancellazione
     for(Rule rule : sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName)){
       VerticalPanel rulePanel = rule.getInnerVerticalPanel();
       int index = Integer.parseInt(rulePanel.getTitle().split("Rule ")[1]);
-      //Window.alert("Current index: " + index + "\nIndexToRemove: " + indexToRemove);
+      Window.alert("Current index: " + index + "\nIndexToRemove: " + indexToRemove);
       if(index > indexToRemove){
-        rulePanel.setTitle("Rule " + (index - 1));
-        rule.getTitle().setText("Rule " + (index - 1));
+        Integer value = (index - 1);
+        Window.alert("New value: " + value);
+        rulePanel.setTitle("Rule " + value);
+        Window.alert("1a ok");
+        rule.getTitle().setText("Rule " + value);
+        Window.alert("1b ok");
       }
     }
 
     verticalPanel.remove(innerVerticalPanel);
+    Window.alert("2a ok");
     sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).remove(indexToRemove - 1);
+    Window.alert("2b ok");
     Integer value = ruleCount.get(sourceStructureExplorer.screenName) - 1;
+    Window.alert("2c ok");
     ruleCount.replace(sourceStructureExplorer.screenName, value);
+    Window.alert("fine");
 
     /*if(rulesListBoxes.get(screenName).size() == 0){
       confirmButton.setEnabled(false);

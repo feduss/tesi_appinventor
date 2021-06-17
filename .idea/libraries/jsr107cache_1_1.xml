@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jsr107cache-1.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/google-cloud-sdk/platform/google_appengine/google/appengine/tools/java/lib/user/jsr107cache-1.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

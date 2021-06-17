@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="lib2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/appinventor/appengine/build/war/WEB-INF/lib/gwt-servlet.jar!/" />
+      <root url="jar://$PROJECT_DIR$/appinventor/appengine/build/war/WEB-INF/lib/gwt-servlet-deps.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

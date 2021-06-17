@@ -408,7 +408,7 @@ public class SourceStructureExplorer extends Composite {
           }
           actionSubjListBox.addItem("");
           actionVerbListBox.addItem("");
-          if(thenSubjListBoxGeneric != null){
+          if(thenSubjListBoxGeneric != null && thenSubjListBoxGeneric.get(screenName) != null){
             for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
               actionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
             }
@@ -611,7 +611,7 @@ public class SourceStructureExplorer extends Composite {
               }
               otherActionSubjListBox.addItem("");
               otherActionVerbListBox.addItem("");
-              if(thenSubjListBoxGeneric != null){
+              if(thenSubjListBoxGeneric != null && thenSubjListBoxGeneric.get(screenName) != null){
                 for(int i = 0; i < thenSubjListBoxGeneric.get(screenName).size(); i++){
                   otherActionSubjListBox.addItem(thenSubjListBoxGeneric.get(screenName).get(i));
                 }
@@ -778,7 +778,7 @@ public class SourceStructureExplorer extends Composite {
           }
         });
 
-        if(ifSubjListBoxGeneric != null){
+        if(ifSubjListBoxGeneric != null && ifSubjListBoxGeneric.get(screenName) != null){
           for(int i = 0; i < ifSubjListBoxGeneric.get(screenName).size(); i++){
             ifSubjListBox.addItem(ifSubjListBoxGeneric.get(screenName).get(i));
           }

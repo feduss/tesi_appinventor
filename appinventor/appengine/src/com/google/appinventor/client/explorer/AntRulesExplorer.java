@@ -77,7 +77,7 @@ public class AntRulesExplorer extends Composite {
       whenSubjListBox.addItem(sourceRule.getWhenSubj().getItemText(i));
     }
     whenSubjListBox.setSelectedIndex(sourceRule.getWhenSubj().getSelectedIndex());
-    Window.alert("sourceRule.getWhenSubj().selected: " + sourceRule.getWhenSubj().getSelectedItemText());
+    //Window.alert("sourceRule.getWhenSubj().selected: " + sourceRule.getWhenSubj().getSelectedItemText());
 
     whenSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
     final ListBox whenVerbListBox = new ListBox();

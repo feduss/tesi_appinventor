@@ -183,22 +183,22 @@ public class AntRulesExplorer extends Composite {
     i = 0;
     /***Restore thens***/
     //Window.alert("rule.getActions().size(): " + rule.getActions().size());
-    for(Action action : sourceRule.getActions()){
+    for(Action action : sourceRule.getActions()) {
       final ListBox actionTypeListBox = new ListBox();
-      for(int j = 0; j < sourceRule.getActions().get(i).getThenType().getItemCount(); j++){
+      for (int j = 0; j < sourceRule.getActions().get(i).getThenType().getItemCount(); j++) {
         actionTypeListBox.addItem(sourceRule.getActions().get(i).getThenType().getItemText(j));
       }
       actionTypeListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
       actionTypeListBox.setSelectedIndex(action.getThenType().getSelectedIndex());
 
       final ListBox actionSubjListBox = new ListBox();
-      for(int j = 0; j < sourceRule.getActions().get(i).getThenSubj().getItemCount(); j++){
+      for (int j = 0; j < sourceRule.getActions().get(i).getThenSubj().getItemCount(); j++) {
         actionSubjListBox.addItem(sourceRule.getActions().get(i).getThenSubj().getItemText(j));
       }
       actionSubjListBox.setSelectedIndex(action.getThenSubj().getSelectedIndex());
       actionSubjListBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
       final ListBox actionVerbListBox = new ListBox();
-      for(int j = 0; j < sourceRule.getActions().get(i).getThenVerb().getItemCount(); j++){
+      for (int j = 0; j < sourceRule.getActions().get(i).getThenVerb().getItemCount(); j++) {
         actionVerbListBox.addItem(sourceRule.getActions().get(i).getThenVerb().getItemText(j));
       }
       actionVerbListBox.setSelectedIndex(action.getThenVerb().getSelectedIndex());
@@ -206,16 +206,15 @@ public class AntRulesExplorer extends Composite {
 
       final TextBox thenTextBox = new TextBox();
       thenTextBox.setText(action.getThenTextBox().getText());
-      if(thenTextBox.getText() == null || thenTextBox.getText().equals("")){
+      if (thenTextBox.getText() == null || thenTextBox.getText().equals("")) {
         thenTextBox.setVisible(false);
-      }
-      else{
+      } else {
         thenTextBox.setVisible(true);
       }
       thenTextBox.getElement().getStyle().setWidth(125, Style.Unit.PX);
       String heightStr = actionVerbListBox.getElement().getStyle().getHeight();
       double height = 25.0;
-      if(heightStr != null && !heightStr.equals("")){
+      if (heightStr != null && !heightStr.equals("")) {
         height = Double.parseDouble(heightStr);
       }
       thenTextBox.getElement().getStyle().setHeight(height, Style.Unit.PX);
@@ -243,6 +242,7 @@ public class AntRulesExplorer extends Composite {
       horizontalPanelAction.add(thenTextBox);
       horizontalPanelAction.add(deleteMainAction);
       innerVerticalPanel.add(horizontalPanelAction);
+    }
 
       Button deleteRule = new Button();
       deleteRule.setText("Delete rule");
@@ -261,7 +261,7 @@ public class AntRulesExplorer extends Composite {
             removeRuleLayout(innerVerticalPanel, verticalPanel);
           }
           else{
-            Window.alert("An error occurs during rule deleting.");
+            //Window.alert("An error occurs during rule deleting.");
           }
         }
       });
@@ -270,7 +270,7 @@ public class AntRulesExplorer extends Composite {
       innerVerticalPanel.add(new HTML("<hr  style=\"width:720px;\" />"));
       verticalPanel.add(innerVerticalPanel);
       i++;
-    }
+
 
   }
 
@@ -281,31 +281,31 @@ public class AntRulesExplorer extends Composite {
     int indexToRemove = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]);
     //Window.alert("indexToRemove: " + indexToRemove);
     SourceStructureExplorer sourceStructureExplorer = BlockSelectorBox.getBlockSelectorBox().getSourceStructureExplorer();
-    Window.alert("sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size: "
-            + sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size());
+    //Window.alert("sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size: "
+    //        + sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).size());
     //TODO problemi nella cancellazione
     for(Rule rule : sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName)){
       VerticalPanel rulePanel = rule.getInnerVerticalPanel();
       int index = Integer.parseInt(rulePanel.getTitle().split("Rule ")[1]);
-      Window.alert("Current index: " + index + "\nIndexToRemove: " + indexToRemove);
+      //Window.alert("Current index: " + index + "\nIndexToRemove: " + indexToRemove);
       if(index > indexToRemove){
         Integer value = (index - 1);
-        Window.alert("New value: " + value);
+        //Window.alert("New value: " + value);
         rulePanel.setTitle("Rule " + value);
-        Window.alert("1a ok");
+        //Window.alert("1a ok");
         rule.getTitle().setText("Rule " + value);
-        Window.alert("1b ok");
+        //Window.alert("1b ok");
       }
     }
 
     verticalPanel.remove(innerVerticalPanel);
-    Window.alert("2a ok");
+    //Window.alert("2a ok");
     sourceStructureExplorer.rulesListBoxes.get(sourceStructureExplorer.screenName).remove(indexToRemove - 1);
-    Window.alert("2b ok");
+    //Window.alert("2b ok");
     Integer value = ruleCount.get(sourceStructureExplorer.screenName) - 1;
-    Window.alert("2c ok");
+    //Window.alert("2c ok");
     ruleCount.replace(sourceStructureExplorer.screenName, value);
-    Window.alert("fine");
+    //Window.alert("fine");
 
     /*if(rulesListBoxes.get(screenName).size() == 0){
       confirmButton.setEnabled(false);

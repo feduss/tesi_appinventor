@@ -725,7 +725,7 @@ function insertBlockRecursive(rule1) {
         case 'is clicked': switch (whenSubjType){
             case "Button": index = 0; break;
           };  break;
-        case 'long click': switch (whenSubjType){
+        case 'is long clicked': switch (whenSubjType){
             case "Button": index = 2; break;
           };  break;
         case 'lost focus': switch (whenSubjType){

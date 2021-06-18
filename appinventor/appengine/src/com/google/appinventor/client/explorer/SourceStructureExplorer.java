@@ -751,7 +751,10 @@ public class SourceStructureExplorer extends Composite {
         if(size != 0){
           toBeAddRule.getConditions().get(size).setANDOR(andOrListBox);
           horizontalPanelIf.add(andOrListBox);
-          horizontalPanelIf.add(new HTML("<hr  style=\"width:40px;\" />"));
+          HTML line2 = new HTML("<hr  style=\"width:40px;\" />");
+          toBeAddRule.getConditions().get(size).setFirstLine(line2);
+          toBeAddRule.getConditions().get(size).setIfLabel(ifLabel);
+          horizontalPanelIf.add(line2);
         }
         horizontalPanelIf.add(ifSubjListBox);
         horizontalPanelIf.add(new HTML("<hr  style=\"width:40px;\" />"));
@@ -801,20 +804,39 @@ public class SourceStructureExplorer extends Composite {
         deleteCond.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent clickEvent) {
-            int indexToRemove = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]) - 1;
+            int indexToRemove = Integer.parseInt(horizontalPanelIf.getTitle().split("Condition ")[1]);
             int ifPos = innerVerticalPanel.getWidgetIndex(horizontalPanelIf);
-            //Window.alert("Condition index: " + (indexToRemove) + ", Condition pos: " + ifPos);
+            //Window.alert("Condition index: " + (indexToRemove) + ", Condition pos: " + ifPos +
+            //        "\ngetConditions size: " + toBeAddRule.getConditions().size() +
+            //        "\ngetRulesIfPanel size: " + toBeAddRule.getRulesIfPanel().size());
             //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
             //toBeAddRule.getConditions().get(indexToRemove).setIfSubj(null);
             //toBeAddRule.getConditions().get(indexToRemove).setIfVerb(null);
-            toBeAddRule.getConditions().remove(indexToRemove);
-            toBeAddRule.getRulesIfPanel().remove(indexToRemove);
+            toBeAddRule.getConditions().remove(indexToRemove - 1);
+            toBeAddRule.getRulesIfPanel().remove(indexToRemove - 1);
             boolean res = innerVerticalPanel.remove(ifPos);
 
             for(HorizontalPanel ifPanel : toBeAddRule.getRulesIfPanel()){
-              int i = Integer.parseInt(ifPanel.getTitle().split("Condition ")[1]) - 1;
+              int i = Integer.parseInt(ifPanel.getTitle().split("Condition ")[1]);
+              //Window.alert("currentIndex: " + i + ", indextoremove: " + indexToRemove);
               if(i > indexToRemove){
                 Integer value = i - 1;
+                if(value == 1){
+                  //Window.alert("i is 1");
+                  if(toBeAddRule.getConditions().get(0).getIfLabel() != null){
+                    toBeAddRule.getConditions().get(0).getIfLabel().setText("If");
+                    //Window.alert("if label restored");
+                  }
+                  if(toBeAddRule.getConditions().get(0).getFirstLine() != null){
+                    toBeAddRule.getConditions().get(0).getHorizontalPanelIf().remove(toBeAddRule.getConditions().get(0).getFirstLine());
+                    //Window.alert("first line removed");
+                  }
+                  if(toBeAddRule.getConditions().get(0).getANDOR() != null){
+                    toBeAddRule.getConditions().get(0).getANDOR().setVisible(false);
+                    toBeAddRule.getConditions().get(0).setANDOR(new ListBox());
+                    //Window.alert("ANDOR listbox removed");
+                  }
+                }
                 ifPanel.setTitle("Condition " + value);
               }
             }
@@ -949,6 +971,7 @@ public class SourceStructureExplorer extends Composite {
 
           //Window.alert("Rule " + ruleCount + ": \n" + value);
           //ruleCount++;
+          //Window.alert("Rule: " + value);
 
           //String input = "se il button1 viene cliccato, allora la lista viene mostrata";
           ///Custom Lexer ->  A lexer takes the individual characters and transforms them
@@ -1101,19 +1124,21 @@ public class SourceStructureExplorer extends Composite {
 
   //feduss
   private void deleteActionHandler(HorizontalPanel horizontalPanelThen, VerticalPanel innerVerticalPanel) {
-    int indexToRemove = Integer.parseInt(horizontalPanelThen.getTitle().split("Action ")[1]) - 1;
+    int indexToRemove = Integer.parseInt(horizontalPanelThen.getTitle().split("Action ")[1]);
     int thenPos = innerVerticalPanel.getWidgetIndex(horizontalPanelThen);
     //Window.alert("Action index: " + (indexToRemove) + ", Action pos: " + thenPos);
     //int ruleIndex = Integer.parseInt(innerVerticalPanel.getTitle().split("Rule ")[1]) - 1;
     //toBeAddRule.getActions().get(indexToRemove).setThenSubj(null);
     //toBeAddRule.getActions().get(indexToRemove).setThenVerb(null);
-    toBeAddRule.getActions().remove(indexToRemove).setThenVerb(null);
-    toBeAddRule.getRulesThenPanel().remove(indexToRemove);
+    toBeAddRule.getActions().remove(indexToRemove - 1).setThenVerb(null);
+    toBeAddRule.getRulesThenPanel().remove(indexToRemove - 1);
     boolean res = innerVerticalPanel.remove(thenPos);
     for(HorizontalPanel thenPanel : toBeAddRule.getRulesThenPanel()){
-      int i = Integer.parseInt(thenPanel.getTitle().split("Action ")[1]) - 1;
+      int i = Integer.parseInt(thenPanel.getTitle().split("Action ")[1]);
+      //Window.alert("current i: " + i + ", indexToRemove: " + indexToRemove);
       if(i > indexToRemove){
         Integer value = i - 1;
+        //Window.alert("New value: " + value);
         thenPanel.setTitle("Action " + value);
       }
     }

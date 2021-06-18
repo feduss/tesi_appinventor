@@ -1,9 +1,6 @@
 package com.google.appinventor.client.thesis;
 
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.*;
 
 public class Condition {
 
@@ -13,6 +10,8 @@ public class Condition {
     private ListBox ifVerb;
     private TextBox ifTextBox;
     private String viewClickedType = "";
+    private Label ifLabel;
+    private HTML firstLine;
     //private Button deleteButton;
 
     public Condition(HorizontalPanel horizontalPanelIf, ListBox ifSubj, ListBox ifVerb, TextBox ifTextBox/*, Button deleteCond*/){
@@ -69,6 +68,22 @@ public class Condition {
 
     public void setViewClickedType(String viewClickedType) {
         this.viewClickedType = viewClickedType;
+    }
+
+    public Label getIfLabel() {
+        return ifLabel;
+    }
+
+    public void setIfLabel(Label ifLabel) {
+        this.ifLabel = ifLabel;
+    }
+
+    public HTML getFirstLine() {
+        return firstLine;
+    }
+
+    public void setFirstLine(HTML firstLine) {
+        this.firstLine = firstLine;
     }
 
     /*public Button getDeleteButton() {

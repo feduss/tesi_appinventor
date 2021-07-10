@@ -64,13 +64,13 @@ public class TesiParserBaseListener implements TesiParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAction_body(TesiParser.Action_bodyContext ctx) { }
+	@Override public void enterCondition_statement(TesiParser.Condition_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAction_body(TesiParser.Action_bodyContext ctx) { }
+	@Override public void exitCondition_statement(TesiParser.Condition_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -95,18 +95,6 @@ public class TesiParserBaseListener implements TesiParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAnother_action(TesiParser.Another_actionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterCondition_statement(TesiParser.Condition_statementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCondition_statement(TesiParser.Condition_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

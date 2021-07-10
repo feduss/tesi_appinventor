@@ -48,15 +48,15 @@ public interface TesiParserListener extends ParseTreeListener {
 	 */
 	void exitAnother_condition(TesiParser.Another_conditionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link TesiParser#action_body}.
+	 * Enter a parse tree produced by {@link TesiParser#condition_statement}.
 	 * @param ctx the parse tree
 	 */
-	void enterAction_body(TesiParser.Action_bodyContext ctx);
+	void enterCondition_statement(TesiParser.Condition_statementContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link TesiParser#action_body}.
+	 * Exit a parse tree produced by {@link TesiParser#condition_statement}.
 	 * @param ctx the parse tree
 	 */
-	void exitAction_body(TesiParser.Action_bodyContext ctx);
+	void exitCondition_statement(TesiParser.Condition_statementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link TesiParser#action}.
 	 * @param ctx the parse tree
@@ -77,16 +77,6 @@ public interface TesiParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAnother_action(TesiParser.Another_actionContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link TesiParser#condition_statement}.
-	 * @param ctx the parse tree
-	 */
-	void enterCondition_statement(TesiParser.Condition_statementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link TesiParser#condition_statement}.
-	 * @param ctx the parse tree
-	 */
-	void exitCondition_statement(TesiParser.Condition_statementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link TesiParser#action_statement}.
 	 * @param ctx the parse tree

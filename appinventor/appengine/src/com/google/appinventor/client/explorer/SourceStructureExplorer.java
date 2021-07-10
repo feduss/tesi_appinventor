@@ -1179,9 +1179,8 @@ public class SourceStructureExplorer extends Composite {
           verbList.addItem("is touched up");
           break;
         case "DatePicker":
-          verbList.addItem("is clicked");
+          verbList.addItem("after date set");
           verbList.addItem("got focus");
-          verbList.addItem("is long clicked");
           verbList.addItem("lost focus");
           verbList.addItem("is touched down");
           verbList.addItem("is touched up");
@@ -1190,15 +1189,15 @@ public class SourceStructureExplorer extends Composite {
           verbList.addItem("is clicked");
           break;
         case "ListPicker":
-          verbList.addItem("is after picked");
-          verbList.addItem("is before picked");
+          verbList.addItem("after picking");
+          verbList.addItem("before picking");
           verbList.addItem("got focus");
           verbList.addItem("lost focus");
           verbList.addItem("is touched down");
           verbList.addItem("is touched up");
           break;
         case "ListView":
-          verbList.addItem("is after picked");
+          verbList.addItem("after picking");
           break;
         case "TextBox":
         case "PasswordTextBox":
@@ -2031,7 +2030,7 @@ public class SourceStructureExplorer extends Composite {
 
       //Window.alert("Conditions ok");
 
-      int size = treeRoot.another_action().size() + 1;
+      int size = treeRoot.action().another_action().size() + 1;
       System.out.println("Size: " + String.valueOf(size));
       json.put("actionNumber", new JSONString(String.valueOf(size)));
       //Actions
@@ -2039,15 +2038,15 @@ public class SourceStructureExplorer extends Composite {
 
       //ActionType
       String ActionType = "NoType";
-      if(treeRoot.action().action_body().action_statement() != null){
-        if(treeRoot.action().action_body().action_statement().SET() != null){
-          ActionType = treeRoot.action().action_body().action_statement().SET().getText();
+      if(treeRoot.action().action_statement() != null){
+        if(treeRoot.action().action_statement().SET() != null){
+          ActionType = treeRoot.action().action_statement().SET().getText();
         }
-        else if(treeRoot.action().action_body().action_statement().CALL() != null){
-          ActionType = treeRoot.action().action_body().action_statement().CALL().getText();
+        else if(treeRoot.action().action_statement().CALL() != null){
+          ActionType = treeRoot.action().action_statement().CALL().getText();
         }
-        else if(treeRoot.action().action_body().action_statement().OPEN() != null){
-          ActionType = treeRoot.action().action_body().action_statement().OPEN().getText();
+        else if(treeRoot.action().action_statement().OPEN() != null){
+          ActionType = treeRoot.action().action_statement().OPEN().getText();
         }
       }
 
@@ -2056,15 +2055,15 @@ public class SourceStructureExplorer extends Composite {
       //ActionSubj
       //Ex.: label2
       String ActionSubj = "NoSubj", ActionSubjType = null;
-      if(treeRoot.action().action_body().action_statement() != null && treeRoot.action().action_body().action_statement().OPEN() == null){
-        ActionSubj = treeRoot.action().action_body().action_statement().subj().getText();
+      if(treeRoot.action().action_statement() != null && treeRoot.action().action_statement().OPEN() == null){
+        ActionSubj = treeRoot.action().action_statement().subj().getText();
         ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
       }
 
       //Window.alert("ActionSubj: " + ActionSubj);
 
-      ActionSubjType = treeRoot.action().action_body().action_statement().subj_type() != null ?
-              treeRoot.action().action_body().action_statement().subj_type().getText() : "NoSubjType" ;
+      ActionSubjType = treeRoot.action().action_statement().subj_type() != null ?
+              treeRoot.action().action_statement().subj_type().getText() : "NoSubjType" ;
 
       //Window.alert("ActionSubjType: " + ActionSubjType);
 
@@ -2073,17 +2072,17 @@ public class SourceStructureExplorer extends Composite {
       //ActionVerb
       //Ex.: is shown
       String ActionVerb = null, ActionValue = null;
-      if(treeRoot.action().action_body().action_statement() != null &&
-              treeRoot.action().action_body().action_statement().OPEN() == null){
-        ActionVerb = treeRoot.action().action_body().action_statement().ACTION_SET_OBJ() != null ?
-                treeRoot.action().action_body().action_statement().ACTION_SET_OBJ().getText() :
-                treeRoot.action().action_body().action_statement().ACTION_CALL_OBJ().getText();
+      if(treeRoot.action().action_statement() != null &&
+              treeRoot.action().action_statement().OPEN() == null){
+        ActionVerb = treeRoot.action().action_statement().ACTION_SET_OBJ() != null ?
+                treeRoot.action().action_statement().ACTION_SET_OBJ().getText() :
+                treeRoot.action().action_statement().ACTION_CALL_OBJ().getText();
 
-        ActionValue = treeRoot.action().action_body().action_statement().value().getText();
+        ActionValue = treeRoot.action().action_statement().value().getText();
       }
       else{
-        ActionVerb =treeRoot.action().action_body().action_statement().ACTION_OPEN_OBJ().getText();
-        ActionValue = treeRoot.action().action_body().action_statement().value().getText();
+        ActionVerb =treeRoot.action().action_statement().ACTION_OPEN_OBJ().getText();
+        ActionValue = treeRoot.action().action_statement().value().getText();
       }
 
       //Window.alert("ActionVerb: " + ActionVerb);
@@ -2095,47 +2094,47 @@ public class SourceStructureExplorer extends Composite {
       temp2.put("actionSubjType", new JSONString(ActionSubjType));
       temp2.put("actionVerb", new JSONString(ActionVerb));
       temp2.put("actionValue", new JSONString(ActionValue));
-      //temp2.put("innerRule", getJSONBlock(treeRoot.action().action_body().block())); //block innestato
+      //temp2.put("innerRule", getJSONBlock(treeRoot.action().block())); //block innestato
       temp.put("action" + 0, temp2);
       //Window.alert("Main action inserted");
       //Other_Actions
-      for(int i = 0; i < treeRoot.another_action().size(); i++){
+      for(int i = 0; i < treeRoot.action().another_action().size(); i++){
         //Window.alert("another action " + i);
-        if(treeRoot.another_action(i).action_body().action_statement() != null){
+        if(treeRoot.action().another_action(i).action_statement() != null){
           ActionType = "NoType";
-          if(treeRoot.another_action(i).action_body().action_statement().SET() != null){
-            ActionType = treeRoot.another_action(i).action_body().action_statement().SET().getText();
+          if(treeRoot.action().another_action(i).action_statement().SET() != null){
+            ActionType = treeRoot.action().another_action(i).action_statement().SET().getText();
           }
-          else if(treeRoot.another_action(i).action_body().action_statement().CALL() != null){
-            ActionType = treeRoot.another_action(i).action_body().action_statement().CALL().getText();
+          else if(treeRoot.action().another_action(i).action_statement().CALL() != null){
+            ActionType = treeRoot.action().another_action(i).action_statement().CALL().getText();
           }
-          else if(treeRoot.another_action(i).action_body().action_statement().OPEN() != null){
-            ActionType = treeRoot.another_action(i).action_body().action_statement().OPEN().getText();
+          else if(treeRoot.action().another_action(i).action_statement().OPEN() != null){
+            ActionType = treeRoot.action().another_action(i).action_statement().OPEN().getText();
           }
 
           ActionSubj = "NoSubj";
-          if(treeRoot.another_action(i).action_body().action_statement() != null && treeRoot.another_action(i).action_body().action_statement().OPEN() == null){
-            ActionSubj = treeRoot.another_action(i).action_body().action_statement().subj().getText();
+          if(treeRoot.action().another_action(i).action_statement() != null && treeRoot.action().another_action(i).action_statement().OPEN() == null){
+            ActionSubj = treeRoot.action().another_action(i).action_statement().subj().getText();
             ActionSubj = ActionSubj.substring(0,1).toUpperCase().concat(ActionSubj.substring(1));
           }
 
           //Window.alert("ActionSubj: " + ActionSubj);
 
-          ActionSubjType = treeRoot.another_action(i).action_body().action_statement().subj_type() != null ?
-                  treeRoot.another_action(i).action_body().action_statement().subj_type().getText() : "NoSubjType" ;
+          ActionSubjType = treeRoot.action().another_action(i).action_statement().subj_type() != null ?
+                  treeRoot.action().another_action(i).action_statement().subj_type().getText() : "NoSubjType" ;
           //Window.alert("ActionSubjType: " + ActionSubjType);
         }
 
-        if(treeRoot.another_action(i).action_body().action_statement() != null &&
-                treeRoot.another_action(i).action_body().action_statement().OPEN() == null){
-          ActionVerb = treeRoot.another_action(i).action_body().action_statement().ACTION_SET_OBJ() != null ?
-                  treeRoot.another_action(i).action_body().action_statement().ACTION_SET_OBJ().getText() :
-                  treeRoot.another_action(i).action_body().action_statement().ACTION_CALL_OBJ().getText();
-          ActionValue = treeRoot.another_action(i).action_body().action_statement().value().getText();
+        if(treeRoot.action().another_action(i).action_statement() != null &&
+                treeRoot.action().another_action(i).action_statement().OPEN() == null){
+          ActionVerb = treeRoot.action().another_action(i).action_statement().ACTION_SET_OBJ() != null ?
+                  treeRoot.action().another_action(i).action_statement().ACTION_SET_OBJ().getText() :
+                  treeRoot.action().another_action(i).action_statement().ACTION_CALL_OBJ().getText();
+          ActionValue = treeRoot.action().another_action(i).action_statement().value().getText();
         }
         else{
-          ActionVerb = treeRoot.another_action(i).action_body().action_statement().ACTION_OPEN_OBJ().getText();
-          ActionValue = treeRoot.another_action(i).action_body().action_statement().value().getText();
+          ActionVerb = treeRoot.action().another_action(i).action_statement().ACTION_OPEN_OBJ().getText();
+          ActionValue = treeRoot.action().another_action(i).action_statement().value().getText();
         }
         //Window.alert("ActionVerb: " + ActionVerb);
         //Window.alert("ActionValue: " + ActionValue);
@@ -2147,7 +2146,7 @@ public class SourceStructureExplorer extends Composite {
         temp2.put("actionSubjType", new JSONString(ActionSubjType));
         temp2.put("actionVerb", new JSONString(ActionVerb));
         temp2.put("actionValue", new JSONString(ActionValue));
-        //temp2.put("innerRule", getJSONBlock(treeRoot.another_action(i).action_body().block())); //block innestato
+        //temp2.put("innerRule", getJSONBlock(treeRoot.action().another_action(i).block())); //block innestato
         temp.put("action" + (i + 1), temp2);
 
       }

@@ -642,6 +642,7 @@ function getActionBlock(actionType, actionSubj, actionVerb, actionObj){
   return actionBlock;
 }
 
+//feduss
 Blockly.Drawer.prototype.deleteBlock = function(id){
   //Blockly.selected.dispose(false, true);
   var block = this.workspace_.blockDB_[id];
@@ -649,6 +650,7 @@ Blockly.Drawer.prototype.deleteBlock = function(id){
   return true;
 }
 
+//feduss
 function insertBlockRecursive(rule1) {
   //test statico
   var id = "";
@@ -694,13 +696,18 @@ function insertBlockRecursive(rule1) {
       var whenAction = rule1.event.whenVerbAct;
       var index = -1;
       switch (whenAction) {
-        case 'after date':
+        case 'after date set':
           switch (whenSubjType){
             case "DatePicker": index = 0; break;
           }; break;
         case 'after picking':
           switch (whenSubjType){
             case "ListView": index = 0; break;
+            case "ListPicker": index = 0; break;
+          };  break;
+        case 'before picking':
+          switch (whenSubjType){
+            case "ListPicker": index = 1; break;
           };  break;
         case 'after selecting':
           switch (whenSubjType){
@@ -718,9 +725,11 @@ function insertBlockRecursive(rule1) {
         case 'got focus': switch (whenSubjType){
             case "Button": index = 1; break;
             case "DatePicker": index = 1; break;
+            case "ListPicker": index = 2; break;
             case "Switch": index = 1; break;
             case "PasswordTextBox": index = 0; break;
             case "TextBox": index = 1; break;
+            case "TimePicker": index = 1; break;
           };  break;
         case 'is clicked': switch (whenSubjType){
             case "Button": index = 0; break;
@@ -729,7 +738,11 @@ function insertBlockRecursive(rule1) {
             case "Button": index = 2; break;
           };  break;
         case 'lost focus': switch (whenSubjType){
-            case "DatePicker": index = 0; break;
+            case "DatePicker": index = 2; break;
+            case "ListPicker": index = 3; break;
+            case "Button": index = 3; break;
+            case "PasswordTextBox": index = 1; break;
+            case "TimePicker": index = 2; break;
           };  break;
         case 'position changed': switch (whenSubjType){
             case "Slider": index = 0; break;

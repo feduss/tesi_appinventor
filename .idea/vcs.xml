@@ -4,5 +4,6 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/appinventor/lib/blockly" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/appinventor/lib/closure-library" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/appinventor/lib/closure-library/closure-library" vcs="Git" />
   </component>
 </project>

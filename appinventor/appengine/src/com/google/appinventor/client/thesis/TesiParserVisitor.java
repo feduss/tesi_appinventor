@@ -35,11 +35,11 @@ public interface TesiParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAnother_condition(TesiParser.Another_conditionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link TesiParser#action_body}.
+	 * Visit a parse tree produced by {@link TesiParser#condition_statement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAction_body(TesiParser.Action_bodyContext ctx);
+	T visitCondition_statement(TesiParser.Condition_statementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link TesiParser#action}.
 	 * @param ctx the parse tree
@@ -52,12 +52,6 @@ public interface TesiParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAnother_action(TesiParser.Another_actionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link TesiParser#condition_statement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCondition_statement(TesiParser.Condition_statementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link TesiParser#action_statement}.
 	 * @param ctx the parse tree

@@ -26,10 +26,10 @@ SET : 'set';
 
 CALL : 'call';
 
-ACTION_WHEN_OBJ : 'after date'|'after selecting'|'after time set'|
+ACTION_WHEN_OBJ : 'after date set'|'after selecting'|'after time set'|
                   'changed'|
                   'got focus'|
-                  'is long clicked'|'is clicked'|'is after picked'|'is before picked'|
+                  'is long clicked'|'is clicked'|'after picking'|'before picking'|
                   'is touched down'|'is touched up'
                   'lost focus'|
                   'position changed to'

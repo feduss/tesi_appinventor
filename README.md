@@ -1,3 +1,34 @@
+FEDUSS README:
+
+Clone this repo.
+
+Download and install Ant for your OS → http://ant.apache.org/
+
+Download and install Google Cloud Sdk for your OS → https://cloud.google.com/sdk/docs/install
+
+Make sure to have Java 8 installed in your system.
+
+cd to tesi_appinventor\appinventor\lib and clone→ 
+
+https://github.com/feduss/blockly
+https://github.com/feduss/closure-library
+
+cd to tesi_appinventor_master/appinventor and run the following commands to build the server (it will take a while…):
+
+ant MakeAuthKey
+
+ant
+
+Then run the server:
+
+your-google-cloud-SDK-folder/bin/java_dev_appserver.sh --port=8888 --address=0.0.0.0 appengine/build/war/
+
+When the server is running, go to http://localhost:8888/ to start.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+MIT README:
+
 # Welcome to MIT App Inventor
 
 ## Introduction
